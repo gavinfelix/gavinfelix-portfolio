@@ -1,0 +1,77 @@
+GavinFelix Portfolio
+This repository is a Monorepo containing three main projects built with Next.js: 1. Blog – Personal blog with MDX support and content center 2. AI Assistant – Interactive AI English assistant 3. SaaS – Dashboard / subscription-based product
+
+Shared components, utilities, and database clients are stored in the packages/ folder.
+
+⸻
+
+Repository Structure
+gavinfelix-portfolio/
+├── apps/
+│ ├── blog/ # Personal blog
+│ ├── ai/ # AI English assistant
+│ └── saas/ # SaaS dashboard
+├── packages/
+│ ├── ui/ # Shared UI components (Button, Card, etc.)
+│ ├── lib/ # Shared utilities and API hooks
+│ └── db/ # Prisma/Supabase clients
+├── pnpm-workspace.yaml
+├── pnpm-lock.yaml
+└── turbo.json # Turborepo configuration
+
+⸻
+
+Prerequisites
+• Node.js v20+
+• pnpm v10+
+• Optional: Turborepo for unified dev commands
+
+⸻
+
+Installation
+Clone the repository:
+git clone https://github.com/gavinfelix/gavinfelix-portfolio.git
+cd gavinfelix-portfolio
+
+⸻
+
+Install dependencies:
+pnpm install
+
+⸻
+
+Development
+
+1. Individual Module
+   You can start each module individually:
+   pnpm --filter blog dev # Start Blog
+   pnpm --filter ai dev # Start AI Assistant
+   pnpm --filter saas dev # Start SaaS
+2. All Modules (Turborepo)
+   Start all modules at once:
+   npx turbo run dev
+   • Blog: http://localhost:3000
+   • SaaS: http://localhost:3001
+   • AI: http://localhost:3002
+   Note: Ports may automatically adjust if there are conflicts.
+
+Usage
+• Blog: Write MDX posts and embed AI assistant components
+• AI Assistant: Interactive English learning and writing
+• SaaS: User dashboard and subscription management
+
+Shared components in packages/ui and utilities in packages/lib can be imported across all modules.
+Notes
+• Ensure only pnpm is used; remove package-lock.json or yarn.lock to avoid workspace root warnings.
+• Keep pnpm-workspace.yaml updated if adding new apps or packages.
+• For Next.js workspace root issues, set outputFileTracingRoot in next.config.js.
+
+⸻
+
+License
+
+MIT
+
+⸻
+
+If you want, I can also add a “Getting Started with AI Demo” section with minimal setup instructions for /apps/ai, so anyone cloning the repo can immediately run the AI assistant.

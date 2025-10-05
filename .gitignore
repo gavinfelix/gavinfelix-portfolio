@@ -1,0 +1,47 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Next.js build outputs
+.next/
+out/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# MacOS system files
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# pnpm workspace
+.pnpm-store/
+
+# Turborepo cache
+.cache/
+.turbo/
+turbo.log
+
+# Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Misc
+*.swp
+*.tmp
+*.bak
+
+# Ignore lock files from other package managers
+package-lock.json
+yarn.lock
