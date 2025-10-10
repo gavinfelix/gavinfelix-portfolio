@@ -1,3 +1,5 @@
+import { PromptInputTextarea } from "./elements/prompt-input";
+
 export function MultimodalInput() {
   return (
     <div>
@@ -6,6 +8,7 @@ export function MultimodalInput() {
         multiple
       />
       Send a message...
+      <PromptInputTextarea />
     </div>
   );
 }
