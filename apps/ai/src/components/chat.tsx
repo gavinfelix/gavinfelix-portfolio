@@ -1,9 +1,12 @@
 "use client";
+import { Messages } from "./messages";
 
 export function Chat({}) {
   return (
     <>
-      <div></div>
+      <div>
+        <Messages />
+      </div>
     </>
   );
 }
