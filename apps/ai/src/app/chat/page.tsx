@@ -9,6 +9,7 @@ export default async function Page() {
   return (
     <>
       <Chat />
+      this is chat page.
     </>
   );
 }
