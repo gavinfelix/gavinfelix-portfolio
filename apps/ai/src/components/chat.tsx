@@ -162,7 +162,7 @@ export function Chat({
           isReadonly={isReadonly}
           selectedVisibilityType={initialVisibilityType}
         />
-        1
+
         <Messages
           chatId={id}
           isArtifactVisible={isArtifactVisible}
@@ -174,7 +174,7 @@ export function Chat({
           status={status}
           votes={votes}
         />
-        2
+
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
           {!isReadonly && (
             <MultimodalInput
