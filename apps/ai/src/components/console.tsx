@@ -154,10 +154,10 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                     {consoleOutput.status === "in_progress"
                       ? "Initializing..."
                       : consoleOutput.status === "loading_packages"
-                        ? consoleOutput.contents.map((content) =>
-                            content.type === "text" ? content.value : null
-                          )
-                        : null}
+                      ? consoleOutput.contents.map((content) =>
+                          content.type === "text" ? content.value : null
+                        )
+                      : null}
                   </div>
                 </div>
               ) : (
