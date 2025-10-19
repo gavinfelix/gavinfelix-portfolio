@@ -1,21 +1,30 @@
 import { NextResponse } from "next/server";
+import { createGuestUser } from "@/lib/db/queries";
 import { getToken } from "next-auth/jwt";
-import { signIn } from "@/app/(auth)/auth";
-import { isDevelopmentEnvironment } from "@/lib/constants";
+import { encodeJwt } from "@/lib/auth/jwt";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const redirectUrl = searchParams.get("redirectUrl") || "/chat";
+  const redirectUrl =
+    new URL(request.url).searchParams.get("redirectUrl") || "/chat";
 
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
   });
 
   if (token) {
-    return NextResponse.redirect(new URL("/chat", request.url));
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
   }
 
-  return signIn("guest", { redirect: true, redirectTo: redirectUrl });
+  const [guestUser] = await createGuestUser();
+
+  // 生成 JWT token 手动写入 cookie
+  const jwt = encodeJwt({ id: guestUser.id, type: "guest" });
+  const response = NextResponse.redirect(new URL(redirectUrl, request.url));
+  response.headers.append(
+    "Set-Cookie",
+    `next-auth.session-token=${jwt}; Path=/; HttpOnly; Secure; SameSite=Lax`
+  );
+
+  return response;
 }
