@@ -25,6 +25,7 @@ export default function Page() {
   const { update: updateSession } = useSession();
 
   useEffect(() => {
+    console.log(state.status, "[register] state.status...");
     if (state.status === "user_exists") {
       toast({ type: "error", description: "Account already exists!" });
     } else if (state.status === "failed") {
@@ -39,13 +40,17 @@ export default function Page() {
 
       setIsSuccessful(true);
       updateSession();
-      router.refresh();
+      router.push("/");
+      // router.refresh();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
     formAction(formData);
   };
 
