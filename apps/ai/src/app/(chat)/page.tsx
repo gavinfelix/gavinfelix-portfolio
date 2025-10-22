@@ -8,18 +8,31 @@ import { auth } from "../(auth)/auth";
 import { decode } from "next-auth/jwt";
 
 export default async function Page() {
+  // 1️⃣ 打 cookie
   const cookieStore = await cookies();
-  const token = cookieStore.get("next-auth.session-token")?.value;
+  console.log("cookieStore:", cookieStore.getAll());
 
-  if (token) {
-    const decoded = await decode({
-      token,
-      secret: process.env.AUTH_SECRET!,
-      salt: "authjs.session-token",
-    });
+  const rawToken = cookieStore.get("authjs.session-token")?.value;
+  console.log("raw authjs.session-token:", rawToken);
+
+  // 2️⃣ 尝试 decode JWT
+  if (rawToken) {
+    try {
+      const decoded = await decode({
+        token: rawToken,
+        secret: process.env.AUTH_SECRET!,
+        salt: "authjs.session-token",
+      });
+      console.log("decoded token:", decoded);
+    } catch (err) {
+      console.error("decode error:", err);
+    }
+  } else {
+    console.log("No raw token found in cookies.");
   }
-
   const session = await auth();
+
+  console.log("session:", session);
 
   if (!session) {
     redirect(`/api/auth/guest`);

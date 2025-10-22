@@ -38,6 +38,7 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  trustHost: true, // Allow localhost in development
   providers: [
     Credentials({
       credentials: {},
