@@ -59,15 +59,15 @@ function PureArtifactActions({
                 isLoading || artifact.status === "streaming"
                   ? true
                   : action.isDisabled
-                    ? action.isDisabled(actionContext)
-                    : false
+                  ? action.isDisabled(actionContext)
+                  : false
               }
               onClick={async () => {
                 setIsLoading(true);
 
                 try {
                   await Promise.resolve(action.onClick(actionContext));
-                } catch (_error) {
+                } catch {
                   toast.error("Failed to execute action");
                 } finally {
                   setIsLoading(false);
