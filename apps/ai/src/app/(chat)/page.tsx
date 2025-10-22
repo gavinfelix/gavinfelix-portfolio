@@ -12,8 +12,8 @@ export default async function Page() {
   const cookieStore = await cookies();
   console.log("cookieStore:", cookieStore.getAll());
 
-  const rawToken = cookieStore.get("authjs.session-token")?.value;
-  console.log("raw authjs.session-token:", rawToken);
+  const rawToken = cookieStore.get("next-auth.session-token")?.value;
+  console.log("raw next-auth.session-token:", rawToken);
 
   // 2️⃣ 尝试 decode JWT
   if (rawToken) {
@@ -21,7 +21,7 @@ export default async function Page() {
       const decoded = await decode({
         token: rawToken,
         secret: process.env.AUTH_SECRET!,
-        salt: "authjs.session-token",
+        salt: "next-auth.session-token",
       });
       console.log("decoded token:", decoded);
     } catch (err) {

@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const jwt = await encode({
       token: { id: guestUser.id, type: "guest" },
       secret: process.env.AUTH_SECRET!,
-      salt: "authjs.session-token",
+      salt: "next-auth.session-token",
     });
     console.log("[auth/guest] jwt:", jwt);
 
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
     const response = NextResponse.redirect(new URL(redirectUrl, request.url));
     response.cookies.set({
-      name: "authjs.session-token",
+      name: "next-auth.session-token",
       value: jwt,
       path: "/",
       httpOnly: true,
