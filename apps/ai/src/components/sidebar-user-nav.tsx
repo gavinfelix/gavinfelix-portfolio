@@ -25,10 +25,12 @@ import { toast } from "./toast";
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
+  console.log(data, "useSession, data");
   const { setTheme, resolvedTheme } = useTheme();
 
-  const isGuest = guestRegex.test(data?.user?.email ?? "");
-
+  const email = data?.user?.email ?? user?.email ?? "";
+  const isGuest = !email || data?.user?.type === "guest";
+  console.log(isGuest, "isGuest");
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -55,11 +57,15 @@ export function SidebarUserNav({ user }: { user: User }) {
                   alt={user.email ?? "User Avatar"}
                   className="rounded-full"
                   height={24}
-                  src={`https://avatar.vercel.sh/${user.email}`}
+                  src={
+                    user?.name
+                      ? `https://avatar.vercel.sh/${user.name}`
+                      : "/default-avatar.png"
+                  }
                   width={24}
                 />
                 <span className="truncate" data-testid="user-email">
-                  {isGuest ? "Guest" : user?.email}
+                  {isGuest ? "Guest" : email}
                 </span>
                 <ChevronUp className="ml-auto" />
               </SidebarMenuButton>
