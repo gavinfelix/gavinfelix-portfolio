@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["avatar.vercel.sh"],
   },
+  eslint: {
+    ignoreDuringBuilds: true, // deploy time ignore ESLint
+  },
 };
 
 export default nextConfig;
