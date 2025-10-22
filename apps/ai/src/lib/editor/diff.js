@@ -300,6 +300,7 @@ const sentencesToChars = (oldSentences, newSentences) => {
   return { chars1, chars2, lineArray };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const computeChildEqualityFactor = (_node1, _node2) => {
   return 0;
 };
