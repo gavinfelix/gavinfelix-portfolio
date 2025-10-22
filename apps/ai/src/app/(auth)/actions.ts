@@ -67,12 +67,11 @@ export const register = async (
       return { status: "user_exists" } as RegisterActionState;
     }
     await createUser(validatedData.email, validatedData.password);
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
-
     return { status: "success" };
   } catch (error) {
     if (error instanceof z.ZodError) {
