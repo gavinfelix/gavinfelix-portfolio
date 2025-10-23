@@ -9,7 +9,7 @@ export async function GET(request: Request) {
       new URL(request.url).searchParams.get("redirectUrl") || "/";
 
     console.log("[auth/guest] creating guest user...");
-    const result = await signIn("guest");
+    const result = await signIn("guest", { redirect: false });
     console.log("[auth/guest] signIn result:", result);
 
     const response = NextResponse.redirect(new URL(redirectUrl, request.url));
