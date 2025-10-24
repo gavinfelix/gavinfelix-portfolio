@@ -26,6 +26,13 @@ export default function Page() {
   const { update: updateSession } = useSession();
 
   useEffect(() => {
+    const handleLogin = async () => {
+      setIsSuccessful(true);
+      await updateSession();
+      await new Promise((res) => setTimeout(res, 200));
+      router.push("/");
+    };
+
     if (state.status === "failed") {
       toast({
         type: "error",
@@ -37,13 +44,10 @@ export default function Page() {
         description: "Failed validating your submission!",
       });
     } else if (state.status === "success") {
-      setIsSuccessful(true);
-      updateSession();
-      // router.refresh();
-      router.push("/");
+      handleLogin();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);
