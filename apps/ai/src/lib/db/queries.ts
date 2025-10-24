@@ -33,6 +33,7 @@ import {
   vote,
 } from "./schema";
 import { generateHashedPassword } from "./utils";
+import type { UserType } from "@/app/(auth)/auth";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -53,11 +54,21 @@ export async function getUser(email: string): Promise<User[]> {
   }
 }
 
-export async function createUser(email: string, password: string) {
+export async function createUser(
+  email: string,
+  password: string,
+  type: UserType
+) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
-    return await db.insert(user).values({ email, password: hashedPassword });
+    return await db
+      .insert(user)
+      .values({ email, password: hashedPassword, type: "regular" })
+      .returning({
+        id: user.id,
+        email: user.email,
+      });
   } catch {
     throw new ChatSDKError("bad_request:database", "Failed to create user");
   }
@@ -68,10 +79,17 @@ export async function createGuestUser() {
   const password = generateHashedPassword(generateUUID());
 
   try {
-    return await db.insert(user).values({ email, password }).returning({
-      id: user.id,
-      email: user.email,
-    });
+    return await db
+      .insert(user)
+      .values({
+        email,
+        password,
+        type: "guest",
+      })
+      .returning({
+        id: user.id,
+        email: user.email,
+      });
   } catch {
     throw new ChatSDKError(
       "bad_request:database",
