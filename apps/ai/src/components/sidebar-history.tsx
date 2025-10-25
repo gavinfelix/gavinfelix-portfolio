@@ -84,9 +84,9 @@ export function getChatHistoryPaginationKey(
     return null;
   }
 
-  if (pageIndex === 0) {
-    return `/api/history?limit=${PAGE_SIZE}`;
-  }
+  // if (pageIndex === 0) {
+  //   return `/api/history?limit=${PAGE_SIZE}`;
+  // }
 
   const firstChatFromPage = previousPageData.chats.at(-1);
 
