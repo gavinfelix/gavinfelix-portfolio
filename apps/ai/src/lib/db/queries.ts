@@ -39,38 +39,41 @@ import type { UserType } from "@/app/(auth)/auth";
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
+// Database connection setup
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
+
+// Helper function for consistent error handling
+function handleDatabaseError(error: unknown, operation: string): never {
+  console.error(`Database error in ${operation}:`, error);
+  throw new ChatSDKError("bad_request:database", `Failed to ${operation}`);
+}
 
 export async function getUser(email: string): Promise<User[]> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
-  } catch {
-    throw new ChatSDKError(
-      "bad_request:database",
-      "Failed to get user by email"
-    );
+  } catch (error) {
+    handleDatabaseError(error, "get user by email");
   }
 }
 
 export async function createUser(
   email: string,
   password: string,
-  type: UserType
+  type: UserType = "regular"
 ) {
   const hashedPassword = generateHashedPassword(password);
 
   try {
     return await db
       .insert(user)
-      .values({ email, password: hashedPassword, type: "regular" })
+      .values({ email, password: hashedPassword, type })
       .returning({
         id: user.id,
         email: user.email,
       });
-  } catch {
-    throw new ChatSDKError("bad_request:database", "Failed to create user");
+  } catch (error) {
+    handleDatabaseError(error, "create user");
   }
 }
 
@@ -90,11 +93,8 @@ export async function createGuestUser() {
         id: user.id,
         email: user.email,
       });
-  } catch {
-    throw new ChatSDKError(
-      "bad_request:database",
-      "Failed to create guest user"
-    );
+  } catch (error) {
+    handleDatabaseError(error, "create guest user");
   }
 }
 
