@@ -1,18 +1,29 @@
 "use server";
 
 import { z } from "zod";
-
 import { createUser, getUser } from "@/lib/db/queries";
-
 import { signIn } from "./auth";
 
+// Enhanced validation schema
 const authFormSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export type LoginActionState = {
   status: "idle" | "in_progress" | "success" | "failed" | "invalid_data";
+  message?: string;
+};
+
+export type RegisterActionState = {
+  status:
+    | "idle"
+    | "in_progress"
+    | "success"
+    | "failed"
+    | "user_exists"
+    | "invalid_data";
+  message?: string;
 };
 
 export const login = async (
@@ -25,30 +36,33 @@ export const login = async (
       password: formData.get("password"),
     });
 
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
 
+    if (result?.error) {
+      return {
+        status: "failed",
+        message: "Invalid email or password",
+      };
+    }
+
     return { status: "success" };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { status: "invalid_data" };
+      return {
+        status: "invalid_data",
+        message: error.errors[0]?.message || "Invalid input data",
+      };
     }
 
-    return { status: "failed" };
+    return {
+      status: "failed",
+      message: "An unexpected error occurred",
+    };
   }
-};
-
-export type RegisterActionState = {
-  status:
-    | "idle"
-    | "in_progress"
-    | "success"
-    | "failed"
-    | "user_exists"
-    | "invalid_data";
 };
 
 export const register = async (
@@ -61,23 +75,45 @@ export const register = async (
       password: formData.get("password"),
     });
 
-    const [user] = await getUser(validatedData.email);
-
-    if (user) {
-      return { status: "user_exists" } as RegisterActionState;
+    const existingUsers = await getUser(validatedData.email);
+    if (existingUsers.length > 0) {
+      return {
+        status: "user_exists",
+        message: "An account with this email already exists",
+      };
     }
+
     await createUser(validatedData.email, validatedData.password, "regular");
+
     const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
-    return { status: "success" };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { status: "invalid_data" };
+
+    if (result?.error) {
+      return {
+        status: "failed",
+        message:
+          "Account created but failed to sign in. Please try logging in manually.",
+      };
     }
 
-    return { status: "failed" };
+    return {
+      status: "success",
+      message: "Account created successfully!",
+    };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        status: "invalid_data",
+        message: error.errors[0]?.message || "Invalid input data",
+      };
+    }
+
+    return {
+      status: "failed",
+      message: "An unexpected error occurred",
+    };
   }
 };
