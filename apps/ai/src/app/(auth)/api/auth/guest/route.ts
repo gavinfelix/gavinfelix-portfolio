@@ -3,20 +3,29 @@ import { signIn } from "@/app/(auth)/auth";
 
 export async function GET(request: Request) {
   try {
-    console.log("[auth/guest] called");
-
     const redirectUrl =
       new URL(request.url).searchParams.get("redirectUrl") || "/";
 
-    console.log("[auth/guest] creating guest user...");
-    const result = await signIn("guest", { redirect: false });
-    console.log("[auth/guest] signIn result:", result);
+    const result = await signIn("guest", {
+      redirect: false,
+      email: `guest-${Date.now()}`,
+      password: "dummy",
+    });
 
-    const response = NextResponse.redirect(new URL(redirectUrl, request.url));
+    if (result?.error) {
+      console.error("[auth/guest] Authentication failed:", result.error);
+      return NextResponse.json(
+        { error: "Failed to create guest session" },
+        { status: 500 }
+      );
+    }
 
-    return response;
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
   } catch (error) {
-    console.error("[auth/guest] error:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    console.error("[auth/guest] Error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
