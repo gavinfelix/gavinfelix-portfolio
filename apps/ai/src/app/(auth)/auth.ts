@@ -6,9 +6,16 @@ import { DUMMY_PASSWORD } from "@/lib/constants";
 import { createGuestUser, getUser } from "@/lib/db/queries";
 import { authConfig } from "./auth.config";
 
+/**
+ * User type definition
+ * - guest: Temporary user without registration
+ * - regular: Registered user with email and password
+ */
 export type UserType = "guest" | "regular";
 
-// Type declarations for NextAuth
+/**
+ * Extend NextAuth types to include user ID and type in session
+ */
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -74,6 +81,10 @@ async function createGuestUserSafely() {
   }
 }
 
+/**
+ * NextAuth instance with custom providers and callbacks
+ * Exports auth handlers, signIn, signOut functions for use throughout the app
+ */
 export const {
   handlers: { GET, POST },
   auth,
@@ -82,6 +93,7 @@ export const {
 } = NextAuth({
   ...authConfig,
   trustHost: true, // Allow localhost in development
+
   providers: [
     // Regular user credentials provider
     Credentials({
@@ -90,7 +102,7 @@ export const {
         return await validateUserCredentials(email, password);
       },
     }),
-    // Guest user provider
+    // Guest user provider - creates temporary users automatically
     Credentials({
       id: "guest",
       credentials: {},
@@ -99,7 +111,9 @@ export const {
       },
     }),
   ],
+
   callbacks: {
+    // Extend JWT token with user ID and type
     jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
@@ -107,6 +121,7 @@ export const {
       }
       return token;
     },
+    // Extend session with user ID and type from token
     session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
