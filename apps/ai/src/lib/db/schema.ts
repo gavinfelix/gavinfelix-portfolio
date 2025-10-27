@@ -13,20 +13,28 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AppUsage } from "../usage";
 
+/**
+ * User table schema
+ * Stores registered users and guest users
+ */
 export const user = pgTable("users", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   email: varchar("email", { length: 64 }).notNull(),
-  password: varchar("password", { length: 64 }),
+  password: varchar("password", { length: 64 }), // Hashed password or null for guest users
   type: varchar("type", { enum: ["regular", "guest"] })
     .notNull()
-    .default("regular"),
+    .default("regular"), // User type: regular (registered) or guest (temporary)
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  // deletedAt: timestamp("deletedAt"),
+  // deletedAt: timestamp("deletedAt"), // Soft delete support (future feature)
 });
 
 export type User = InferSelectModel<typeof user>;
 
+/**
+ * Chat table schema
+ * Stores chat conversations with users
+ */
 export const chat = pgTable("Chat", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   createdAt: timestamp("createdAt").notNull(),
