@@ -534,7 +534,14 @@ export async function getMessageCountByUserId({
       .execute();
 
     return stats?.count ?? 0;
-  } catch {
+  } catch (error) {
+    // 记录详细的错误信息以便调试
+    console.error("[getMessageCountByUserId] Database error:", {
+      userId: id,
+      differenceInHours,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new ChatSDKError(
       "bad_request:database",
       "Failed to get message count by user id"
