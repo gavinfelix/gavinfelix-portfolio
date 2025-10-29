@@ -80,13 +80,20 @@ export function getChatHistoryPaginationKey(
   pageIndex: number,
   previousPageData: ChatHistory
 ) {
+  // 第一页：previousPageData 为 null/undefined
+  if (pageIndex === 0) {
+    return `/api/history?limit=${PAGE_SIZE}`;
+  }
+
+  // 如果上一页数据表明没有更多数据，返回 null 停止加载
   if (previousPageData && previousPageData.hasMore === false) {
     return null;
   }
 
-  // if (pageIndex === 0) {
-  //   return `/api/history?limit=${PAGE_SIZE}`;
-  // }
+  // 如果没有上一页数据，返回 null
+  if (!previousPageData || !previousPageData.chats) {
+    return null;
+  }
 
   const firstChatFromPage = previousPageData.chats.at(-1);
 
