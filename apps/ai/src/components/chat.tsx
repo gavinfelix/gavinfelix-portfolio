@@ -106,6 +106,29 @@ export function Chat({
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
+      console.error("[Chat] Error occurred:", error);
+
+      // 检查是否是取消错误
+      if (error instanceof Error) {
+        if (
+          error.name === "AbortError" ||
+          error.message?.includes("canceled") ||
+          error.message?.includes("aborted")
+        ) {
+          console.warn(
+            "[Chat] Request was aborted/canceled. This may happen if:",
+            [
+              "- Component was unmounted",
+              "- Navigation occurred",
+              "- User clicked stop button",
+              "- New request was sent before previous completed",
+            ].join("\n")
+          );
+          // 不显示错误提示，因为取消通常是预期的行为
+          return;
+        }
+      }
+
       if (error instanceof ChatSDKError) {
         // Check if it's a credit card error
         if (
@@ -118,26 +141,49 @@ export function Chat({
             description: error.message,
           });
         }
+      } else {
+        // 处理其他未预期的错误
+        toast({
+          type: "error",
+          description:
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred",
+        });
       }
     },
   });
+
+  // 监听 status 变化，用于调试 canceled 状态
+  useEffect(() => {
+    if (status === "error") {
+      console.warn(
+        "[Chat] Request status changed to error. Messages count:",
+        messages.length
+      );
+      console.warn(
+        "[Chat] Current URL:",
+        typeof window !== "undefined" ? window.location.href : "SSR"
+      );
+    }
+  }, [status, messages.length]);
 
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
-  useEffect(() => {
-    if (query && !hasAppendedQuery) {
-      sendMessage({
-        role: "user" as const,
-        parts: [{ type: "text", text: query }],
-      });
+  // useEffect(() => {
+  //   if (query && !hasAppendedQuery) {
+  //     sendMessage({
+  //       role: "user" as const,
+  //       parts: [{ type: "text", text: query }],
+  //     });
 
-      setHasAppendedQuery(true);
-      window.history.replaceState({}, "", `/chat/${id}`);
-    }
-  }, [query, sendMessage, hasAppendedQuery, id]);
+  //     setHasAppendedQuery(true);
+  //     window.history.replaceState({}, "", `/chat/${id}`);
+  //   }
+  // }, [query, sendMessage, hasAppendedQuery, id]);
 
   const { data: votes } = useSWR<Vote[]>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
