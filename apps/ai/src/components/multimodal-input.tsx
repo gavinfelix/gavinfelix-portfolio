@@ -94,6 +94,9 @@ function PureMultimodalInput({
       adjustHeight();
     }
   }, [adjustHeight]);
+  useEffect(() => {
+    console.log("status:", status);
+  }, [status]);
 
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
