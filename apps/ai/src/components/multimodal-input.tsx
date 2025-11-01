@@ -83,6 +83,7 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
+  // Reset textarea height to default
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "44px";
@@ -104,6 +105,7 @@ function PureMultimodalInput({
     }
   }, []);
 
+  // Persist input in localStorage to restore after page reload
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     "input",
     ""
@@ -132,6 +134,7 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
+  // Submit message with text and attachments, then reset form
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
@@ -151,11 +154,13 @@ function PureMultimodalInput({
       ],
     });
 
+    // Clear form state after submission
     setAttachments([]);
     setLocalStorageInput("");
     resetHeight();
     setInput("");
 
+    // Refocus textarea on desktop for better UX
     if (width && width > 768) {
       textareaRef.current?.focus();
     }
@@ -171,6 +176,7 @@ function PureMultimodalInput({
     resetHeight,
   ]);
 
+  // Upload file to server and return attachment metadata
   const uploadFile = useCallback(async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -209,19 +215,23 @@ function PureMultimodalInput({
     [usage]
   );
 
+  // Handle multiple file uploads in parallel
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
 
+      // Show upload queue for better user feedback
       setUploadQueue(files.map((file) => file.name));
 
       try {
+        // Upload all files in parallel
         const uploadPromises = files.map((file) => uploadFile(file));
         const uploadedAttachments = await Promise.all(uploadPromises);
         const successfullyUploadedAttachments = uploadedAttachments.filter(
           (attachment) => attachment !== undefined
         );
 
+        // Add successfully uploaded files to attachments list
         setAttachments((currentAttachments) => [
           ...currentAttachments,
           ...successfullyUploadedAttachments,
