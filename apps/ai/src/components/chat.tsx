@@ -68,6 +68,7 @@ export function Chat({
     currentModelIdRef.current = currentModelId;
   }, [currentModelId]);
 
+  // Initialize chat hook with custom transport and handlers
   const {
     messages,
     setMessages,
@@ -84,6 +85,7 @@ export function Chat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
+      // Include current model and visibility in request
       prepareSendMessagesRequest(request) {
         return {
           body: {
@@ -96,19 +98,21 @@ export function Chat({
         };
       },
     }),
+    // Handle streaming data and update usage statistics
     onData: (dataPart) => {
       setDataStream((ds) => (ds ? [...ds, dataPart] : []));
       if (dataPart.type === "data-usage") {
         setUsage(dataPart.data);
       }
     },
+    // Refresh chat history when message finishes
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error) => {
       console.error("[Chat] Error occurred:", error);
 
-      // 检查是否是取消错误
+      // Check if error is due to request cancellation (expected behavior)
       if (error instanceof Error) {
         if (
           error.name === "AbortError" ||
@@ -124,13 +128,13 @@ export function Chat({
               "- New request was sent before previous completed",
             ].join("\n")
           );
-          // 不显示错误提示，因为取消通常是预期的行为
+          // Don't show error toast for cancellations as they're expected
           return;
         }
       }
 
       if (error instanceof ChatSDKError) {
-        // Check if it's a credit card error
+        // Show credit card alert for payment-related errors
         if (
           error.message?.includes("AI Gateway requires a valid credit card")
         ) {
@@ -142,7 +146,7 @@ export function Chat({
           });
         }
       } else {
-        // 处理其他未预期的错误
+        // Handle other unexpected errors
         toast({
           type: "error",
           description:
@@ -154,7 +158,7 @@ export function Chat({
     },
   });
 
-  // 监听 status 变化，用于调试 canceled 状态
+  // Monitor status changes for debugging purposes
   useEffect(() => {
     if (status === "error") {
       console.warn(
@@ -185,6 +189,7 @@ export function Chat({
   //   }
   // }, [query, sendMessage, hasAppendedQuery, id]);
 
+  // Fetch votes only if there are at least 2 messages (user + assistant)
   const { data: votes } = useSWR<Vote[]>(
     messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
     fetcher
@@ -193,6 +198,7 @@ export function Chat({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
+  // Automatically resume incomplete chat streams if enabled
   useAutoResume({
     autoResume,
     initialMessages,
