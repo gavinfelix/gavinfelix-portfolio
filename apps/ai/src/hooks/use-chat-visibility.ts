@@ -10,6 +10,7 @@ import {
 } from "@/components/sidebar-history";
 import type { VisibilityType } from "@/components/visibility-selector";
 
+// Custom hook to manage chat visibility state (private/public)
 export function useChatVisibility({
   chatId,
   initialVisibilityType,
@@ -20,6 +21,7 @@ export function useChatVisibility({
   const { mutate, cache } = useSWRConfig();
   const history: ChatHistory = cache.get("/api/history")?.data;
 
+  // Store visibility in local SWR cache for optimistic updates
   const { data: localVisibility, mutate: setLocalVisibility } = useSWR(
     `${chatId}-visibility`,
     null,
@@ -28,6 +30,7 @@ export function useChatVisibility({
     }
   );
 
+  // Determine current visibility from cache or local state
   const visibilityType = useMemo(() => {
     if (!history) {
       return localVisibility;
@@ -39,6 +42,7 @@ export function useChatVisibility({
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 
+  // Update visibility locally and sync with server
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
     mutate(unstable_serialize(getChatHistoryPaginationKey));
