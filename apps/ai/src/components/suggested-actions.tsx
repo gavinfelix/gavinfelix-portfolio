@@ -14,6 +14,7 @@ type SuggestedActionsProps = {
 };
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
+  // Predefined prompt suggestions for empty chat state
   const suggestedActions = [
     "What are the advantages of using Next.js?",
     "Write code to demonstrate Dijkstra's algorithm",
@@ -32,12 +33,14 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
           exit={{ opacity: 0, y: 20 }}
           initial={{ opacity: 0, y: 20 }}
           key={suggestedAction}
+          // Stagger animation delays for smooth entrance effect
           transition={{ delay: 0.05 * index }}
         >
           <Suggestion
             className="h-auto w-full whitespace-normal p-3 text-left"
             onClick={(suggestion) => {
               window.history.replaceState({}, "", `/chat/${chatId}`);
+              // Send selected suggestion as user message
               sendMessage({
                 role: "user",
                 parts: [{ type: "text", text: suggestion }],
