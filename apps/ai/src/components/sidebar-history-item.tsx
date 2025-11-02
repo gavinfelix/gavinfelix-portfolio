@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
 } from "./ui/sidebar";
 
+// Individual chat item in sidebar with share and delete actions
 const PureChatItem = ({
   chat,
   isActive,
@@ -37,6 +38,7 @@ const PureChatItem = ({
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
 }) => {
+  // Manage visibility state for this chat
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
     initialVisibilityType: chat.visibility,
@@ -50,6 +52,7 @@ const PureChatItem = ({
         </Link>
       </SidebarMenuButton>
 
+      {/* Context menu for chat actions */}
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
           <SidebarMenuAction
@@ -62,6 +65,7 @@ const PureChatItem = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" side="bottom">
+          {/* Share submenu to change chat visibility */}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger className="cursor-pointer">
               <ShareIcon />
@@ -99,6 +103,7 @@ const PureChatItem = ({
             </DropdownMenuPortal>
           </DropdownMenuSub>
 
+          {/* Delete chat option */}
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
             onSelect={() => onDelete(chat.id)}
