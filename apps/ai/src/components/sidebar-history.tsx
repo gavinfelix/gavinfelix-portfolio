@@ -43,6 +43,7 @@ export type ChatHistory = {
 
 const PAGE_SIZE = 20;
 
+// Group chats by date categories for organized display
 const groupChatsByDate = (chats: Chat[]): GroupedChats => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
@@ -52,6 +53,7 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
     (groups, chat) => {
       const chatDate = new Date(chat.createdAt);
 
+      // Categorize chats by creation date
       if (isToday(chatDate)) {
         groups.today.push(chat);
       } else if (isYesterday(chatDate)) {
@@ -76,25 +78,27 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
   );
 };
 
+// Generate pagination key for infinite scroll using cursor-based pagination
 export function getChatHistoryPaginationKey(
   pageIndex: number,
   previousPageData: ChatHistory
 ) {
-  // 第一页：previousPageData 为 null/undefined
+  // First page: no previous data
   if (pageIndex === 0) {
     return `/api/history?limit=${PAGE_SIZE}`;
   }
 
-  // 如果上一页数据表明没有更多数据，返回 null 停止加载
+  // Stop loading if no more data available
   if (previousPageData && previousPageData.hasMore === false) {
     return null;
   }
 
-  // 如果没有上一页数据，返回 null
+  // Return null if no previous page data
   if (!previousPageData || !previousPageData.chats) {
     return null;
   }
 
+  // Use last chat ID as cursor for next page
   const firstChatFromPage = previousPageData.chats.at(-1);
 
   if (!firstChatFromPage) {
@@ -122,6 +126,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Check pagination state
   const hasReachedEnd = paginatedChatHistories
     ? paginatedChatHistories.some((page) => page.hasMore === false)
     : false;
@@ -130,6 +135,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     ? paginatedChatHistories.every((page) => page.chats.length === 0)
     : false;
 
+  // Delete chat and update local cache optimistically
   const handleDelete = () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
       method: "DELETE",
@@ -138,6 +144,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     toast.promise(deletePromise, {
       loading: "Deleting chat...",
       success: () => {
+        // Remove deleted chat from cache
         mutate((chatHistories) => {
           if (chatHistories) {
             return chatHistories.map((chatHistory) => ({
@@ -154,6 +161,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
 
     setShowDeleteDialog(false);
 
+    // Redirect to home if current chat was deleted
     if (deleteId === id) {
       router.push("/");
     }
