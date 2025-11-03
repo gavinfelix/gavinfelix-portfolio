@@ -11,6 +11,7 @@ import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import { getStreamContext } from "../../route";
 
+// API route to resume interrupted chat streams
 export async function GET(
   _: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -46,10 +47,12 @@ export async function GET(
     return new ChatSDKError("not_found:chat").toResponse();
   }
 
+  // Verify user has permission to access private chats
   if (chat.visibility === "private" && chat.userId !== session.user.id) {
     return new ChatSDKError("forbidden:chat").toResponse();
   }
 
+  // Get all stream IDs for this chat and use the most recent one
   const streamIds = await getStreamIdsByChatId({ chatId });
 
   if (!streamIds.length) {
@@ -62,18 +65,20 @@ export async function GET(
     return new ChatSDKError("not_found:stream").toResponse();
   }
 
+  // Create empty stream as fallback
   const emptyDataStream = createUIMessageStream<ChatMessage>({
     // biome-ignore lint/suspicious/noEmptyBlockStatements: "Needs to exist"
     execute: () => {},
   });
 
+  // Attempt to resume the stream from Redis cache
   const stream = await streamContext.resumableStream(recentStreamId, () =>
     emptyDataStream.pipeThrough(new JsonToSseTransformStream())
   );
 
   /*
-   * For when the generation is streaming during SSR
-   * but the resumable stream has concluded at this point.
+   * Fallback: If resumable stream has concluded (e.g., during SSR),
+   * restore the last message if it was created recently (< 15 seconds ago)
    */
   if (!stream) {
     const messages = await getMessagesByChatId({ id: chatId });
@@ -83,16 +88,19 @@ export async function GET(
       return new Response(emptyDataStream, { status: 200 });
     }
 
+    // Only restore assistant messages
     if (mostRecentMessage.role !== "assistant") {
       return new Response(emptyDataStream, { status: 200 });
     }
 
     const messageCreatedAt = new Date(mostRecentMessage.createdAt);
 
+    // Only restore messages created within the last 15 seconds
     if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
       return new Response(emptyDataStream, { status: 200 });
     }
 
+    // Restore the message as a transient stream event
     const restoredStream = createUIMessageStream<ChatMessage>({
       execute: ({ writer }) => {
         writer.write({
