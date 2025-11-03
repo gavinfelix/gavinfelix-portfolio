@@ -64,6 +64,7 @@ const getTokenlensCatalog = cache(
   { revalidate: 24 * 60 * 60 } // 24 hours
 );
 
+// Get or create global resumable stream context (requires Redis)
 export function getStreamContext() {
   if (!globalStreamContext) {
     try {
@@ -84,6 +85,7 @@ export function getStreamContext() {
   return globalStreamContext;
 }
 
+// Main chat API endpoint - handles message streaming and tool execution
 export async function POST(request: Request) {
   let requestBody: PostRequestBody;
 
@@ -122,8 +124,8 @@ export async function POST(request: Request) {
 
     const userType: UserType = session.user.type;
 
-    // 检查用户 ID 是否是有效的 UUID
-    // Fallback 用户的 ID 格式为 "fallback-{timestamp}"，不是有效的 UUID
+    // Check if user ID is a valid UUID
+    // Fallback users have IDs like "fallback-{timestamp}" and skip DB operations
     const isValidUUID =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         session.user.id
@@ -131,8 +133,8 @@ export async function POST(request: Request) {
 
     let messageCount: number = 0;
 
-    // 只有当用户 ID 是有效的 UUID 时才查询数据库
-    // Fallback 用户（数据库创建失败时的临时用户）跳过速率限制检查
+    // Only query database for valid UUID users
+    // Fallback users skip rate limiting and database persistence
     if (isValidUUID) {
       try {
         messageCount = await getMessageCountByUserId({
@@ -163,22 +165,26 @@ export async function POST(request: Request) {
       messageCount = 0;
     }
 
+    // Enforce rate limits based on user type
     if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
       return new ChatSDKError("rate_limit:chat").toResponse();
     }
 
-    // 对于 fallback 用户，不进行数据库操作（他们的 ID 不是有效的 UUID）
+    // For fallback users, skip database operations (their IDs are not valid UUIDs)
     let chat = null;
     let uiMessages: ChatMessage[] = [message];
 
     if (isValidUUID) {
+      // Get or create chat, generate title if new
       chat = await getChatById({ id });
 
       if (chat) {
+        // Verify user owns the chat
         if (chat.userId !== session.user.id) {
           return new ChatSDKError("forbidden:chat").toResponse();
         }
       } else {
+        // Generate title from first user message
         const title = await generateTitleFromUserMessage({
           message,
         });
@@ -191,6 +197,7 @@ export async function POST(request: Request) {
         });
       }
 
+      // Load existing messages and append new user message
       const messagesFromDb = await getMessagesByChatId({ id });
       uiMessages = [...convertToUIMessages(messagesFromDb), message];
     } else {
@@ -226,14 +233,15 @@ export async function POST(request: Request) {
       });
     }
 
+    // Create stream ID for resumable streams (only for valid UUID users)
     const streamId = generateUUID();
-    // 只为有效的 UUID 用户创建 stream ID（因为需要数据库支持）
     if (isValidUUID) {
       await createStreamId({ streamId, chatId: id });
     }
 
     let finalMergedUsage: AppUsage | undefined;
 
+    // Create stream with AI model and tool execution
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         const result = streamText({
@@ -241,6 +249,7 @@ export async function POST(request: Request) {
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
+          // Disable tools for reasoning model, enable for others
           experimental_activeTools:
             selectedChatModel === "chat-model-reasoning"
               ? []
