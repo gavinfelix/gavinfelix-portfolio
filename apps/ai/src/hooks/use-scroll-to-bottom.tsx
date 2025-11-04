@@ -3,14 +3,17 @@ import useSWR from "swr";
 
 type ScrollFlag = ScrollBehavior | false;
 
+// Hook to manage automatic scrolling to bottom of message container
 export function useScrollToBottom() {
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
 
+  // Store scroll behavior preference in SWR cache
   const { data: scrollBehavior = false, mutate: setScrollBehavior } =
     useSWR<ScrollFlag>("messages:should-scroll", null, { fallbackData: false });
 
+  // Check if user is near bottom of scroll container (within 100px threshold)
   const handleScroll = useCallback(() => {
     if (!containerRef.current) {
       return;
@@ -21,6 +24,7 @@ export function useScrollToBottom() {
     setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 100);
   }, []);
 
+  // Observe container size changes and DOM mutations to track scroll position
   useEffect(() => {
     if (!containerRef.current) {
       return;
@@ -28,12 +32,14 @@ export function useScrollToBottom() {
 
     const container = containerRef.current;
 
+    // Monitor container resize events
     const resizeObserver = new ResizeObserver(() => {
       requestAnimationFrame(() => {
         handleScroll();
       });
     });
 
+    // Monitor DOM changes (new messages, style updates)
     const mutationObserver = new MutationObserver(() => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -58,6 +64,7 @@ export function useScrollToBottom() {
     };
   }, [handleScroll]);
 
+  // Listen to scroll events for real-time position tracking
   useEffect(() => {
     const container = containerRef.current;
     if (!container) {
@@ -72,6 +79,7 @@ export function useScrollToBottom() {
     };
   }, [handleScroll]);
 
+  // Perform scroll when scrollBehavior is set
   useEffect(() => {
     if (scrollBehavior && containerRef.current) {
       const container = containerRef.current;
@@ -84,6 +92,7 @@ export function useScrollToBottom() {
     }
   }, [scrollBehavior, setScrollBehavior]);
 
+  // Trigger scroll to bottom with specified behavior
   const scrollToBottom = useCallback(
     (currentScrollBehavior: ScrollBehavior = "smooth") => {
       setScrollBehavior(currentScrollBehavior);
@@ -91,6 +100,7 @@ export function useScrollToBottom() {
     [setScrollBehavior]
   );
 
+  // Callbacks for intersection observer to detect when end ref is visible
   function onViewportEnter() {
     setIsAtBottom(true);
   }
