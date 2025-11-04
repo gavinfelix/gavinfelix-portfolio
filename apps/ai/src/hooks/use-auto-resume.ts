@@ -12,6 +12,7 @@ export type UseAutoResumeParams = {
   setMessages: UseChatHelpers<ChatMessage>["setMessages"];
 };
 
+// Hook to automatically resume interrupted chat streams
 export function useAutoResume({
   autoResume,
   initialMessages,
@@ -20,6 +21,7 @@ export function useAutoResume({
 }: UseAutoResumeParams) {
   const { dataStream } = useDataStream();
 
+  // Resume stream if last message was from user (incomplete conversation)
   useEffect(() => {
     if (!autoResume) {
       return;
@@ -35,6 +37,7 @@ export function useAutoResume({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoResume, initialMessages.at, resumeStream]);
 
+  // Append restored messages from data stream
   useEffect(() => {
     if (!dataStream) {
       return;
@@ -45,6 +48,7 @@ export function useAutoResume({
 
     const dataPart = dataStream[0];
 
+    // Parse and append message from stream restoration
     if (dataPart.type === "data-appendMessage") {
       const message = JSON.parse(dataPart.data);
       setMessages([...initialMessages, message]);
