@@ -22,6 +22,7 @@ type MessagesProps = {
   selectedModelId: string;
 };
 
+// Messages container component with scroll management
 function PureMessages({
   chatId,
   status,
@@ -32,6 +33,7 @@ function PureMessages({
   isReadonly,
   selectedModelId,
 }: MessagesProps) {
+  // Get scroll management utilities from hook
   const {
     containerRef: messagesContainerRef,
     endRef: messagesEndRef,
@@ -44,6 +46,7 @@ function PureMessages({
 
   useDataStream();
 
+  // Auto-scroll to bottom when message is submitted
   useEffect(() => {
     if (status === "submitted") {
       requestAnimationFrame(() => {
@@ -90,11 +93,13 @@ function PureMessages({
             />
           ))}
 
+          {/* Show thinking indicator for non-reasoning models when user message is submitted */}
           {status === "submitted" &&
             messages.length > 0 &&
             messages.at(-1)?.role === "user" &&
             selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
 
+          {/* Anchor element for scroll position detection */}
           <div
             className="min-h-[24px] min-w-[24px] shrink-0"
             ref={messagesEndRef}
