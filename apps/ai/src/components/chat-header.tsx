@@ -10,6 +10,7 @@ import { PlusIcon, VercelIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
 import { VisibilitySelector, type VisibilityType } from "./visibility-selector";
 
+// Chat header component with sidebar toggle, new chat button, and visibility selector
 function PureChatHeader({
   chatId,
   selectedVisibilityType,
@@ -28,6 +29,7 @@ function PureChatHeader({
     <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
       <SidebarToggle />
 
+      {/* Show new chat button when sidebar is closed or on mobile */}
       {(!open || windowWidth < 768) && (
         <Button
           className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
@@ -42,6 +44,7 @@ function PureChatHeader({
         </Button>
       )}
 
+      {/* Only show visibility selector for non-readonly chats */}
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
