@@ -22,6 +22,7 @@ export type ErrorCode = `${ErrorType}:${Surface}`;
 
 export type ErrorVisibility = "response" | "log" | "none";
 
+// Configure error visibility per surface (log vs show to user)
 export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   database: "log",
   chat: "response",
@@ -35,6 +36,7 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   activate_gateway: "response",
 };
 
+// Custom error class for chat SDK with structured error codes
 export class ChatSDKError extends Error {
   type: ErrorType;
   surface: Surface;
@@ -52,12 +54,14 @@ export class ChatSDKError extends Error {
     this.statusCode = getStatusCodeByType(this.type);
   }
 
+  // Convert error to HTTP Response with appropriate visibility handling
   toResponse() {
     const code: ErrorCode = `${this.type}:${this.surface}`;
     const visibility = visibilityBySurface[this.surface];
 
     const { message, cause, statusCode } = this;
 
+    // Hide internal errors from users, log them instead
     if (visibility === "log") {
       console.error({
         code,
