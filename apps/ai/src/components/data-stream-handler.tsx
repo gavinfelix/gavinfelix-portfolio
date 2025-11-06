@@ -5,10 +5,12 @@ import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 
+// Component to process streaming data parts and update artifact state
 export function DataStreamHandler() {
   const { dataStream } = useDataStream();
 
   const { artifact, setArtifact, setMetadata } = useArtifact();
+  // Track last processed index to only process new deltas
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
@@ -16,10 +18,12 @@ export function DataStreamHandler() {
       return;
     }
 
+    // Process only new deltas since last update
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
 
     for (const delta of newDeltas) {
+      // Find artifact definition and call custom stream handler if available
       const artifactDefinition = artifactDefinitions.find(
         (currentArtifactDefinition) =>
           currentArtifactDefinition.kind === artifact.kind
@@ -33,6 +37,7 @@ export function DataStreamHandler() {
         });
       }
 
+      // Update artifact state based on delta type
       setArtifact((draftArtifact) => {
         if (!draftArtifact) {
           return { ...initialArtifactData, status: "streaming" };
