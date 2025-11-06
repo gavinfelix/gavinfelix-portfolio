@@ -14,6 +14,7 @@ type DataStreamContextValue = {
 
 const DataStreamContext = createContext<DataStreamContextValue | null>(null);
 
+// Context provider for managing streaming data parts across components
 export function DataStreamProvider({
   children,
 }: {
@@ -23,6 +24,7 @@ export function DataStreamProvider({
     []
   );
 
+  // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({ dataStream, setDataStream }), [dataStream]);
 
   return (
@@ -32,6 +34,7 @@ export function DataStreamProvider({
   );
 }
 
+// Hook to access data stream context (must be used within DataStreamProvider)
 export function useDataStream() {
   const context = useContext(DataStreamContext);
   if (!context) {
