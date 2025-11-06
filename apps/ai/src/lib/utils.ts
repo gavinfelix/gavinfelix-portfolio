@@ -11,10 +11,12 @@ import type { DBMessage, Document } from "@/lib/db/schema";
 import { ChatSDKError, type ErrorCode } from "./errors";
 import type { ChatMessage, ChatTools, CustomUIDataTypes } from "./types";
 
+// Utility to merge Tailwind CSS classes with clsx and twMerge
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// SWR fetcher with error handling for API responses
 export const fetcher = async (url: string) => {
   const response = await fetch(url);
 
@@ -26,6 +28,7 @@ export const fetcher = async (url: string) => {
   return response.json();
 };
 
+// Fetch wrapper with error handling and offline detection
 export async function fetchWithErrorHandlers(
   input: RequestInfo | URL,
   init?: RequestInit
@@ -40,6 +43,7 @@ export async function fetchWithErrorHandlers(
 
     return response;
   } catch (error: unknown) {
+    // Detect offline state and throw appropriate error
     if (typeof navigator !== "undefined" && !navigator.onLine) {
       throw new ChatSDKError("offline:chat");
     }
@@ -55,6 +59,7 @@ export function getLocalStorage(key: string) {
   return [];
 }
 
+// Generate UUID v4 compliant identifier
 export function generateUUID(): string {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
@@ -103,6 +108,7 @@ export function sanitizeText(text: string) {
   return text.replace("<has_function_call>", "");
 }
 
+// Convert database messages to UI message format
 export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
   return messages.map((message) => ({
     id: message.id,
@@ -114,6 +120,7 @@ export function convertToUIMessages(messages: DBMessage[]): ChatMessage[] {
   }));
 }
 
+// Extract plain text content from message parts
 export function getTextFromMessage(message: ChatMessage): string {
   return message.parts
     .filter((part) => part.type === "text")
