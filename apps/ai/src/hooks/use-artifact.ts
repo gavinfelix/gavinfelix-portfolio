@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import type { UIArtifact } from "@/components/artifact";
 
+// Default artifact state used before any streaming data arrives
 export const initialArtifactData: UIArtifact = {
   documentId: "init",
   content: "",
@@ -21,6 +22,7 @@ export const initialArtifactData: UIArtifact = {
 
 type Selector<T> = (state: UIArtifact) => T;
 
+// Select a slice of the artifact state from SWR cache
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
   const { data: localArtifact } = useSWR<UIArtifact>("artifact", null, {
     fallbackData: initialArtifactData,
@@ -36,6 +38,7 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
   return selectedValue;
 }
 
+// Full artifact hook exposing state, setter, and metadata helpers
 export function useArtifact() {
   const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
     "artifact",
