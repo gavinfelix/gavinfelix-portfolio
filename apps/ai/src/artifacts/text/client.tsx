@@ -18,6 +18,7 @@ type TextArtifactMetadata = {
   suggestions: Suggestion[];
 };
 
+// Text artifact configuration: handles streaming content and inline suggestions
 export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   kind: "text",
   description: "Useful for text content, like drafting essays and emails.",
@@ -29,6 +30,7 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
     });
   },
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
+    // Accumulate AI-generated suggestions for the draft
     if (streamPart.type === "data-suggestion") {
       setMetadata((metadata) => {
         return {
@@ -37,6 +39,7 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
       });
     }
 
+    // Append streamed text chunks and reveal panel once enough content exists
     if (streamPart.type === "data-textDelta") {
       setArtifact((draftArtifact) => {
         return {
