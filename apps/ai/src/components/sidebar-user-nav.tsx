@@ -21,6 +21,7 @@ import {
 import { LoaderIcon } from "./icons";
 import { toast } from "./toast";
 
+// User account menu shown in the sidebar footer
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
