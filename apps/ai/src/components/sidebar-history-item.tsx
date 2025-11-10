@@ -117,6 +117,7 @@ const PureChatItem = ({
   );
 };
 
+// Memoize history item to avoid re-renders unless active state changes
 export const ChatItem = memo(PureChatItem, (prevProps, nextProps) => {
   if (prevProps.isActive !== nextProps.isActive) {
     return false;
