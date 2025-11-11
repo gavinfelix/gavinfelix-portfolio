@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { SidebarLeftIcon } from "./icons";
 import { Button } from "./ui/button";
 
+// Button that toggles the responsive sidebar and shows tooltip on desktop
 export function SidebarToggle({
   className,
 }: ComponentProps<typeof SidebarTrigger>) {
