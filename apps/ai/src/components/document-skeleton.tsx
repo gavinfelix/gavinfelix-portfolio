@@ -2,6 +2,7 @@
 
 import type { ArtifactKind } from "./artifact";
 
+// Skeleton placeholder shown while artifact content is loading
 export const DocumentSkeleton = ({
   artifactKind,
 }: {
@@ -24,6 +25,7 @@ export const DocumentSkeleton = ({
   );
 };
 
+// Compact skeleton used for inline document previews
 export const InlineDocumentSkeleton = () => {
   return (
     <div className="flex w-full flex-col gap-4">
