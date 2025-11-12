@@ -3,6 +3,7 @@ import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { CrossIcon } from "./icons";
 import { Button } from "./ui/button";
 
+// Close button hides or resets the current artifact panel
 function PureArtifactCloseButton() {
   const { setArtifact } = useArtifact();
 
