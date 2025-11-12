@@ -16,6 +16,7 @@ type ArtifactActionsProps = {
   setMetadata: Dispatch<SetStateAction<any>>;
 };
 
+// Toolbar of actions (run, version control, etc.) defined per artifact type
 function PureArtifactActions({
   artifact,
   handleVersionChange,
