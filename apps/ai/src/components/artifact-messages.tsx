@@ -19,6 +19,7 @@ type ArtifactMessagesProps = {
   artifactStatus: UIArtifact["status"];
 };
 
+// Message list rendered inside artifact view (separate from main chat layout)
 function PureArtifactMessages({
   chatId,
   status,
@@ -81,6 +82,7 @@ function areEqual(
   prevProps: ArtifactMessagesProps,
   nextProps: ArtifactMessagesProps
 ) {
+  // Avoid rerendering while artifact content streams; otherwise compare props
   if (
     prevProps.artifactStatus === "streaming" &&
     nextProps.artifactStatus === "streaming"
