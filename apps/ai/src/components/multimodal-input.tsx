@@ -131,6 +131,7 @@ function PureMultimodalInput({
     setInput(event.target.value);
   };
 
+  // Keep a handle on the hidden file input to programmatically trigger uploads
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
 
