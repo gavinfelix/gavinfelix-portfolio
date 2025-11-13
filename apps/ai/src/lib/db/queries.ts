@@ -153,6 +153,7 @@ export async function getChatsByUserId({
   endingBefore: string | null;
 }) {
   try {
+    // Fetch one extra record so we can detect if another page exists
     const extendedLimit = limit + 1;
 
     const query = (whereCondition?: SQL<any>) =>
