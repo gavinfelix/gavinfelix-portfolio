@@ -1,5 +1,6 @@
 "use client";
 
+// Main chat interface component handling message streaming, state management, and user interactions
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useSearchParams } from "next/navigation";
