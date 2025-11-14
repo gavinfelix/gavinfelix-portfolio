@@ -1,3 +1,4 @@
+// Sidebar history item component with share and delete actions for individual chat items
 import Link from "next/link";
 import { memo } from "react";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
