@@ -1,5 +1,6 @@
 "use client";
 
+// Main sidebar layout component combining header, chat history, and user navigation
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
