@@ -1,5 +1,6 @@
 "use client";
 
+// Multimodal input component supporting text input, file attachments, model selection, and message submission
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
