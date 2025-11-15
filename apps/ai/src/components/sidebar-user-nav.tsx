@@ -1,5 +1,6 @@
 "use client";
 
+// User navigation menu component in sidebar footer with theme toggle and authentication
 import { ChevronUp } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
