@@ -1,3 +1,4 @@
+// Messages container component managing scroll behavior, message rendering, and auto-scroll functionality
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { ArrowDownIcon } from "lucide-react";
