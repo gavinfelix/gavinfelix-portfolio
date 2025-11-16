@@ -1,5 +1,6 @@
 "use client";
 
+// Chat header component with sidebar toggle, new chat button, and visibility controls
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
