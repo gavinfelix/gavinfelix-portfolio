@@ -1,6 +1,6 @@
+// Animated greeting component displayed when chat has no messages yet
 import { motion } from "framer-motion";
 
-// Animated greeting shown when there are no chat messages
 export const Greeting = () => {
   return (
     <div
