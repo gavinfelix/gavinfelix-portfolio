@@ -1,4 +1,6 @@
 "use client";
+
+// Message component rendering individual chat messages with text, attachments, tool results, and actions
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
