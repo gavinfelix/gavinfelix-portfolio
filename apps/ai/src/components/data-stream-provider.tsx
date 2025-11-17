@@ -1,5 +1,6 @@
 "use client";
 
+// Data stream context provider for managing streaming UI data parts across components
 import type { DataUIPart } from "ai";
 import type React from "react";
 import { createContext, useContext, useMemo, useState } from "react";
