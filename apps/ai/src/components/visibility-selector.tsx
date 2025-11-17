@@ -1,5 +1,6 @@
 "use client";
 
+// Visibility selector component for toggling chat visibility between private and public
 import { type ReactNode, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
