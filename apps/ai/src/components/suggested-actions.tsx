@@ -1,5 +1,6 @@
 "use client";
 
+// Suggested actions component displaying predefined prompts for empty chat state
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
 import { memo } from "react";
