@@ -1,3 +1,4 @@
+// Message actions component providing copy, edit, and vote functionality for chat messages
 import equal from "fast-deep-equal";
 import { memo } from "react";
 import { toast } from "sonner";
