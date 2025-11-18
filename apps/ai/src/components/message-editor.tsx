@@ -1,5 +1,6 @@
 "use client";
 
+// Message editor component for editing and regenerating chat messages
 import type { UseChatHelpers } from "@ai-sdk/react";
 import {
   type Dispatch,
