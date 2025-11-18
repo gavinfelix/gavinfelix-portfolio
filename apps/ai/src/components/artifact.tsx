@@ -1,3 +1,4 @@
+// Artifact component for displaying and managing interactive artifacts like code, images, and documents
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { formatDistance } from "date-fns";
 import equal from "fast-deep-equal";
