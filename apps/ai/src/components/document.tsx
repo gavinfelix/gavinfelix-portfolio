@@ -1,3 +1,4 @@
+// Document tool result components for displaying and opening artifact documents
 import { memo } from "react";
 import { toast } from "sonner";
 import { useArtifact } from "@/hooks/use-artifact";
