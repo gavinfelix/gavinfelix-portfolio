@@ -1,4 +1,6 @@
 "use client";
+
+// Toolbar component providing artifact-specific actions and reading level adjustment
 import type { UseChatHelpers } from "@ai-sdk/react";
 import cx from "classnames";
 import {
