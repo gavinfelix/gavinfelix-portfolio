@@ -1,3 +1,4 @@
+// Sidebar toggle button component for responsive sidebar navigation with tooltip support
 import type { ComponentProps } from "react";
 
 import { type SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
