@@ -1,3 +1,4 @@
+// Preview attachment component for displaying image and file attachments with remove functionality
 import Image from "next/image";
 import type { Attachment } from "@/lib/types";
 import { Loader } from "./elements/loader";
