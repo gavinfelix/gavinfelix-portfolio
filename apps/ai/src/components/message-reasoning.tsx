@@ -1,5 +1,6 @@
 "use client";
 
+// Message reasoning component displaying AI reasoning process in collapsible format
 import { useEffect, useState } from "react";
 import {
   Reasoning,
