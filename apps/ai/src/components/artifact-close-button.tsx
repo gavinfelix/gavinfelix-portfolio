@@ -1,3 +1,4 @@
+// Artifact close button component for hiding or resetting the artifact panel
 import { memo } from "react";
 import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { CrossIcon } from "./icons";
