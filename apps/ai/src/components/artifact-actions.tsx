@@ -1,3 +1,4 @@
+// Artifact actions toolbar component rendering artifact-specific action buttons with version control
 import { type Dispatch, memo, type SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
