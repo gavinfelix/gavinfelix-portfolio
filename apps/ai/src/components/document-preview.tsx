@@ -1,5 +1,6 @@
 "use client";
 
+// Document preview component for displaying inline document previews with click-to-expand functionality
 import equal from "fast-deep-equal";
 import {
   type MouseEvent,
