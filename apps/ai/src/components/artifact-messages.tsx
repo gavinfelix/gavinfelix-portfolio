@@ -1,3 +1,4 @@
+// Artifact messages component displaying chat messages within the artifact view sidebar
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { motion } from "framer-motion";
