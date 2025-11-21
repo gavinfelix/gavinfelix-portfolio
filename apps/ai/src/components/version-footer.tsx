@@ -1,5 +1,6 @@
 "use client";
 
+// Version footer component for restoring previous document versions in artifact view
 import { isAfter } from "date-fns";
 import { motion } from "framer-motion";
 import { useState } from "react";
