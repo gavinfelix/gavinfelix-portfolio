@@ -1,5 +1,6 @@
 "use client";
 
+// Weather component displaying current weather conditions with hourly temperature forecast
 import cx from "classnames";
 import { format, isWithinInterval } from "date-fns";
 import { useEffect, useState } from "react";
