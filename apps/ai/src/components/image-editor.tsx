@@ -1,3 +1,4 @@
+// Image editor component for displaying and editing generated images with loading states
 import cn from "classnames";
 import { LoaderIcon } from "./icons";
 
