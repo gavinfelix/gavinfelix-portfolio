@@ -1,5 +1,6 @@
 "use client";
 
+// Text editor component using ProseMirror for rich text editing with suggestions support
 import { exampleSetup } from "prosemirror-example-setup";
 import { inputRules } from "prosemirror-inputrules";
 import { EditorState } from "prosemirror-state";
