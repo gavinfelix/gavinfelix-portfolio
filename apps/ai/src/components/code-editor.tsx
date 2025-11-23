@@ -1,5 +1,6 @@
 "use client";
 
+// Code editor component using CodeMirror for editing Python code with syntax highlighting
 import { python } from "@codemirror/lang-python";
 import { EditorState, Transaction } from "@codemirror/state";
 import { oneDark } from "@codemirror/theme-one-dark";
