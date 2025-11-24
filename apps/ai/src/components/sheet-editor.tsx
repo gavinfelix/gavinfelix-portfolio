@@ -1,5 +1,6 @@
 "use client";
 
+// Spreadsheet editor component using react-data-grid for CSV data editing and manipulation
 import { useTheme } from "next-themes";
 import { parse, unparse } from "papaparse";
 import { memo, useEffect, useMemo, useState } from "react";
