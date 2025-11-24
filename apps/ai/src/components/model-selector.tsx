@@ -1,5 +1,6 @@
 "use client";
 
+// Model selector component for choosing AI chat models based on user entitlements
 import type { Session } from "next-auth";
 import { startTransition, useMemo, useOptimistic, useState } from "react";
 import { saveChatModelAsCookie } from "@/app/(chat)/actions";
