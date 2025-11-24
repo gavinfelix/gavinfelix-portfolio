@@ -1,5 +1,6 @@
 "use client";
 
+// Document skeleton components providing loading placeholders for different artifact types
 import type { ArtifactKind } from "./artifact";
 
 // Skeleton placeholder shown while artifact content is loading
