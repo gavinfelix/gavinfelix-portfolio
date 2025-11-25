@@ -1,5 +1,6 @@
 "use client";
 
+// Data stream handler component processing streaming data parts and updating artifact state
 import { useEffect, useRef } from "react";
 import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { artifactDefinitions } from "./artifact";
