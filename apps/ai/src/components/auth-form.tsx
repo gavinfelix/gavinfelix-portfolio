@@ -1,3 +1,4 @@
+// Authentication form component with email and password inputs for login/signup
 import Form from "next/form";
 
 import { Input } from "./ui/input";
