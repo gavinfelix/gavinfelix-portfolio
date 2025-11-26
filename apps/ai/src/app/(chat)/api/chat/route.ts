@@ -1,3 +1,4 @@
+// Main chat API endpoint for handling message streaming and tool execution
 import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
