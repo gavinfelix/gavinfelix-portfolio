@@ -1,3 +1,4 @@
+// Zod schema definitions for chat API request validation
 import { z } from "zod";
 
 const textPartSchema = z.object({
