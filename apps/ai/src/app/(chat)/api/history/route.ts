@@ -1,3 +1,4 @@
+// Returns paginated chat history for authenticated users
 import type { NextRequest } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getChatsByUserId } from "@/lib/db/queries";
