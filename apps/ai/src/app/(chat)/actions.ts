@@ -1,5 +1,6 @@
 "use server";
 
+// Server actions backing chat features (cookies, titles, cleanup)
 import { generateText, type UIMessage } from "ai";
 import { cookies } from "next/headers";
 import type { VisibilityType } from "@/components/visibility-selector";
