@@ -28,6 +28,7 @@ type ConsoleProps = {
   setConsoleOutputs: Dispatch<SetStateAction<ConsoleOutput[]>>;
 };
 
+// Console component for displaying code execution output with resizable height
 export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
   const [height, setHeight] = useState<number>(300);
   const [isResizing, setIsResizing] = useState(false);
