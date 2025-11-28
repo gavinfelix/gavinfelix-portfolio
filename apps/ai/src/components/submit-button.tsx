@@ -1,5 +1,6 @@
 "use client";
 
+// Submit button component with loading state and form status integration
 import { useFormStatus } from "react-dom";
 
 import { LoaderIcon } from "@/components/icons";
