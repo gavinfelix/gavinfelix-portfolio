@@ -1,5 +1,6 @@
 "use client";
 
+// Suggestion component displaying AI writing suggestions with expandable card UI
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { useWindowSize } from "usehooks-ts";
