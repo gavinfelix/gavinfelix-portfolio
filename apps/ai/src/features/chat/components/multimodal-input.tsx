@@ -92,24 +92,40 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
-  // Reset textarea height to default
+  // Auto-resize textarea based on content (default 1 line, max 11 lines)
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "44px";
+      const textarea = textareaRef.current;
+      // Reset to auto first to get accurate scrollHeight
+      textarea.style.height = "auto";
+
+      // Use requestAnimationFrame to ensure DOM is updated before calculating
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          const scrollHeight = textareaRef.current.scrollHeight;
+          const minHeight = 44; // 1 line
+          const maxHeight = 264; // 11 lines: 11 * 24px ≈ 264px
+          const newHeight = Math.max(
+            minHeight,
+            Math.min(scrollHeight, maxHeight)
+          );
+          textareaRef.current.style.height = `${newHeight}px`;
+        }
+      });
     }
   }, []);
 
+  // Adjust height when input changes
   useEffect(() => {
-    if (textareaRef.current) {
-      adjustHeight();
-    }
-  }, [adjustHeight]);
+    adjustHeight();
+  }, [adjustHeight, input]);
   useEffect(() => {
     console.log("status:", status);
   }, [status]);
 
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
+      // Reset to one line height
       textareaRef.current.style.height = "44px";
     }
   }, []);
@@ -138,6 +154,18 @@ function PureMultimodalInput({
 
   const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(event.target.value);
+
+    // Auto-resize textarea immediately when input changes
+    const textarea = event.target;
+    // Reset to auto first to get accurate scrollHeight
+    textarea.style.height = "auto";
+
+    // Calculate scroll height and limit to max 11 lines (264px)
+    const scrollHeight = textarea.scrollHeight;
+    const minHeight = 44; // 1 line
+    const maxHeight = 264; // 11 lines: 11 * 24px ≈ 264px
+    const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
+    textarea.style.height = `${newHeight}px`;
   };
 
   // Keep a handle on the hidden file input to programmatically trigger uploads
@@ -323,10 +351,10 @@ function PureMultimodalInput({
         <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
             autoFocus
-            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden overflow-y-auto"
             data-testid="multimodal-input"
             disableAutoResize={true}
-            maxHeight={200}
+            maxHeight={264}
             minHeight={44}
             onChange={handleInput}
             placeholder="Send a message..."
