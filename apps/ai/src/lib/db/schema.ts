@@ -24,8 +24,8 @@ export const user = pgTable("users", {
   type: varchar("type", { enum: ["regular", "guest"] })
     .notNull()
     .default("regular"), // User type: regular (registered) or guest (temporary)
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   // deletedAt: timestamp("deletedAt"), // Soft delete support (future feature)
 });
 
