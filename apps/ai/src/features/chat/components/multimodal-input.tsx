@@ -47,6 +47,8 @@ import { PreviewAttachment } from "@/components/preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "@/components/ui/button";
 import type { VisibilityType } from "@/components/visibility-selector";
+import { TemplateSelectorCompact } from "@/features/templates/components/template-selector-compact";
+import type { PromptTemplate } from "@/features/templates/types";
 
 function PureMultimodalInput({
   chatId,
@@ -64,6 +66,9 @@ function PureMultimodalInput({
   selectedModelId,
   onModelChange,
   usage,
+  templates,
+  selectedTemplate,
+  onTemplateSelect,
 }: {
   chatId: string;
   input: string;
@@ -80,6 +85,9 @@ function PureMultimodalInput({
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
   usage?: AppUsage;
+  templates?: PromptTemplate[];
+  selectedTemplate?: PromptTemplate | null;
+  onTemplateSelect?: (template: PromptTemplate | null) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -339,6 +347,14 @@ function PureMultimodalInput({
               onModelChange={onModelChange}
               selectedModelId={selectedModelId}
             />
+            {templates && templates.length > 0 && (
+              <TemplateSelectorCompact
+                templates={templates}
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={onTemplateSelect}
+                setInput={setInput}
+              />
+            )}
           </PromptInputTools>
 
           {status === "submitted" ? (
@@ -374,6 +390,12 @@ export const MultimodalInput = memo(
       return false;
     }
     if (prevProps.selectedModelId !== nextProps.selectedModelId) {
+      return false;
+    }
+    if (!equal(prevProps.templates, nextProps.templates)) {
+      return false;
+    }
+    if (!equal(prevProps.selectedTemplate, nextProps.selectedTemplate)) {
       return false;
     }
 
