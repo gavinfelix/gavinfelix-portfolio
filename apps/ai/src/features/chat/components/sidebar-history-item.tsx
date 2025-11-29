@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import { memo, useEffect, useState } from "react";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schema";
-import { Loader } from "./elements/loader";
-import type { VisibilityType } from "./visibility-selector";
+import { Loader } from "@/components/elements/loader";
+import type { VisibilityType } from "@/components/visibility-selector";
 import {
   CheckCircleFillIcon,
   GlobeIcon,
@@ -13,7 +13,7 @@ import {
   MoreHorizontalIcon,
   ShareIcon,
   TrashIcon,
-} from "./icons";
+} from "@/components/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,12 +23,12 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "./ui/sidebar";
+} from "@/components/ui/sidebar";
 
 // Individual chat item in sidebar with share and delete actions
 const PureChatItem = ({

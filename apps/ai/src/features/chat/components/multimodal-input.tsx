@@ -26,7 +26,7 @@ import { myProvider } from "@/lib/ai/providers";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
-import { Context } from "./elements/context";
+import { Context } from "@/components/elements/context";
 import {
   PromptInput,
   PromptInputModelSelect,
@@ -35,18 +35,18 @@ import {
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
-} from "./elements/prompt-input";
+} from "@/components/elements/prompt-input";
 import {
   ArrowUpIcon,
   ChevronDownIcon,
   CpuIcon,
   PaperclipIcon,
   StopIcon,
-} from "./icons";
-import { PreviewAttachment } from "./preview-attachment";
+} from "@/components/icons";
+import { PreviewAttachment } from "@/components/preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
-import { Button } from "./ui/button";
-import type { VisibilityType } from "./visibility-selector";
+import { Button } from "@/components/ui/button";
+import type { VisibilityType } from "@/components/visibility-selector";
 
 function PureMultimodalInput({
   chatId,

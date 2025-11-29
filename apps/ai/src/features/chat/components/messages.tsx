@@ -6,9 +6,9 @@ import { memo, useEffect, useRef, useState } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
-import { useDataStream } from "./data-stream-provider";
-import { Conversation, ConversationContent } from "./elements/conversation";
-import { Loader } from "./elements/loader";
+import { useDataStream } from "@/components/data-stream-provider";
+import { Conversation, ConversationContent } from "@/components/elements/conversation";
+import { Loader } from "@/components/elements/loader";
 import { Greeting } from "./greeting";
 import { PreviewMessage, ThinkingMessage } from "./message";
 

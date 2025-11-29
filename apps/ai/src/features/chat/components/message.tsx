@@ -8,25 +8,25 @@ import { memo, useState } from "react";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
-import type { ArtifactKind } from "./artifact";
-import { useDataStream } from "./data-stream-provider";
-import { DocumentToolResult } from "./document";
-import { DocumentPreview } from "./document-preview";
-import { MessageContent } from "./elements/message";
-import { Response } from "./elements/response";
+import type { ArtifactKind } from "@/components/artifact";
+import { useDataStream } from "@/components/data-stream-provider";
+import { DocumentToolResult } from "@/components/document";
+import { DocumentPreview } from "@/components/document-preview";
+import { MessageContent } from "@/components/elements/message";
+import { Response } from "@/components/elements/response";
 import {
   Tool,
   ToolContent,
   ToolHeader,
   ToolInput,
   ToolOutput,
-} from "./elements/tool";
-import { SparklesIcon } from "./icons";
-import { MessageActions } from "./message-actions";
-import { MessageEditor } from "./message-editor";
-import { MessageReasoning } from "./message-reasoning";
-import { PreviewAttachment } from "./preview-attachment";
-import { Weather } from "./weather";
+} from "@/components/elements/tool";
+import { SparklesIcon } from "@/components/icons";
+import { MessageActions } from "@/components/message-actions";
+import { MessageEditor } from "@/components/message-editor";
+import { MessageReasoning } from "@/components/message-reasoning";
+import { PreviewAttachment } from "@/components/preview-attachment";
+import { Weather } from "@/components/weather";
 
 const PurePreviewMessage = ({
   chatId,

@@ -7,7 +7,7 @@ import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import type { UIArtifact } from "./artifact";
-import { PreviewMessage, ThinkingMessage } from "./message";
+import { PreviewMessage, ThinkingMessage } from "@/features/chat/components/message";
 
 type ArtifactMessagesProps = {
   chatId: string;

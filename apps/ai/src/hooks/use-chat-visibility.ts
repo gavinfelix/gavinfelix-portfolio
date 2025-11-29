@@ -7,7 +7,7 @@ import { updateChatVisibility } from "@/app/(chat)/actions";
 import {
   type ChatHistory,
   getChatHistoryPaginationKey,
-} from "@/components/sidebar-history";
+} from "@/features/chat/components/sidebar-history";
 import type { VisibilityType } from "@/components/visibility-selector";
 
 // Custom hook to manage chat visibility state (private/public)

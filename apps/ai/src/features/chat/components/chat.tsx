@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
-import { ChatHeader } from "@/components/chat-header";
+import { ChatHeader } from "./chat-header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,13 +26,13 @@ import { ChatSDKError } from "@/lib/errors";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
-import { Artifact } from "./artifact";
-import { useDataStream } from "./data-stream-provider";
+import { Artifact } from "@/components/artifact";
+import { useDataStream } from "@/components/data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
-import { toast } from "./toast";
-import type { VisibilityType } from "./visibility-selector";
+import { toast } from "@/components/toast";
+import type { VisibilityType } from "@/components/visibility-selector";
 import { TemplatePicker } from "@/features/templates/components/template-picker";
 import type { PromptTemplate } from "@/features/templates/types";
 

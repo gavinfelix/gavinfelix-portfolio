@@ -2,8 +2,9 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/app/(auth)/auth";
-import { Chat } from "@/components/chat";
+import { Chat } from "@/features/chat/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
+import type { VisibilityType } from "@/components/visibility-selector";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { convertToUIMessages } from "@/lib/utils";
@@ -53,7 +54,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialLastContext={chat.lastContext ?? undefined}
           initialMessages={uiMessages}
-          initialVisibilityType={chat.visibility}
+          initialVisibilityType={chat.visibility as VisibilityType}
           isReadonly={session?.user?.id !== chat.userId}
         />
         <DataStreamHandler />
