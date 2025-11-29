@@ -7,7 +7,10 @@ import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { useDataStream } from "@/components/data-stream-provider";
-import { Conversation, ConversationContent } from "@/components/elements/conversation";
+import {
+  Conversation,
+  ConversationContent,
+} from "@/components/elements/conversation";
 import { Loader } from "@/components/elements/loader";
 import { Greeting } from "./greeting";
 import { PreviewMessage, ThinkingMessage } from "./message";
@@ -182,8 +185,11 @@ function PureMessages({
       {!isAtBottom && (
         <button
           aria-label="Scroll to bottom"
-          className="-translate-x-1/2 absolute bottom-40 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-colors hover:bg-muted"
+          className="-translate-x-1/2 absolute left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-all hover:bg-muted"
           onClick={() => scrollToBottom("smooth")}
+          style={{
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 320px)",
+          }}
           type="button"
         >
           <ArrowDownIcon className="size-4" />
