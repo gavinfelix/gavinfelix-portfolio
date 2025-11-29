@@ -83,6 +83,7 @@ export type LoaderProps = HTMLAttributes<HTMLDivElement> & {
   size?: number;
 };
 
+// Loading spinner component with customizable size
 export const Loader = ({ className, size = 16, ...props }: LoaderProps) => (
   <div
     className={cn(
