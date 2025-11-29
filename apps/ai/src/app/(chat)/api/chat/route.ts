@@ -110,11 +110,13 @@ export async function POST(request: Request) {
       message,
       selectedChatModel,
       selectedVisibilityType,
+      templateContent,
     }: {
       id: string;
       message: ChatMessage;
       selectedChatModel: ChatModel["id"];
       selectedVisibilityType: VisibilityType;
+      templateContent?: string;
     } = requestBody;
 
     const session = await auth();
@@ -227,6 +229,12 @@ export async function POST(request: Request) {
       country,
     };
 
+    // Build system prompt - prepend template content if provided
+    const baseSystemPrompt = systemPrompt({ selectedChatModel, requestHints });
+    const finalSystemPrompt = requestBody.templateContent
+      ? `${requestBody.templateContent}\n\n${baseSystemPrompt}`
+      : baseSystemPrompt;
+
     // 只为有效的 UUID 用户保存用户消息到数据库
     if (isValidUUID) {
       await saveMessages({
@@ -256,7 +264,7 @@ export async function POST(request: Request) {
       execute: ({ writer: dataStream }) => {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel, requestHints }),
+          system: finalSystemPrompt,
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           // Disable tools for reasoning model, enable for others

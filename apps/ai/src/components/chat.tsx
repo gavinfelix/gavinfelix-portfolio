@@ -98,6 +98,8 @@ export function Chat({
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<PromptTemplate | null>(null);
 
   useEffect(() => {
     currentModelIdRef.current = currentModelId;
@@ -120,7 +122,7 @@ export function Chat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
-      // Include current model and visibility in request
+      // Include current model, visibility, and template in request
       prepareSendMessagesRequest(request) {
         return {
           body: {
@@ -128,6 +130,7 @@ export function Chat({
             message: request.messages.at(-1),
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
+            templateContent: selectedTemplate?.content,
             ...request.body,
           },
         };
@@ -269,6 +272,7 @@ export function Chat({
                 className="w-full sm:w-64"
                 templates={promptTemplates}
                 onSelect={(template) => {
+                  setSelectedTemplate(template);
                   if (template) {
                     setInput(template.content);
                   }
