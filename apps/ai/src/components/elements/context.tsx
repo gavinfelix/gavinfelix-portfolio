@@ -31,6 +31,7 @@ type ContextIconProps = {
   percent: number; // 0 - 100
 };
 
+// Circular progress icon showing model context usage percentage
 export const ContextIcon = ({ percent }: ContextIconProps) => {
   const radius = ICON_RADIUS;
   const circumference = 2 * Math.PI * radius;
@@ -99,6 +100,7 @@ function InfoRow({
   );
 }
 
+// Context usage indicator showing token consumption and cost breakdown
 export const Context = ({ className, usage, ...props }: ContextProps) => {
   const used = usage?.totalTokens ?? 0;
   const max =
