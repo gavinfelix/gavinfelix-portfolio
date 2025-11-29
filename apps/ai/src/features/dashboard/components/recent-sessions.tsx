@@ -2,7 +2,6 @@
 
 // Recent sessions component displaying the latest chat sessions
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import {
   Card,
@@ -27,8 +26,6 @@ export function RecentSessions({
   recentSessions,
   isLoading,
 }: RecentSessionsProps) {
-  const router = useRouter();
-
   if (isLoading) {
     return (
       <Card>
@@ -82,10 +79,6 @@ export function RecentSessions({
                   "hover:bg-accent hover:text-accent-foreground",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 )}
-                onClick={(e) => {
-                  e.preventDefault();
-                  router.push(`/chat/${session.id}`);
-                }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">

@@ -196,6 +196,17 @@ export function Chat({
     },
   });
 
+  // Update messages when id or initialMessages change (e.g., when navigating to a different chat)
+  // This ensures the chat displays the correct messages for the selected chat session
+  const prevIdRef = useRef(id);
+  useEffect(() => {
+    // When id changes, update messages to match the new chat's initialMessages
+    if (prevIdRef.current !== id) {
+      prevIdRef.current = id;
+      setMessages(initialMessages);
+    }
+  }, [id, initialMessages, setMessages]);
+
   // Monitor status changes for debugging purposes
   useEffect(() => {
     if (status === "error") {
