@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import type { PromptTemplate } from "../types";
 
 type TemplatePickerProps = {
@@ -34,10 +35,15 @@ export function TemplatePicker({
 
   return (
     <Select onValueChange={handleValueChange} defaultValue="none">
-      <SelectTrigger className={className}>
+      <SelectTrigger
+        className={cn(
+          "!bg-background !opacity-100 bg-white dark:bg-zinc-900",
+          className
+        )}
+      >
         <SelectValue placeholder="No template" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="!bg-popover !opacity-100 bg-white dark:bg-zinc-900">
         <SelectItem value="none">No template</SelectItem>
         {templates.map((template) => (
           <SelectItem key={template.id} value={template.id}>
@@ -48,4 +54,3 @@ export function TemplatePicker({
     </Select>
   );
 }
-
