@@ -8,6 +8,7 @@ import { memo, useState } from "react";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { cn, sanitizeText } from "@/lib/utils";
+import type { ArtifactKind } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
@@ -257,7 +258,11 @@ const PurePreviewMessage = ({
                           ) : (
                             <DocumentToolResult
                               isReadonly={isReadonly}
-                              result={part.output}
+                              result={{
+                                id: part.output.id,
+                                title: part.output.title,
+                                kind: part.output.kind as ArtifactKind,
+                              }}
                               type="request-suggestions"
                             />
                           )
@@ -328,12 +333,37 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
-          <div className="p-0 text-muted-foreground text-sm">
+          <div className="flex items-center gap-2 px-0 py-2 text-muted-foreground text-sm">
+            <LoadingDots />
             <LoadingText>Thinking...</LoadingText>
           </div>
         </div>
       </div>
     </motion.div>
+  );
+};
+
+// Animated loading dots component
+const LoadingDots = () => {
+  return (
+    <div className="flex items-center gap-1">
+      {[0, 1, 2].map((index) => (
+        <motion.div
+          key={index}
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.5, 1, 0.5],
+          }}
+          className="size-1.5 rounded-full bg-current"
+          transition={{
+            duration: 1.2,
+            repeat: Number.POSITIVE_INFINITY,
+            delay: index * 0.2,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
   );
 };
 
