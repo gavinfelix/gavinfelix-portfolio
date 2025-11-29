@@ -24,6 +24,8 @@ export async function GET(request: NextRequest) {
     return new ChatSDKError("unauthorized:chat").toResponse();
   }
 
+  console.log("[GET /api/history] Fetching chats for user:", session.user.id);
+
   const chats = await getChatsByUserId({
     id: session.user.id,
     limit,
@@ -31,5 +33,14 @@ export async function GET(request: NextRequest) {
     endingBefore,
   });
 
-  return Response.json(chats);
+  console.log("[GET /api/history] Found chats:", {
+    count: chats.chats.length,
+    hasMore: chats.hasMore,
+  });
+
+  // Return chats in the format expected by the frontend
+  return Response.json({
+    chats: chats.chats,
+    hasMore: chats.hasMore,
+  });
 }

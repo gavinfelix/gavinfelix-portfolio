@@ -190,12 +190,21 @@ export async function POST(request: Request) {
           message,
         });
 
+        console.log("[POST /api/chat] Creating new chat:", {
+          id,
+          userId: session.user.id,
+          title,
+          visibility: selectedVisibilityType,
+        });
+
         await saveChat({
           id,
           userId: session.user.id,
           title,
           visibility: selectedVisibilityType,
         });
+
+        console.log("[POST /api/chat] Chat saved successfully:", id);
       }
 
       // Load existing messages and append new user message
