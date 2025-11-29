@@ -4,6 +4,7 @@ import type { ComponentProps } from "react";
 
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
+// Conversation container with auto-scroll to bottom behavior
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
     className={cn(
@@ -21,6 +22,7 @@ export type ConversationContentProps = ComponentProps<
   typeof StickToBottom.Content
 >;
 
+// Conversation content wrapper with padding
 export const ConversationContent = ({
   className,
   ...props
