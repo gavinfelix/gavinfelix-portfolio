@@ -2,7 +2,7 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { ArrowDownIcon } from "lucide-react";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
@@ -46,6 +46,31 @@ function PureMessages({
   });
 
   useDataStream();
+
+  // Track if we've scrolled for this chat to avoid scrolling on every render
+  const hasScrolledForChatRef = useRef<string | null>(null);
+
+  // Auto-scroll to bottom when opening a chat from history (when chatId changes and messages exist)
+  useEffect(() => {
+    if (messages.length > 0 && messagesContainerRef.current) {
+      // Only scroll if this is a new chat (chatId changed) or we haven't scrolled for this chat yet
+      if (hasScrolledForChatRef.current !== chatId) {
+        // Use a small delay to ensure DOM is fully rendered
+        const timeoutId = setTimeout(() => {
+          const container = messagesContainerRef.current;
+          if (container) {
+            container.scrollTo({
+              top: container.scrollHeight,
+              behavior: "auto", // Use "auto" for instant scroll on initial load
+            });
+            hasScrolledForChatRef.current = chatId;
+          }
+        }, 100);
+
+        return () => clearTimeout(timeoutId);
+      }
+    }
+  }, [chatId, messages.length, messagesContainerRef]);
 
   // Auto-scroll to bottom when message is submitted
   useEffect(() => {
@@ -94,10 +119,21 @@ function PureMessages({
             />
           ))}
 
-          {/* Show thinking indicator for non-reasoning models when user message is submitted */}
+          {/* Show thinking indicator when waiting for AI response */}
           {status === "submitted" &&
             messages.length > 0 &&
             messages.at(-1)?.role === "user" &&
+            selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
+
+          {/* Show thinking indicator when streaming starts but no text content yet */}
+          {status === "streaming" &&
+            messages.length > 0 &&
+            messages.at(-1)?.role === "assistant" &&
+            !messages
+              .at(-1)
+              ?.parts?.some(
+                (part) => part.type === "text" && part.text?.trim()
+              ) &&
             selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
 
           {/* Anchor element for scroll position detection */}
