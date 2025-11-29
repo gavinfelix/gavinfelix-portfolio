@@ -34,6 +34,7 @@ import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { toast } from "./toast";
 import type { VisibilityType } from "./visibility-selector";
 import { TemplatePicker } from "@/features/templates/components/template-picker";
+import type { PromptTemplate } from "@/features/templates/types";
 
 export function Chat({
   id,
@@ -59,6 +60,38 @@ export function Chat({
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
+
+  // Hard-coded prompt templates
+  const promptTemplates: PromptTemplate[] = [
+    {
+      id: "ielts-speaking",
+      name: "IELTS Speaking Trainer",
+      description: "Practice IELTS speaking questions with feedback",
+      content:
+        "I want to practice IELTS speaking. Please ask me questions and provide feedback on my answers.",
+    },
+    {
+      id: "grammar-corrector",
+      name: "Grammar Corrector",
+      description: "Correct grammar and improve writing",
+      content:
+        "Please correct the grammar and improve the writing of the following text:",
+    },
+    {
+      id: "english-rewriter",
+      name: "English Rewriter",
+      description: "Rewrite text in different styles or tones",
+      content:
+        "Please rewrite the following text to make it more professional and clear:",
+    },
+    {
+      id: "vocabulary-explainer",
+      name: "Vocabulary Explainer",
+      description: "Explain vocabulary words with examples",
+      content:
+        "Please explain the following vocabulary words with definitions, examples, and usage:",
+    },
+  ];
 
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
@@ -234,7 +267,7 @@ export function Chat({
             <>
               <TemplatePicker
                 className="w-full sm:w-64"
-                templates={[]}
+                templates={promptTemplates}
                 onSelect={(template) => {
                   if (template) {
                     setInput(template.content);
