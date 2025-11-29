@@ -2,12 +2,13 @@
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { ArrowDownIcon } from "lucide-react";
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
 import { useDataStream } from "./data-stream-provider";
 import { Conversation, ConversationContent } from "./elements/conversation";
+import { Loader } from "./elements/loader";
 import { Greeting } from "./greeting";
 import { PreviewMessage, ThinkingMessage } from "./message";
 
@@ -49,6 +50,30 @@ function PureMessages({
 
   // Track if we've scrolled for this chat to avoid scrolling on every render
   const hasScrolledForChatRef = useRef<string | null>(null);
+  // Track loading state when switching chats
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const previousChatIdRef = useRef<string>(chatId);
+
+  // Detect chat ID change to show loading state
+  useEffect(() => {
+    if (previousChatIdRef.current !== chatId) {
+      setIsLoadingChat(true);
+      previousChatIdRef.current = chatId;
+      // Reset scroll tracking for new chat
+      hasScrolledForChatRef.current = null;
+    }
+  }, [chatId]);
+
+  // Hide loading state when messages are loaded
+  useEffect(() => {
+    if (isLoadingChat && messages.length > 0) {
+      // Small delay to ensure smooth transition
+      const timeoutId = setTimeout(() => {
+        setIsLoadingChat(false);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isLoadingChat, messages.length]);
 
   // Auto-scroll to bottom when opening a chat from history (when chatId changes and messages exist)
   useEffect(() => {
@@ -64,6 +89,7 @@ function PureMessages({
               behavior: "auto", // Use "auto" for instant scroll on initial load
             });
             hasScrolledForChatRef.current = chatId;
+            setIsLoadingChat(false);
           }
         }, 100);
 
@@ -95,7 +121,16 @@ function PureMessages({
     >
       <Conversation className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 md:gap-6">
         <ConversationContent className="flex flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
-          {messages.length === 0 && <Greeting />}
+          {/* Show loading animation when switching chats */}
+          {isLoadingChat && messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-3 py-12">
+              <Loader size={24} />
+              <p className="text-muted-foreground text-sm">Loading chat...</p>
+            </div>
+          )}
+
+          {/* Show greeting only when not loading and no messages */}
+          {!isLoadingChat && messages.length === 0 && <Greeting />}
 
           {messages.map((message, index) => (
             <PreviewMessage

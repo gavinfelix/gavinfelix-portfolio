@@ -1,8 +1,11 @@
 // Sidebar history item component with share and delete actions for individual chat items
 import Link from "next/link";
-import { memo } from "react";
+import { usePathname } from "next/navigation";
+import { memo, useEffect, useState } from "react";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/db/schema";
+import { Loader } from "./elements/loader";
+import type { VisibilityType } from "./visibility-selector";
 import {
   CheckCircleFillIcon,
   GlobeIcon,
@@ -39,17 +42,43 @@ const PureChatItem = ({
   onDelete: (chatId: string) => void;
   setOpenMobile: (open: boolean) => void;
 }) => {
+  const pathname = usePathname();
+  const [isNavigating, setIsNavigating] = useState(false);
+
   // Manage visibility state for this chat
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
-    initialVisibilityType: chat.visibility,
+    initialVisibilityType: chat.visibility as VisibilityType,
   });
+
+  // Detect when navigation to this chat starts
+  useEffect(() => {
+    if (pathname === `/chat/${chat.id}` && !isActive && !isNavigating) {
+      setIsNavigating(true);
+    } else if (isActive && isNavigating) {
+      // Navigation completed, hide loading
+      setIsNavigating(false);
+    }
+  }, [pathname, chat.id, isActive, isNavigating]);
+
+  // Show loading state when clicking or navigating
+  const showLoading = isNavigating;
+
+  const handleClick = () => {
+    setIsNavigating(true);
+    setOpenMobile(false);
+  };
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          <span>{chat.title}</span>
+        <Link href={`/chat/${chat.id}`} onClick={handleClick}>
+          <span className="flex-1 truncate">{chat.title}</span>
+          {showLoading && (
+            <span className="ml-2 shrink-0">
+              <Loader size={14} />
+            </span>
+          )}
         </Link>
       </SidebarMenuButton>
 
