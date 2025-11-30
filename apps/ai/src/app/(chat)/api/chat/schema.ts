@@ -26,6 +26,7 @@ export const postRequestBodySchema = z.object({
   selectedVisibilityType: z.enum(["public", "private"]),
   templateId: z.string().uuid().optional(),
   templateContent: z.string().optional(),
+  documentId: z.string().uuid().optional(),
 });
 
 export type PostRequestBody = z.infer<typeof postRequestBodySchema>;

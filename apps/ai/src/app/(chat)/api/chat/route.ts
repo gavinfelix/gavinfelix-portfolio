@@ -3,6 +3,7 @@ import { geolocation } from "@vercel/functions";
 import {
   convertToModelMessages,
   createUIMessageStream,
+  embed,
   JsonToSseTransformStream,
   smoothStream,
   stepCountIs,
@@ -23,7 +24,7 @@ import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
-import { myProvider } from "@/lib/ai/providers";
+import { getEmbeddingModel, myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
@@ -42,14 +43,63 @@ import {
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
-import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import {
+  convertToUIMessages,
+  generateUUID,
+  getTextFromMessage,
+} from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 import { getUserSettings } from "@/features/settings/lib/user-settings-client";
+import postgres from "postgres";
 
 export const maxDuration = 60;
 
 let globalStreamContext: ResumableStreamContext | null = null;
+
+// Database connection for RAG queries
+const postgresClient = postgres(process.env.POSTGRES_URL!);
+
+/**
+ * Generate embedding using AI SDK (via OpenAI provider)
+ */
+async function generateEmbedding(text: string): Promise<number[]> {
+  const { model: embeddingModel, error: embeddingError } = getEmbeddingModel();
+
+  if (!embeddingModel) {
+    const errorMessage = embeddingError || "Embedding model is not configured";
+    throw new Error(errorMessage);
+  }
+
+  const result = await embed({
+    model: embeddingModel,
+    value: text,
+  });
+
+  return result.embedding;
+}
+
+/**
+ * Retrieve relevant document chunks using vector similarity search
+ */
+async function retrieveDocumentChunks(
+  documentId: string,
+  queryEmbedding: number[],
+  limit: number = 3
+): Promise<string[]> {
+  // Format embedding array as PostgreSQL vector string
+  const embeddingString = `[${queryEmbedding.join(",")}]`;
+
+  const chunks = await postgresClient`
+    SELECT content
+    FROM document_chunks
+    WHERE document_id = ${documentId}
+    ORDER BY embedding <-> ${embeddingString}::vector
+    LIMIT ${limit}
+  `;
+
+  return chunks.map((chunk: any) => chunk.content);
+}
 
 const getTokenlensCatalog = cache(
   async (): Promise<ModelCatalog | undefined> => {
@@ -114,6 +164,7 @@ export async function POST(request: Request) {
       selectedVisibilityType,
       templateId,
       templateContent,
+      documentId,
     }: {
       id: string;
       message: ChatMessage;
@@ -121,6 +172,7 @@ export async function POST(request: Request) {
       selectedVisibilityType: VisibilityType;
       templateId?: string;
       templateContent?: string;
+      documentId?: string;
     } = requestBody;
 
     const session = await auth();
@@ -280,14 +332,104 @@ export async function POST(request: Request) {
       );
     }
 
-    // Build system prompt - prepend template content if provided
+    // RAG: Retrieve document chunks if documentId is provided
+    let ragContextText: string | null = null;
+    let retrievedChunksCount = 0;
+
+    if (documentId && isValidUUID) {
+      try {
+        // Verify document belongs to the user
+        const document = await postgresClient`
+          SELECT user_id
+          FROM documents
+          WHERE id = ${documentId}
+        `.then((rows) => rows[0]);
+
+        if (!document) {
+          console.warn(
+            `[POST /api/chat] RAG: Document ${documentId} not found`
+          );
+        } else if (document.user_id !== session.user.id) {
+          console.warn(
+            `[POST /api/chat] RAG: Document ${documentId} does not belong to user ${session.user.id}`
+          );
+        } else {
+          // Extract user question text from message parts
+          const userQuestion = getTextFromMessage(message);
+
+          if (userQuestion && userQuestion.trim().length > 0) {
+            console.log(
+              "[POST /api/chat] RAG: Generating embedding for question"
+            );
+
+            // Generate embedding for the user question
+            const queryEmbedding = await generateEmbedding(userQuestion);
+
+            console.log("[POST /api/chat] RAG: Retrieving document chunks");
+
+            // Retrieve top 3 most similar chunks
+            const chunks = await retrieveDocumentChunks(
+              documentId,
+              queryEmbedding,
+              3
+            );
+            retrievedChunksCount = chunks.length;
+
+            if (chunks.length > 0) {
+              // Combine chunks into context text
+              ragContextText = chunks.join("\n\n");
+              console.log(
+                `[POST /api/chat] RAG: Retrieved ${chunks.length} chunks`
+              );
+            } else {
+              console.log("[POST /api/chat] RAG: No chunks found for document");
+            }
+          } else {
+            console.log(
+              "[POST /api/chat] RAG: Skipping - user question is empty"
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          "[POST /api/chat] RAG: Error retrieving document chunks:",
+          error
+        );
+        // Continue without RAG context if retrieval fails
+      }
+    }
+
+    // Log RAG configuration
+    console.log("[POST /api/chat] RAG config:", {
+      hasDocumentId: !!documentId,
+      retrievedChunksCount,
+      hasContext: !!ragContextText,
+    });
+
+    // Build system prompt - prepend template content and RAG context if provided
     const baseSystemPrompt = systemPrompt({
       selectedChatModel: effectiveModel,
       requestHints,
     });
-    const finalSystemPrompt = requestBody.templateContent
-      ? `${requestBody.templateContent}\n\n${baseSystemPrompt}`
-      : baseSystemPrompt;
+
+    let systemPromptParts: string[] = [];
+
+    // Add RAG context if available
+    if (ragContextText) {
+      systemPromptParts.push(
+        `You are answering questions based on the following document excerpts:\n\n${ragContextText}\n\nOnly use this information when relevant.`
+      );
+    }
+
+    // Add template content if provided
+    if (requestBody.templateContent) {
+      systemPromptParts.push(requestBody.templateContent);
+    }
+
+    // Add base system prompt
+    systemPromptParts.push(baseSystemPrompt);
+
+    const finalSystemPrompt = systemPromptParts.join("\n\n");
 
     // 只为有效的 UUID 用户保存用户消息到数据库
     if (isValidUUID) {

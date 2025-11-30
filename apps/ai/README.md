@@ -2,6 +2,32 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Environment Variables
+
+Before running the development server, you need to configure the required environment variables.
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Update `.env.local` with your actual values:
+
+   - **OPENAI_API_KEY**: Required for RAG (Retrieval-Augmented Generation) functionality. Get your API key from [OpenAI Platform](https://platform.openai.com/api-keys).
+   - **POSTGRES_URL**: Your Supabase PostgreSQL connection URL.
+   - **AUTH_SECRET**: A random string for NextAuth JWT encryption. Generate one for production.
+
+Example `.env.local`:
+```env
+OPENAI_API_KEY=sk-your-actual-openai-api-key
+POSTGRES_URL=postgresql://user:password@host:port/database
+AUTH_SECRET=your-random-secret-string
+```
+
+**Note**: The `.env.local` file is git-ignored and should not be committed to version control.
+
+### Run the Development Server
+
 First, run the development server:
 
 ```bash

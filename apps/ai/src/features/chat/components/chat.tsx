@@ -93,7 +93,7 @@ export function Chat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
       fetch: fetchWithErrorHandlers,
-      // Include current model, visibility, and template in request
+      // Include current model, visibility, template, and documentId in request
       prepareSendMessagesRequest(request) {
         return {
           body: {
@@ -103,6 +103,8 @@ export function Chat({
             selectedVisibilityType: visibilityType,
             templateId: selectedTemplate?.id,
             templateContent: selectedTemplate?.content,
+            // Include documentId if a RAG document was uploaded
+            ...(currentDocumentIdRef.current && { documentId: currentDocumentIdRef.current }),
             ...request.body,
           },
         };
@@ -115,9 +117,11 @@ export function Chat({
         setUsage(dataPart.data);
       }
     },
-    // Refresh chat history when message finishes
+    // Refresh chat history when message finishes and clear documentId
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
+      // Clear documentId after message is sent successfully
+      setCurrentDocumentId(undefined);
     },
     onError: (error) => {
       console.error("[Chat] Error occurred:", error);
@@ -176,6 +180,8 @@ export function Chat({
     if (prevIdRef.current !== id) {
       prevIdRef.current = id;
       setMessages(initialMessages);
+      // Clear documentId when switching chats
+      setCurrentDocumentId(undefined);
     }
   }, [id, initialMessages, setMessages]);
 
@@ -217,7 +223,14 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [currentDocumentId, setCurrentDocumentId] = useState<string | undefined>(undefined);
+  const currentDocumentIdRef = useRef<string | undefined>(undefined);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
+  
+  // Keep ref in sync with state for use in prepareSendMessagesRequest
+  useEffect(() => {
+    currentDocumentIdRef.current = currentDocumentId;
+  }, [currentDocumentId]);
 
   // Automatically resume incomplete chat streams if enabled
   useAutoResume({
@@ -256,8 +269,10 @@ export function Chat({
               <MultimodalInput
                 attachments={attachments}
                 chatId={id}
+                documentId={currentDocumentId}
                 input={input}
                 messages={messages}
+                onDocumentIdChange={setCurrentDocumentId}
                 onModelChange={setCurrentModelId}
               onTemplateSelect={(template) => {
                 setSelectedTemplate(template);

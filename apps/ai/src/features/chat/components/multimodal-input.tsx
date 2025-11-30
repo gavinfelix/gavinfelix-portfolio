@@ -46,6 +46,7 @@ import {
 import { PreviewAttachment } from "@/components/preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/elements/loader";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { TemplateSelectorCompact } from "@/features/templates/components/template-selector-compact";
 import type { PromptTemplate } from "@/features/templates/types";
@@ -69,6 +70,8 @@ function PureMultimodalInput({
   templates,
   selectedTemplate,
   onTemplateSelect,
+  documentId,
+  onDocumentIdChange,
 }: {
   chatId: string;
   input: string;
@@ -88,6 +91,8 @@ function PureMultimodalInput({
   templates?: PromptTemplate[];
   selectedTemplate?: PromptTemplate | null;
   onTemplateSelect?: (template: PromptTemplate | null) => void;
+  documentId?: string;
+  onDocumentIdChange?: (documentId: string | undefined) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -169,6 +174,10 @@ function PureMultimodalInput({
   // Keep a handle on the hidden file input to programmatically trigger uploads
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
+  const [ragUploadStatus, setRagUploadStatus] = useState<{
+    filename: string;
+    status: "uploading" | "processing";
+  } | null>(null);
 
   // Submit message with text and attachments, then reset form
   const submitForm = useCallback(() => {
@@ -191,6 +200,7 @@ function PureMultimodalInput({
     });
 
     // Clear form state after submission
+    // Note: documentId will be cleared in chat.tsx onFinish callback after message is sent successfully
     setAttachments([]);
     setLocalStorageInput("");
     resetHeight();
@@ -211,6 +221,63 @@ function PureMultimodalInput({
     chatId,
     resetHeight,
   ]);
+
+  // Check if file is a RAG-supported text file
+  const isRagFile = useCallback((file: File): boolean => {
+    const filename = file.name.toLowerCase();
+    const lastDotIndex = filename.lastIndexOf(".");
+    if (lastDotIndex < 0) return false; // No extension
+    const extension = filename.substring(lastDotIndex);
+    return extension === ".txt" || extension === ".md";
+  }, []);
+
+  // Upload RAG document to server and return document ID
+  const uploadRagDocument = useCallback(
+    async (file: File): Promise<string | undefined> => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      setRagUploadStatus({ filename: file.name, status: "uploading" });
+
+      try {
+        const response = await fetch("/api/rag/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          setRagUploadStatus({ filename: file.name, status: "processing" });
+          const data = await response.json();
+          const { documentId } = data;
+          setRagUploadStatus(null);
+          return documentId;
+        }
+
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        const errorMessage = errorData.error || "Failed to process document";
+        console.error("[RAG Upload] Error response:", {
+          status: response.status,
+          error: errorMessage,
+          filename: file.name,
+        });
+        toast.error(errorMessage);
+        setRagUploadStatus(null);
+      } catch (error) {
+        console.error("[RAG Upload] Network or parsing error:", error);
+        const errorMessage =
+          error instanceof Error
+            ? `Upload failed: ${error.message}`
+            : "Failed to upload document, please try again!";
+        toast.error(errorMessage);
+        setRagUploadStatus(null);
+      }
+
+      return undefined;
+    },
+    []
+  );
 
   // Upload file to server and return attachment metadata
   const uploadFile = useCallback(async (file: File) => {
@@ -251,41 +318,81 @@ function PureMultimodalInput({
     [usage]
   );
 
-  // Handle multiple file uploads in parallel
+  // Handle multiple file uploads - route to RAG for text files, otherwise use regular upload
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
 
-      // Show upload queue for better user feedback
-      setUploadQueue(files.map((file) => file.name));
+      if (files.length === 0) return;
+
+      // Separate RAG files (.txt, .md) from regular attachment files
+      const ragFiles: File[] = [];
+      const attachmentFiles: File[] = [];
+
+      files.forEach((file) => {
+        if (isRagFile(file)) {
+          ragFiles.push(file);
+        } else {
+          attachmentFiles.push(file);
+        }
+      });
+
+      // Show upload queue for attachment files
+      if (attachmentFiles.length > 0) {
+        setUploadQueue(attachmentFiles.map((file) => file.name));
+      }
 
       try {
-        // Upload all files in parallel
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined
-        );
+        // Handle RAG file uploads (sequential to avoid overwhelming the API)
+        for (const ragFile of ragFiles) {
+          const documentId = await uploadRagDocument(ragFile);
+          if (documentId) {
+            onDocumentIdChange?.(documentId);
+            toast.success(`Document "${ragFile.name}" processed successfully`);
+          }
+        }
 
-        // Add successfully uploaded files to attachments list
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
+        // Handle regular attachment uploads in parallel
+        if (attachmentFiles.length > 0) {
+          const uploadPromises = attachmentFiles.map((file) =>
+            uploadFile(file)
+          );
+          const uploadedAttachments = await Promise.all(uploadPromises);
+          const successfullyUploadedAttachments = uploadedAttachments.filter(
+            (attachment) => attachment !== undefined
+          );
+
+          // Add successfully uploaded files to attachments list
+          setAttachments((currentAttachments) => [
+            ...currentAttachments,
+            ...successfullyUploadedAttachments,
+          ]);
+        }
       } catch (error) {
         console.error("Error uploading files!", error);
       } finally {
         setUploadQueue([]);
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     },
-    [setAttachments, uploadFile]
+    [
+      setAttachments,
+      uploadFile,
+      isRagFile,
+      uploadRagDocument,
+      onDocumentIdChange,
+    ]
   );
 
   return (
     <div className={cn("relative flex w-full flex-col gap-4", className)}>
       {messages.length === 0 &&
         attachments.length === 0 &&
-        uploadQueue.length === 0 && (
+        uploadQueue.length === 0 &&
+        !ragUploadStatus && (
           <SuggestedActions
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
@@ -295,6 +402,7 @@ function PureMultimodalInput({
 
       <input
         className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
+        accept=".txt,.md,image/jpeg,image/png"
         multiple
         onChange={handleFileChange}
         ref={fileInputRef}
@@ -313,37 +421,57 @@ function PureMultimodalInput({
           }
         }}
       >
-        {(attachments.length > 0 || uploadQueue.length > 0) && (
+        {(attachments.length > 0 ||
+          uploadQueue.length > 0 ||
+          ragUploadStatus) && (
           <div
-            className="flex flex-row items-end gap-2 overflow-x-scroll"
+            className="flex flex-col gap-2"
             data-testid="attachments-preview"
           >
-            {attachments.map((attachment) => (
-              <PreviewAttachment
-                attachment={attachment}
-                key={attachment.url}
-                onRemove={() => {
-                  setAttachments((currentAttachments) =>
-                    currentAttachments.filter((a) => a.url !== attachment.url)
-                  );
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                  }
-                }}
-              />
-            ))}
+            {ragUploadStatus && (
+              <div className="flex items-center gap-2 rounded-lg border bg-muted px-3 py-2 text-sm text-muted-foreground">
+                <Loader size={16} />
+                <span>
+                  {ragUploadStatus.status === "uploading"
+                    ? "Uploading"
+                    : "Processing"}{" "}
+                  {ragUploadStatus.filename}...
+                </span>
+              </div>
+            )}
 
-            {uploadQueue.map((filename) => (
-              <PreviewAttachment
-                attachment={{
-                  url: "",
-                  name: filename,
-                  contentType: "",
-                }}
-                isUploading={true}
-                key={filename}
-              />
-            ))}
+            {(attachments.length > 0 || uploadQueue.length > 0) && (
+              <div className="flex flex-row items-end gap-2 overflow-x-scroll">
+                {attachments.map((attachment) => (
+                  <PreviewAttachment
+                    attachment={attachment}
+                    key={attachment.url}
+                    onRemove={() => {
+                      setAttachments((currentAttachments) =>
+                        currentAttachments.filter(
+                          (a) => a.url !== attachment.url
+                        )
+                      );
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                    }}
+                  />
+                ))}
+
+                {uploadQueue.map((filename) => (
+                  <PreviewAttachment
+                    attachment={{
+                      url: "",
+                      name: filename,
+                      contentType: "",
+                    }}
+                    isUploading={true}
+                    key={filename}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
         <div className="flex flex-row items-start gap-1 sm:gap-2">
@@ -388,7 +516,11 @@ function PureMultimodalInput({
           ) : (
             <PromptInputSubmit
               className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
-              disabled={!input.trim() || uploadQueue.length > 0}
+              disabled={
+                !input.trim() ||
+                uploadQueue.length > 0 ||
+                ragUploadStatus !== null
+              }
               status={status}
             >
               <ArrowUpIcon size={14} />
@@ -422,6 +554,9 @@ export const MultimodalInput = memo(
       return false;
     }
     if (!equal(prevProps.selectedTemplate, nextProps.selectedTemplate)) {
+      return false;
+    }
+    if (prevProps.documentId !== nextProps.documentId) {
       return false;
     }
 
