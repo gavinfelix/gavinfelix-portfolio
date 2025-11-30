@@ -15,12 +15,12 @@ type SuggestedActionsProps = {
 };
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
-  // Predefined prompt suggestions for empty chat state
+  // Predefined prompt suggestions for empty chat state - English learning focused
   const suggestedActions = [
-    "What are the advantages of using Next.js?",
-    "Write code to demonstrate Dijkstra's algorithm",
-    "Help me write an essay about Silicon Valley",
-    "What is the weather in San Francisco?",
+    "Practice IELTS Speaking with me",
+    "Explain grammar rules with clear examples",
+    "Teach me 5 useful phrases for daily English",
+    "Improve my English writing with corrections",
   ];
 
   return (
