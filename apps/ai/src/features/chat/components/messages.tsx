@@ -15,6 +15,45 @@ import { Loader } from "@/components/elements/loader";
 import { Greeting } from "./greeting";
 import { PreviewMessage, ThinkingMessage } from "./message";
 
+// Hook to get input container height for responsive scroll button positioning
+function useInputContainerHeight() {
+  const [inputHeight, setInputHeight] = useState(160); // Default to 160px
+
+  useEffect(() => {
+    const updateHeight = () => {
+      const inputContainer = document.getElementById("input-container");
+      if (inputContainer) {
+        const height = inputContainer.offsetHeight;
+        setInputHeight(height);
+      }
+    };
+
+    // Initial measurement with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(updateHeight, 100);
+
+    // Observe input container height changes
+    const resizeObserver = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    const inputContainer = document.getElementById("input-container");
+    if (inputContainer) {
+      resizeObserver.observe(inputContainer);
+    }
+
+    // Also listen for window resize
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
+
+  return inputHeight;
+}
+
 type MessagesProps = {
   chatId: string;
   status: UseChatHelpers<ChatMessage>["status"];
@@ -50,6 +89,9 @@ function PureMessages({
   });
 
   useDataStream();
+
+  // Get input container height for responsive button positioning
+  const inputContainerHeight = useInputContainerHeight();
 
   // Track if we've scrolled for this chat to avoid scrolling on every render
   const hasScrolledForChatRef = useRef<string | null>(null);
@@ -185,10 +227,10 @@ function PureMessages({
       {!isAtBottom && (
         <button
           aria-label="Scroll to bottom"
-          className="-translate-x-1/2 absolute left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-all hover:bg-muted"
+          className="-translate-x-1/2 absolute left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-all duration-200 hover:bg-muted"
           onClick={() => scrollToBottom("smooth")}
           style={{
-            bottom: "calc(env(safe-area-inset-bottom, 0px) + 320px)",
+            bottom: `${inputContainerHeight + 16}px`,
           }}
           type="button"
         >

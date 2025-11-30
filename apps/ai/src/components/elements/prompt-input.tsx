@@ -80,8 +80,6 @@ export const PromptInputTextarea = ({
           : "field-sizing-content max-h-[6lh]",
         "bg-transparent dark:bg-transparent",
         "focus-visible:ring-0",
-        // Override default min-h-[80px] from Textarea component
-        minHeight ? `min-h-[${minHeight}px]` : "min-h-[44px]",
         className
       )}
       name="message"
@@ -90,10 +88,6 @@ export const PromptInputTextarea = ({
       }}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
-      style={{
-        minHeight: minHeight ? `${minHeight}px` : "44px",
-        ...props.style,
-      }}
       {...props}
     />
   );
@@ -222,7 +216,13 @@ export const PromptInputModelSelectContent = ({
   className,
   ...props
 }: PromptInputModelSelectContentProps) => (
-  <SelectContent className={cn("!bg-popover !opacity-100 bg-white dark:bg-zinc-900", className)} {...props} />
+  <SelectContent
+    className={cn(
+      "!bg-popover !opacity-100 bg-white dark:bg-zinc-900",
+      className
+    )}
+    {...props}
+  />
 );
 
 export type PromptInputModelSelectItemProps = ComponentProps<typeof SelectItem>;

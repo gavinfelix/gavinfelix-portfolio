@@ -99,19 +99,12 @@ function PureMultimodalInput({
       // Reset to auto first to get accurate scrollHeight
       textarea.style.height = "auto";
 
-      // Use requestAnimationFrame to ensure DOM is updated before calculating
-      requestAnimationFrame(() => {
-        if (textareaRef.current) {
-          const scrollHeight = textareaRef.current.scrollHeight;
-          const minHeight = 44; // 1 line
-          const maxHeight = 264; // 11 lines: 11 * 24px ≈ 264px
-          const newHeight = Math.max(
-            minHeight,
-            Math.min(scrollHeight, maxHeight)
-          );
-          textareaRef.current.style.height = `${newHeight}px`;
-        }
-      });
+      // Calculate scroll height and limit to max 11 lines (264px)
+      const scrollHeight = textarea.scrollHeight;
+      const minHeight = 44; // 1 line
+      const maxHeight = 264; // 11 lines: 11 * 24px ≈ 264px
+      const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
+      textarea.style.height = `${newHeight}px`;
     }
   }, []);
 
@@ -142,7 +135,12 @@ function PureMultimodalInput({
       // Prefer DOM value over localStorage to handle hydration
       const finalValue = domValue || localStorageInput || "";
       setInput(finalValue);
-      adjustHeight();
+      // Set initial height to one line (44px) if no content
+      if (!finalValue && textareaRef.current) {
+        textareaRef.current.style.height = "44px";
+      } else {
+        adjustHeight();
+      }
     }
     // Only run once after hydration
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -360,7 +358,6 @@ function PureMultimodalInput({
             placeholder="Send a message..."
             ref={textareaRef}
             rows={1}
-            style={{ height: "44px", minHeight: "44px", maxHeight: "264px" }}
             value={input}
           />{" "}
           <Context {...contextProps} />
