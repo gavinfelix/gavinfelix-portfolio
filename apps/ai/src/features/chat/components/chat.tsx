@@ -280,30 +280,30 @@ export function Chat({
           id="input-container"
         >
           {!isReadonly && (
-            <MultimodalInput
-              attachments={attachments}
-              chatId={id}
-              input={input}
-              messages={messages}
-              onModelChange={setCurrentModelId}
+              <MultimodalInput
+                attachments={attachments}
+                chatId={id}
+                input={input}
+                messages={messages}
+                onModelChange={setCurrentModelId}
               onTemplateSelect={(template) => {
                 setSelectedTemplate(template);
                 if (template) {
                   setInput(template.content);
                 }
               }}
-              selectedModelId={currentModelId}
+                selectedModelId={currentModelId}
               selectedTemplate={selectedTemplate}
-              selectedVisibilityType={visibilityType}
-              sendMessage={sendMessage}
-              setAttachments={setAttachments}
-              setInput={setInput}
-              setMessages={setMessages}
-              status={status}
-              stop={stop}
+                selectedVisibilityType={visibilityType}
+                sendMessage={sendMessage}
+                setAttachments={setAttachments}
+                setInput={setInput}
+                setMessages={setMessages}
+                status={status}
+                stop={stop}
               templates={promptTemplates}
-              usage={usage}
-            />
+                usage={usage}
+              />
           )}
         </div>
       </div>

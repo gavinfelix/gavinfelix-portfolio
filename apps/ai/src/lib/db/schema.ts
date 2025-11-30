@@ -2,8 +2,10 @@ import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   foreignKey,
+  integer,
   json,
   jsonb,
+  numeric,
   pgTable,
   primaryKey,
   text,
@@ -147,3 +149,24 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+/**
+ * User settings table schema
+ * Stores per-user chat settings including model preferences, temperature, and max tokens
+ */
+export const userSettings = pgTable("user_settings", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  model: text("model"),
+  temperature: numeric("temperature"),
+  maxTokens: integer("max_tokens"),
+  useTemplatesAsSystem: boolean("use_templates_as_system")
+    .notNull()
+    .default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type UserSettings = InferSelectModel<typeof userSettings>;
