@@ -112,12 +112,14 @@ export async function POST(request: Request) {
       message,
       selectedChatModel,
       selectedVisibilityType,
+      templateId,
       templateContent,
     }: {
       id: string;
       message: ChatMessage;
       selectedChatModel: ChatModel["id"];
       selectedVisibilityType: VisibilityType;
+      templateId?: string;
       templateContent?: string;
     } = requestBody;
 

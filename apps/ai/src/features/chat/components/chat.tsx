@@ -33,7 +33,8 @@ import { MultimodalInput } from "./multimodal-input";
 import { getChatHistoryPaginationKey } from "./sidebar-history";
 import { toast } from "@/components/toast";
 import type { VisibilityType } from "@/components/visibility-selector";
-import type { PromptTemplate } from "@/features/templates/types";
+import type { PromptTemplate } from "@/lib/db/schema";
+import { useTemplates } from "@/features/templates/hooks/use-templates";
 
 export function Chat({
   id,
@@ -60,37 +61,8 @@ export function Chat({
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
 
-  // Hard-coded prompt templates
-  const promptTemplates: PromptTemplate[] = [
-    {
-      id: "ielts-speaking",
-      name: "IELTS Speaking Trainer",
-      description: "Practice IELTS speaking questions with feedback",
-      content:
-        "I want to practice IELTS speaking. Please ask me questions and provide feedback on my answers.",
-    },
-    {
-      id: "grammar-corrector",
-      name: "Grammar Corrector",
-      description: "Correct grammar and improve writing",
-      content:
-        "Please correct the grammar and improve the writing of the following text:",
-    },
-    {
-      id: "english-rewriter",
-      name: "English Rewriter",
-      description: "Rewrite text in different styles or tones",
-      content:
-        "Please rewrite the following text to make it more professional and clear:",
-    },
-    {
-      id: "vocabulary-explainer",
-      name: "Vocabulary Explainer",
-      description: "Explain vocabulary words with examples",
-      content:
-        "Please explain the following vocabulary words with definitions, examples, and usage:",
-    },
-  ];
+  // Load templates from API
+  const { templates: promptTemplates } = useTemplates();
 
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
@@ -129,6 +101,7 @@ export function Chat({
             message: request.messages.at(-1),
             selectedChatModel: currentModelIdRef.current,
             selectedVisibilityType: visibilityType,
+            templateId: selectedTemplate?.id,
             templateContent: selectedTemplate?.content,
             ...request.body,
           },

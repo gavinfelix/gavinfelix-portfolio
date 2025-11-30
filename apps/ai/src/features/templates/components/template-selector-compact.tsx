@@ -9,7 +9,7 @@ import {
   PromptInputModelSelectContent,
 } from "@/components/elements/prompt-input";
 import { ChevronDownIcon } from "@/components/icons";
-import type { PromptTemplate } from "../types";
+import type { PromptTemplate } from "@/lib/db/schema";
 
 type TemplateSelectorCompactProps = {
   templates: PromptTemplate[];
@@ -60,9 +60,11 @@ function PureTemplateSelectorCompact({
               <div className="truncate font-medium text-xs">
                 {template.name}
               </div>
-              <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
-                {template.description}
-              </div>
+              {template.description && (
+                <div className="mt-px truncate text-[10px] text-muted-foreground leading-tight">
+                  {template.description}
+                </div>
+              )}
             </SelectItem>
           ))}
         </div>
