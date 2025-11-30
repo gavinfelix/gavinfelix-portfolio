@@ -11,10 +11,10 @@ export async function GET() {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const settings = await getUserSettings(session.user.id);
@@ -25,10 +25,10 @@ export async function GET() {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -37,10 +37,10 @@ export async function PUT(request: Request) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const body = await request.json();
@@ -48,7 +48,11 @@ export async function PUT(request: Request) {
 
     const settings = await upsertUserSettings(session.user.id, {
       model: model || null,
-      temperature: temperature ? String(temperature) : null,
+      // Handle temperature: 0 is a valid value, so check for undefined/null explicitly
+      temperature:
+        temperature !== undefined && temperature !== null
+          ? String(temperature)
+          : null,
       maxTokens: maxTokens || null,
       useTemplatesAsSystem:
         useTemplatesAsSystem !== undefined ? useTemplatesAsSystem : null,
@@ -60,10 +64,9 @@ export async function PUT(request: Request) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
     }
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
-

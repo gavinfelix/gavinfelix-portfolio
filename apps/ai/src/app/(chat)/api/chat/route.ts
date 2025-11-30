@@ -259,6 +259,12 @@ export async function POST(request: Request) {
       ? parseFloat(userSettings.temperature)
       : 0.7;
 
+    console.log("[POST /api/chat] Temperature configuration:", {
+      userSetting: userSettings?.temperature,
+      effectiveTemperature,
+      source: userSettings?.temperature ? "user_settings" : "default",
+    });
+
     // Determine max tokens: user setting > undefined (let model use default)
     const effectiveMaxTokens = userSettings?.maxTokens
       ? userSettings.maxTokens
