@@ -360,6 +360,7 @@ function PureMultimodalInput({
             placeholder="Send a message..."
             ref={textareaRef}
             rows={1}
+            style={{ height: "44px", minHeight: "44px", maxHeight: "264px" }}
             value={input}
           />{" "}
           <Context {...contextProps} />
