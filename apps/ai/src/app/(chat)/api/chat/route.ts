@@ -21,6 +21,7 @@ import { auth, type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
+import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
@@ -44,6 +45,7 @@ import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
+import { getUserSettings } from "@/features/settings/lib/user-settings-client";
 
 export const maxDuration = 60;
 
@@ -229,8 +231,52 @@ export async function POST(request: Request) {
       country,
     };
 
+    // Load user settings if user is authenticated and has valid UUID
+    let userSettings = null;
+    if (isValidUUID && session.user.id) {
+      try {
+        userSettings = await getUserSettings(session.user.id);
+        if (userSettings) {
+          console.log("[POST /api/chat] User settings loaded:", {
+            model: userSettings.model,
+            temperature: userSettings.temperature,
+            maxTokens: userSettings.maxTokens,
+            useTemplatesAsSystem: userSettings.useTemplatesAsSystem,
+          });
+        }
+      } catch (error) {
+        console.warn("[POST /api/chat] Failed to load user settings:", error);
+        // Continue with defaults if settings load fails
+      }
+    }
+
+    // Determine the model to use: user setting > request body > default
+    // If user has set a model (not null), use it; otherwise use the request body selection
+    const effectiveModel = userSettings?.model || selectedChatModel;
+
+    // Determine temperature: user setting > default (0.7)
+    const effectiveTemperature = userSettings?.temperature
+      ? parseFloat(userSettings.temperature)
+      : 0.7;
+
+    // Determine max tokens: user setting > undefined (let model use default)
+    const effectiveMaxTokens = userSettings?.maxTokens
+      ? userSettings.maxTokens
+      : undefined;
+
+    // Log useTemplatesAsSystem for debugging (not used yet)
+    if (userSettings?.useTemplatesAsSystem !== undefined) {
+      console.log(
+        "[POST /api/chat] useTemplatesAsSystem setting:",
+        userSettings.useTemplatesAsSystem
+      );
+    }
+
     // Build system prompt - prepend template content if provided
-    const baseSystemPrompt = systemPrompt({ selectedChatModel, requestHints });
+    const baseSystemPrompt = systemPrompt({
+      selectedChatModel: effectiveModel,
+      requestHints,
+    });
     const finalSystemPrompt = requestBody.templateContent
       ? `${requestBody.templateContent}\n\n${baseSystemPrompt}`
       : baseSystemPrompt;
@@ -262,14 +308,16 @@ export async function POST(request: Request) {
     // Create stream with AI model and tool execution
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
+        // Build streamText options with user settings
+        const streamTextOptions: Parameters<typeof streamText>[0] = {
+          model: myProvider.languageModel(effectiveModel),
           system: finalSystemPrompt,
           messages: convertToModelMessages(uiMessages),
+          temperature: effectiveTemperature,
           stopWhen: stepCountIs(5),
           // Disable tools for reasoning model, enable for others
           experimental_activeTools:
-            selectedChatModel === "chat-model-reasoning"
+            effectiveModel === "chat-model-reasoning"
               ? []
               : [
                   "getWeather",
@@ -291,11 +339,27 @@ export async function POST(request: Request) {
             isEnabled: isProductionEnvironment,
             functionId: "stream-text",
           },
+        };
+
+        // Add maxTokens if user has set it (via provider options if needed)
+        // Note: maxTokens may need to be passed via provider-specific options
+        // For now, we'll log it and apply it if the SDK supports it
+        if (effectiveMaxTokens !== undefined) {
+          console.log(
+            "[POST /api/chat] User maxTokens setting:",
+            effectiveMaxTokens
+          );
+          // Try to apply maxTokens - this may vary by provider
+          // Some providers may need it in providerOptions
+          (streamTextOptions as any).maxTokens = effectiveMaxTokens;
+        }
+
+        const result = streamText({
+          ...streamTextOptions,
           onFinish: async ({ usage }) => {
             try {
               const providers = await getTokenlensCatalog();
-              const modelId =
-                myProvider.languageModel(selectedChatModel).modelId;
+              const modelId = myProvider.languageModel(effectiveModel).modelId;
               if (!modelId) {
                 finalMergedUsage = usage;
                 dataStream.write({

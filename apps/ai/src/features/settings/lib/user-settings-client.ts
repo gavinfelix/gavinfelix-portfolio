@@ -43,7 +43,9 @@ export async function getUserSettings(
  */
 export async function upsertUserSettings(
   userId: string,
-  partialSettings: Partial<Omit<UserSettings, "userId" | "createdAt" | "updatedAt">>
+  partialSettings: Partial<
+    Omit<UserSettings, "userId" | "createdAt" | "updatedAt">
+  >
 ): Promise<UserSettings> {
   try {
     // First, try to get existing settings
@@ -51,12 +53,10 @@ export async function upsertUserSettings(
 
     if (existing) {
       // Update existing settings
+      // Note: updatedAt is automatically updated by database trigger
       const [updated] = await db
         .update(userSettings)
-        .set({
-          ...partialSettings,
-          updatedAt: new Date(),
-        })
+        .set(partialSettings)
         .where(eq(userSettings.userId, userId))
         .returning();
 
@@ -85,4 +85,3 @@ export async function upsertUserSettings(
     handleDatabaseError(error, "upsert user settings");
   }
 }
-
