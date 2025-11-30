@@ -170,3 +170,22 @@ export const userSettings = pgTable("user_settings", {
 });
 
 export type UserSettings = InferSelectModel<typeof userSettings>;
+
+/**
+ * Prompt templates table schema
+ * Stores user-created prompt templates for chat conversations
+ */
+export const promptTemplates = pgTable("prompt_templates", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  content: text("content").notNull(),
+  isFavorite: boolean("is_favorite").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type PromptTemplate = InferSelectModel<typeof promptTemplates>;

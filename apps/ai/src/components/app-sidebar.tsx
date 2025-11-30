@@ -2,9 +2,9 @@
 
 // Main sidebar layout component combining header, chat history, and user navigation
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { User } from "next-auth";
-import { PlusIcon } from "@/components/icons";
+import { FileIcon, LineChartIcon, MessageIcon, PlusIcon } from "@/components/icons";
 import { SidebarHistory } from "@/features/chat/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -21,13 +23,74 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 // Sidebar layout combining history list, new chat button, and user menu
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+
+  const isDashboardActive = pathname === "/dashboard";
+  const isChatActive = pathname === "/" || pathname.startsWith("/chat/");
+  const isTemplatesActive = pathname === "/templates";
 
   return (
     <Sidebar className="group-data-[side=left]:border-r-0">
       <SidebarHeader>
         <SidebarMenu>
-          <div className="flex flex-row items-center justify-between">
+          {/* Navigation items */}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isDashboardActive}
+              tooltip="Dashboard"
+            >
+              <Link
+                href="/dashboard"
+                onClick={() => {
+                  setOpenMobile(false);
+                }}
+              >
+                <LineChartIcon size={16} />
+                <span>Dashboard</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isChatActive}
+              tooltip="Chat"
+            >
+              <Link
+                href="/"
+                onClick={() => {
+                  setOpenMobile(false);
+                }}
+              >
+                <MessageIcon size={16} />
+                <span>Chat</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isTemplatesActive}
+              tooltip="Templates"
+            >
+              <Link
+                href="/templates"
+                onClick={() => {
+                  setOpenMobile(false);
+                }}
+              >
+                <FileIcon size={16} />
+                <span>Templates</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          {/* Chatbot title and New Chat button */}
+          <div className="flex flex-row items-center justify-between mt-2">
             <Link
               className="flex flex-row items-center gap-3"
               href="/"
