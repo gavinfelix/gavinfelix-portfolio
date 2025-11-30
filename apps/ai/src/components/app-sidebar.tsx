@@ -2,12 +2,12 @@
 
 // Main sidebar layout component combining header, chat history, and user navigation
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { User } from "next-auth";
-import { FileIcon, LineChartIcon, MessageIcon, PlusIcon } from "@/components/icons";
+import { FileIcon, LineChartIcon, MessageIcon } from "@/components/icons";
 import { SidebarHistory } from "@/features/chat/components/sidebar-history";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
-import { Button } from "@/components/ui/button";
+import { SidebarToggle } from "@/components/sidebar-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -18,11 +18,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-// Sidebar layout combining history list, new chat button, and user menu
+// Sidebar layout combining history list, toggle button, and user menu
 export function AppSidebar({ user }: { user: User | undefined }) {
-  const router = useRouter();
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
 
@@ -31,41 +29,23 @@ export function AppSidebar({ user }: { user: User | undefined }) {
   const isTemplatesActive = pathname === "/templates";
 
   return (
-    <Sidebar className="group-data-[side=left]:border-r-0">
+    <Sidebar collapsible="icon" className="group-data-[side=left]:border-r-0">
       <SidebarHeader>
         <SidebarMenu>
-          {/* Chatbot title and New Chat button */}
+          {/* Chatbot title and Toggle Sidebar button */}
           <div className="flex flex-row items-center justify-between">
             <Link
-              className="flex flex-row items-center gap-3"
+              className="flex flex-row items-center gap-3 group-data-[collapsible=icon]:justify-center"
               href="/"
               onClick={() => {
                 setOpenMobile(false);
               }}
             >
-              <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
+              <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted group-data-[collapsible=icon]:hidden">
                 Chatbot
               </span>
             </Link>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  className="h-8 p-1 md:h-fit md:p-2"
-                  onClick={() => {
-                    setOpenMobile(false);
-                    router.push("/");
-                    router.refresh();
-                  }}
-                  type="button"
-                  variant="ghost"
-                >
-                  <PlusIcon />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent align="end" className="hidden md:block">
-                New Chat
-              </TooltipContent>
-            </Tooltip>
+            <SidebarToggle />
           </div>
 
           {/* Navigation items */}
@@ -82,7 +62,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <LineChartIcon size={16} />
-                <span>Dashboard</span>
+                <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -100,7 +80,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <MessageIcon size={16} />
-                <span>Chat</span>
+                <span className="group-data-[collapsible=icon]:hidden">Chat</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -118,16 +98,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <FileIcon size={16} />
-                <span>Templates</span>
+                <span className="group-data-[collapsible=icon]:hidden">Templates</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="group-data-[collapsible=icon]:hidden">
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter className="mt-auto">{user && <SidebarUserNav user={user} />}</SidebarFooter>
     </Sidebar>
   );
 }

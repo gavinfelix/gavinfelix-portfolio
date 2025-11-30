@@ -41,11 +41,11 @@ export function SidebarUserNav({ user }: { user: User }) {
               <SidebarMenuButton className="h-10 justify-between bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                 <div className="flex flex-row gap-2">
                   <div className="size-6 animate-pulse rounded-full bg-zinc-500/30" />
-                  <span className="animate-pulse rounded-md bg-zinc-500/30 text-transparent">
+                  <span className="animate-pulse rounded-md bg-zinc-500/30 text-transparent group-data-[collapsible=icon]:hidden">
                     Loading auth status
                   </span>
                 </div>
-                <div className="animate-spin text-zinc-500">
+                <div className="animate-spin text-zinc-500 group-data-[collapsible=icon]:hidden">
                   <LoaderIcon />
                 </div>
               </SidebarMenuButton>
@@ -53,6 +53,7 @@ export function SidebarUserNav({ user }: { user: User }) {
               <SidebarMenuButton
                 className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="user-nav-button"
+                tooltip={isGuest ? "Guest" : email}
               >
                 <Image
                   alt={user.email ?? "User Avatar"}
@@ -65,10 +66,10 @@ export function SidebarUserNav({ user }: { user: User }) {
                   }
                   width={24}
                 />
-                <span className="truncate" data-testid="user-email">
+                <span className="truncate group-data-[collapsible=icon]:hidden" data-testid="user-email">
                   {isGuest ? "Guest" : email}
                 </span>
-                <ChevronUp className="ml-auto" />
+                <ChevronUp className="ml-auto group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             )}
           </DropdownMenuTrigger>

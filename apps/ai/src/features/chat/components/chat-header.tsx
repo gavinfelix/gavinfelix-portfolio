@@ -1,11 +1,10 @@
 "use client";
 
-// Chat header component with sidebar toggle, new chat button, and visibility controls
+// Chat header component with new chat button and visibility controls
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useWindowSize } from "usehooks-ts";
-import { SidebarToggle } from "@/components/sidebar-toggle";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, VercelIcon } from "@/components/icons";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -28,8 +27,6 @@ function PureChatHeader({
 
   return (
     <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
-      <SidebarToggle />
-
       {/* Show new chat button when sidebar is closed or on mobile */}
       {(!open || windowWidth < 768) && (
         <Button
