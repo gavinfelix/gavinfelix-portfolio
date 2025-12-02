@@ -1,6 +1,7 @@
 "use client";
 
 // Chat header component with new chat button and visibility controls
+// Sidebar toggle button has been moved to the sidebar header for better UX
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo } from "react";

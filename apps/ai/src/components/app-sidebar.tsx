@@ -63,17 +63,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <LineChartIcon size={16} />
-                <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  Dashboard
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
 
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={isChatActive}
-              tooltip="Chat"
-            >
+            <SidebarMenuButton asChild isActive={isChatActive} tooltip="Chat">
               <Link
                 href="/"
                 onClick={() => {
@@ -81,7 +79,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <MessageIcon size={16} />
-                <span className="group-data-[collapsible=icon]:hidden">Chat</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  Chat
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -99,7 +99,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 }}
               >
                 <FileIcon size={16} />
-                <span className="group-data-[collapsible=icon]:hidden">Templates</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  Templates
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -108,7 +110,9 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <SidebarContent className="group-data-[collapsible=icon]:hidden">
         <SidebarHistory user={user} />
       </SidebarContent>
-      <SidebarFooter className="mt-auto">{user && <SidebarUserNav user={user} />}</SidebarFooter>
+      <SidebarFooter className="mt-auto">
+        {user && <SidebarUserNav user={user} />}
+      </SidebarFooter>
     </Sidebar>
   );
 }
