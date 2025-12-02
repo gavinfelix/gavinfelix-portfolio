@@ -9,7 +9,10 @@ import { useWindowSize } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, VercelIcon } from "@/components/icons";
 import { useSidebar } from "@/components/ui/sidebar";
-import { VisibilitySelector, type VisibilityType } from "@/components/visibility-selector";
+import {
+  VisibilitySelector,
+  type VisibilityType,
+} from "@/components/visibility-selector";
 
 // Chat header component with sidebar toggle, new chat button, and visibility selector
 function PureChatHeader({
