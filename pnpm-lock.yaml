@@ -55,6 +55,46 @@ importers:
         specifier: ^2.5.8
         version: 2.5.8
 
+  apps/admin:
+    dependencies:
+      next:
+        specifier: 15.5.4
+        version: 15.5.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@eslint/eslintrc':
+        specifier: ^3
+        version: 3.3.1
+      '@tailwindcss/postcss':
+        specifier: ^4
+        version: 4.1.14
+      '@types/node':
+        specifier: ^20
+        version: 20.19.19
+      '@types/react':
+        specifier: ^19
+        version: 19.2.0
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.0(@types/react@19.2.0)
+      eslint:
+        specifier: ^9
+        version: 9.37.0(jiti@2.6.1)
+      eslint-config-next:
+        specifier: 15.5.4
+        version: 15.5.4(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^4
+        version: 4.1.14
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   apps/ai:
     dependencies:
       '@ai-sdk/gateway':
@@ -324,46 +364,6 @@ importers:
         version: 5.3.9(@types/debug@4.1.12)(@types/node@20.19.19)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)(typescript@5.9.3)
 
   apps/blog:
-    dependencies:
-      next:
-        specifier: 15.5.4
-        version: 15.5.4(@opentelemetry/api@1.9.0)(@playwright/test@1.56.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      react:
-        specifier: 19.1.0
-        version: 19.1.0
-      react-dom:
-        specifier: 19.1.0
-        version: 19.1.0(react@19.1.0)
-    devDependencies:
-      '@eslint/eslintrc':
-        specifier: ^3
-        version: 3.3.1
-      '@tailwindcss/postcss':
-        specifier: ^4
-        version: 4.1.14
-      '@types/node':
-        specifier: ^20
-        version: 20.19.19
-      '@types/react':
-        specifier: ^19
-        version: 19.2.0
-      '@types/react-dom':
-        specifier: ^19
-        version: 19.2.0(@types/react@19.2.0)
-      eslint:
-        specifier: ^9
-        version: 9.37.0(jiti@2.6.1)
-      eslint-config-next:
-        specifier: 15.5.4
-        version: 15.5.4(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
-      tailwindcss:
-        specifier: ^4
-        version: 4.1.14
-      typescript:
-        specifier: ^5
-        version: 5.9.3
-
-  apps/saas:
     dependencies:
       next:
         specifier: 15.5.4
