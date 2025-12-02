@@ -38,7 +38,8 @@ export function SettingsPage({ user }: SettingsPageProps) {
         return;
       }
 
-      // Success - refresh the page to show updated data
+      // Success - show feedback and refresh the page
+      alert("Saved");
       router.refresh();
     } catch (err) {
       console.error("Error saving settings:", err);
