@@ -33,6 +33,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       <SidebarHeader>
         <SidebarMenu>
           {/* Chatbot title and Toggle Sidebar button */}
+          {/* Toggle button is icon-only without border, positioned next to the Chatbot title */}
           <div className="flex flex-row items-center justify-between">
             <Link
               className="flex flex-row items-center gap-3 group-data-[collapsible=icon]:justify-center"
