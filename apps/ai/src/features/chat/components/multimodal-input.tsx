@@ -71,7 +71,8 @@ function PureMultimodalInput({
   selectedTemplate,
   onTemplateSelect,
   documentId,
-  onDocumentIdChange,
+  documentName,
+  onDocumentChange,
 }: {
   chatId: string;
   input: string;
@@ -92,7 +93,8 @@ function PureMultimodalInput({
   selectedTemplate?: PromptTemplate | null;
   onTemplateSelect?: (template: PromptTemplate | null) => void;
   documentId?: string;
-  onDocumentIdChange?: (documentId: string | undefined) => void;
+  documentName?: string;
+  onDocumentChange?: (documentId: string | undefined, documentName: string | undefined) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -231,9 +233,9 @@ function PureMultimodalInput({
     return extension === ".txt" || extension === ".md";
   }, []);
 
-  // Upload RAG document to server and return document ID
+  // Upload RAG document to server and return document ID and name
   const uploadRagDocument = useCallback(
-    async (file: File): Promise<string | undefined> => {
+    async (file: File): Promise<{ documentId: string; documentName: string } | undefined> => {
       const formData = new FormData();
       formData.append("file", file);
 
@@ -248,9 +250,11 @@ function PureMultimodalInput({
         if (response.ok) {
           setRagUploadStatus({ filename: file.name, status: "processing" });
           const data = await response.json();
-          const { documentId } = data;
+          const { documentId, documentTitle, originalFilename } = data;
+          // Use documentTitle if available, otherwise fall back to originalFilename
+          const documentName = documentTitle || originalFilename || file.name;
           setRagUploadStatus(null);
-          return documentId;
+          return { documentId, documentName };
         }
 
         const errorData = await response
@@ -345,10 +349,20 @@ function PureMultimodalInput({
       try {
         // Handle RAG file uploads (sequential to avoid overwhelming the API)
         for (const ragFile of ragFiles) {
-          const documentId = await uploadRagDocument(ragFile);
-          if (documentId) {
-            onDocumentIdChange?.(documentId);
-            toast.success(`Document "${ragFile.name}" processed successfully`);
+          const result = await uploadRagDocument(ragFile);
+          if (result) {
+            const { documentId, documentName } = result;
+            console.log("[MultimodalInput] RAG upload successful:", {
+              documentId,
+              documentName,
+              filename: ragFile.name,
+            });
+            onDocumentChange?.(documentId, documentName);
+            toast.success(`Document "${documentName}" processed successfully`);
+          } else {
+            console.warn("[MultimodalInput] RAG upload failed or returned no result:", {
+              filename: ragFile.name,
+            });
           }
         }
 
@@ -383,7 +397,7 @@ function PureMultimodalInput({
       uploadFile,
       isRagFile,
       uploadRagDocument,
-      onDocumentIdChange,
+      onDocumentChange,
     ]
   );
 
@@ -392,13 +406,32 @@ function PureMultimodalInput({
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 &&
-        !ragUploadStatus && (
+        !ragUploadStatus &&
+        !documentId && (
           <SuggestedActions
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
             sendMessage={sendMessage}
           />
         )}
+
+      {/* Document attachment indicator */}
+      {documentId && documentName && (
+        <div className="flex items-center gap-2 rounded-lg border bg-muted px-3 py-2 text-sm">
+          <span className="text-muted-foreground">Attached document:</span>
+          <span className="font-medium text-foreground">{documentName}</span>
+          <Button
+            className="ml-auto h-6 px-2 text-xs"
+            onClick={() => {
+              onDocumentChange?.(undefined, undefined);
+            }}
+            variant="ghost"
+            size="sm"
+          >
+            Clear
+          </Button>
+        </div>
+      )}
 
       <input
         className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
@@ -557,6 +590,9 @@ export const MultimodalInput = memo(
       return false;
     }
     if (prevProps.documentId !== nextProps.documentId) {
+      return false;
+    }
+    if (prevProps.documentName !== nextProps.documentName) {
       return false;
     }
 

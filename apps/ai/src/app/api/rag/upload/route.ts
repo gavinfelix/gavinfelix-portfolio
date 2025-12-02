@@ -285,6 +285,15 @@ export async function POST(request: Request) {
     `;
 
     // Insert chunks into database
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("[POST /api/rag/upload] 💾 STORING CHUNKS IN DATABASE");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("  - Table: document_chunks");
+    console.log("  - Columns: id, document_id, chunk_index, content, embedding, created_at");
+    console.log("  - documentId (type:", typeof documentId, "):", documentId);
+    console.log("  - Total chunks to insert:", chunks.length);
+    console.log("  - Total embeddings generated:", embeddings.length);
+    
     try {
       for (let i = 0; i < chunks.length; i++) {
         const chunkId = generateUUID();
@@ -301,6 +310,18 @@ export async function POST(request: Request) {
         // Format embedding array as PostgreSQL vector string
         // PostgreSQL pgvector expects format: [1.0,2.0,3.0]
         const embeddingString = `[${embedding.join(",")}]`;
+
+        // Log first chunk details
+        if (i === 0) {
+          console.log("  - First chunk preview:");
+          console.log("    * Chunk index:", i);
+          console.log("    * Content preview (120 chars):", content.substring(0, 120));
+          console.log("    * Content length:", content.length, "characters");
+          console.log("    * Embedding dimensions:", embedding.length);
+          console.log("    * Embedding is non-null:", embedding !== null && embedding !== undefined);
+          console.log("    * document_id value:", documentId);
+          console.log("    * document_id type:", typeof documentId);
+        }
 
         await client`
           INSERT INTO document_chunks (
@@ -321,6 +342,10 @@ export async function POST(request: Request) {
           )
         `;
       }
+      
+      console.log("  - ✅ Successfully inserted", chunks.length, "chunks");
+      console.log("  - documentId used for all chunks:", documentId);
+      console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     } catch (chunkError) {
       console.error(
         "[POST /api/rag/upload] Error inserting chunks:",
@@ -344,6 +369,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       documentId,
+      documentTitle: title,
+      originalFilename: filename,
       chunkCount: chunks.length,
     });
   } catch (error) {

@@ -95,19 +95,46 @@ export function Chat({
       fetch: fetchWithErrorHandlers,
       // Include current model, visibility, template, and documentId in request
       prepareSendMessagesRequest(request) {
-        return {
-          body: {
-            id: request.id,
-            message: request.messages.at(-1),
-            selectedChatModel: currentModelIdRef.current,
-            selectedVisibilityType: visibilityType,
-            templateId: selectedTemplate?.id,
-            templateContent: selectedTemplate?.content,
-            // Include documentId if a RAG document was uploaded
-            ...(currentDocumentIdRef.current && { documentId: currentDocumentIdRef.current }),
-            ...request.body,
-          },
+        // Build base body with required fields
+        const body = {
+          id: request.id,
+          message: request.messages.at(-1),
+          selectedChatModel: currentModelIdRef.current,
+          selectedVisibilityType: visibilityType,
+          templateId: selectedTemplate?.id,
+          templateContent: selectedTemplate?.content,
+          // Spread any additional fields from request.body first
+          ...request.body,
         };
+        
+        // Add documentId after spreading request.body to ensure it's not overwritten
+        // and is always included if a document is attached
+        if (currentDocumentIdRef.current) {
+          body.documentId = currentDocumentIdRef.current;
+        }
+        
+        // Determine documentId status for logging
+        const documentIdStatus = 
+          body.documentId === undefined ? "MISSING" :
+          body.documentId === null ? "NULL" :
+          typeof body.documentId === "string" && body.documentId.length > 0 ? "VALID_STRING" :
+          "INVALID";
+        
+        // Enhanced logging: Log full request details just before sending
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.log("[Chat] 📤 SENDING REQUEST TO /api/chat");
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.log("URL:", "/api/chat");
+        console.log("Request Body:", JSON.stringify(body, null, 2));
+        console.log("documentId Status:", documentIdStatus);
+        console.log("documentId Value:", body.documentId ?? "undefined");
+        console.log("documentId Type:", typeof body.documentId);
+        console.log("Has documentId in body:", "documentId" in body);
+        console.log("Current documentId from ref:", currentDocumentIdRef.current ?? "undefined");
+        console.log("Current documentName:", currentDocumentName ?? "undefined");
+        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        
+        return { body };
       },
     }),
     // Handle streaming data and update usage statistics
@@ -117,11 +144,10 @@ export function Chat({
         setUsage(dataPart.data);
       }
     },
-    // Refresh chat history when message finishes and clear documentId
+    // Refresh chat history when message finishes
+    // Note: documentId is NOT cleared automatically - user must clear it manually
     onFinish: () => {
       mutate(unstable_serialize(getChatHistoryPaginationKey));
-      // Clear documentId after message is sent successfully
-      setCurrentDocumentId(undefined);
     },
     onError: (error) => {
       console.error("[Chat] Error occurred:", error);
@@ -180,8 +206,9 @@ export function Chat({
     if (prevIdRef.current !== id) {
       prevIdRef.current = id;
       setMessages(initialMessages);
-      // Clear documentId when switching chats
+      // Clear documentId and documentName when switching chats
       setCurrentDocumentId(undefined);
+      setCurrentDocumentName(undefined);
     }
   }, [id, initialMessages, setMessages]);
 
@@ -224,6 +251,7 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [currentDocumentId, setCurrentDocumentId] = useState<string | undefined>(undefined);
+  const [currentDocumentName, setCurrentDocumentName] = useState<string | undefined>(undefined);
   const currentDocumentIdRef = useRef<string | undefined>(undefined);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
   
@@ -270,9 +298,18 @@ export function Chat({
                 attachments={attachments}
                 chatId={id}
                 documentId={currentDocumentId}
+                documentName={currentDocumentName}
                 input={input}
                 messages={messages}
-                onDocumentIdChange={setCurrentDocumentId}
+                onDocumentChange={(id, name) => {
+                  console.log("[Chat] Document state updated:", {
+                    documentId: id || null,
+                    documentName: name || null,
+                    previousDocumentId: currentDocumentId || null,
+                  });
+                  setCurrentDocumentId(id);
+                  setCurrentDocumentName(name);
+                }}
                 onModelChange={setCurrentModelId}
               onTemplateSelect={(template) => {
                 setSelectedTemplate(template);
