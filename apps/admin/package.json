@@ -16,11 +16,7 @@
     "radix-ui": "^1.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.5.1",
-    "tailwind-merge": "^2.5.4",
-    "drizzle-orm": "^0.34.1",
-    "postgres": "^3.4.7",
-    "zod": "^3.25.76",
-    "date-fns": "^4.1.0"
+    "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
     "typescript": "^5",
