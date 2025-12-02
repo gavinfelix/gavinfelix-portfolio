@@ -1,28 +1,40 @@
 import "server-only";
 
-import { cookies } from "next/headers";
-import { getUserById } from "@/lib/db/queries";
+import { getUserByEmail } from "@/lib/db/queries";
+import { verifyPassword } from "@/lib/password";
 import type { AdminUser } from "@/lib/db/schema";
 
 /**
- * Get the current admin session user
- * For now, uses a simple cookie-based approach
- * Can be extended to use NextAuth or other auth providers
+ * Authenticate admin user with email and password
+ * Returns user object if credentials are valid, null otherwise
  */
-export async function getAdminSession(): Promise<AdminUser | null> {
+export async function authenticateAdmin(
+  email: string,
+  password: string
+): Promise<AdminUser | null> {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("admin_user_id")?.value;
+    // Get user by email
+    const user = await getUserByEmail(email.trim());
 
-    if (!userId) {
+    if (!user) {
       return null;
     }
 
-    const user = await getUserById(userId);
+    // Check if user has a password hash
+    if (!user.passwordHash) {
+      return null;
+    }
+
+    // Verify password
+    const isValid = await verifyPassword(password, user.passwordHash);
+
+    if (!isValid) {
+      return null;
+    }
+
     return user;
   } catch (error) {
-    console.error("Error getting admin session:", error);
+    console.error("Error authenticating admin:", error);
     return null;
   }
 }
-
