@@ -12,6 +12,7 @@ import { SidebarLeftIcon } from "./icons";
 import { Button } from "./ui/button";
 
 // Button that toggles the responsive sidebar and shows tooltip on desktop
+// Icon-only button without border for minimal visual footprint
 export function SidebarToggle({
   className,
 }: ComponentProps<typeof SidebarTrigger>) {
