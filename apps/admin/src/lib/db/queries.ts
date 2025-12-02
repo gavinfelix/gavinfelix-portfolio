@@ -137,3 +137,14 @@ export async function deleteUser(id: string): Promise<boolean> {
   return result.rowCount !== null && result.rowCount > 0;
 }
 
+/**
+ * Update admin user by ID
+ * Alias for updateUser with specific typing for admin user updates
+ */
+export async function updateAdminUser(
+  id: string,
+  data: { name?: string }
+): Promise<AdminUser | null> {
+  return updateUser(id, data);
+}
+
