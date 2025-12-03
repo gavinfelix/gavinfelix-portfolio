@@ -38,11 +38,11 @@ export default function LoginPage() {
 
     // Redirect based on role
     if (userRole === "admin") {
-      router.push("/admin");
+      // Use window.location for full page reload to ensure cookies are synced
+      window.location.href = "/admin";
     } else {
-      // Non-admin users stay on login page or redirect to a public page
-      // Middleware will handle redirect if they try to access /admin
-      router.push("/admin");
+      // Non-admin users - show error or stay on login
+      setError("Access denied. Admin role required.");
     }
   }
 

@@ -23,6 +23,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      drizzle-orm:
+        specifier: ^0.34.1
+        version: 0.34.1(@neondatabase/serverless@0.9.5)(@opentelemetry/api@1.9.0)(@types/pg@8.11.6)(@types/react@19.2.0)(@vercel/postgres@0.10.0)(postgres@3.4.7)(react@19.1.0)
       eslint:
         specifier: ^9.37.0
         version: 9.37.0(jiti@2.6.1)
