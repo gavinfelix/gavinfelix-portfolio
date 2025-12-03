@@ -98,3 +98,4 @@ export function SettingsPage({ user }: SettingsPageProps) {
     </div>
   );
 }
+
