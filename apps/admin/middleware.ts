@@ -3,12 +3,56 @@ import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
+  let res = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { ...req.cookies } }
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          req.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+          res = NextResponse.next({
+            request: {
+              headers: req.headers,
+            },
+          });
+          res.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: any) {
+          req.cookies.set({
+            name,
+            value: "",
+            ...options,
+          });
+          res = NextResponse.next({
+            request: {
+              headers: req.headers,
+            },
+          });
+          res.cookies.set({
+            name,
+            value: "",
+            ...options,
+          });
+        },
+      },
+    }
   );
 
   const {
@@ -24,12 +68,12 @@ export async function middleware(req: NextRequest) {
   }
 
   // Logged in non-admin trying to access admin panel
-  if (user?.user_metadata?.role !== "admin" && isAdminRoute) {
+  if (user && user.user_metadata?.role !== "admin" && isAdminRoute) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // Already authenticated user visiting login page
-  if (user && isLogin) {
+  // Already authenticated admin user visiting login page
+  if (user && user.user_metadata?.role === "admin" && isLogin) {
     return NextResponse.redirect(new URL("/admin", req.url));
   }
 
