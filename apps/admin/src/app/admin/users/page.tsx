@@ -80,10 +80,16 @@ export default async function UsersPage() {
       <div className="flex items-center justify-between text-sm text-gray-500">
         <span>Showing {users.length} users</span>
         <div className="flex gap-2">
-          <button className="px-3 py-1 border rounded hover:bg-gray-50" disabled>
+          <button
+            className="px-3 py-1 border rounded hover:bg-gray-50"
+            disabled
+          >
             Previous
           </button>
-          <button className="px-3 py-1 border rounded hover:bg-gray-50" disabled>
+          <button
+            className="px-3 py-1 border rounded hover:bg-gray-50"
+            disabled
+          >
             Next
           </button>
         </div>
@@ -91,4 +97,3 @@ export default async function UsersPage() {
     </div>
   );
 }
-

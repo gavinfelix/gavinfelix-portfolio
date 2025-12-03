@@ -24,10 +24,12 @@ export default function LoginPage() {
 
     const supabase = supabaseBrowser();
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword(
+      {
+        email,
+        password,
+      }
+    );
 
     if (signInError) {
       setError("Email or Password is incorrect");
@@ -49,7 +51,7 @@ export default function LoginPage() {
   return (
     <div className="p-8 max-w-sm mx-auto">
       <h1 className="text-xl font-bold mb-4">Admin Login</h1>
-      
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
@@ -69,7 +71,10 @@ export default function LoginPage() {
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
-        <button type="submit" className="bg-black text-white w-full p-2 rounded">
+        <button
+          type="submit"
+          className="bg-black text-white w-full p-2 rounded"
+        >
           Login
         </button>
       </form>
