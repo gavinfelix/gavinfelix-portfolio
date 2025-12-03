@@ -15,7 +15,7 @@ export async function requireAdmin() {
   const role = user.user_metadata?.role;
 
   if (role !== "admin") {
-    redirect("/");
+    redirect("/login");
   }
 
   return user;

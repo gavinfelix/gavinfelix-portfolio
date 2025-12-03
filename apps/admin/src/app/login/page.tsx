@@ -40,7 +40,9 @@ export default function LoginPage() {
     if (userRole === "admin") {
       router.push("/admin");
     } else {
-      router.push("/");
+      // Non-admin users stay on login page or redirect to a public page
+      // Middleware will handle redirect if they try to access /admin
+      router.push("/admin");
     }
   }
 

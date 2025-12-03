@@ -69,7 +69,7 @@ export async function middleware(req: NextRequest) {
 
   // Logged in non-admin trying to access admin panel
   if (user && user.user_metadata?.role !== "admin" && isAdminRoute) {
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   // Already authenticated admin user visiting login page
