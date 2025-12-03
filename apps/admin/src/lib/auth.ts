@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export async function requireAdmin() {
-  const supabase = supabaseServer();
+  const supabase = await supabaseServer();
 
   const {
     data: { user },
@@ -20,4 +20,3 @@ export async function requireAdmin() {
 
   return user;
 }
-
