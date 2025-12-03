@@ -1,4 +1,4 @@
-import { getAdminSession } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { updateAdminUser } from "@/lib/queries";
 
 /**
@@ -7,15 +7,7 @@ import { updateAdminUser } from "@/lib/queries";
  */
 export async function PATCH(request: Request) {
   try {
-    // Get current session user
-    const user = await getAdminSession();
-
-    if (!user) {
-      return Response.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    const user = await requireAdmin();
 
     // Parse request body
     let body;

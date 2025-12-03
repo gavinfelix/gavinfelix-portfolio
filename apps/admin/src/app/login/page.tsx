@@ -1,107 +1,76 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabaseBrowser } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { LogIn, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const supabase = supabaseBrowser();
+    supabase.auth.getSession().then(({ data }) => {
+      const userRole = data.session?.user.user_metadata?.role;
+      if (userRole === "admin") router.replace("/admin");
+    });
+  }, [router]);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitError(null);
+    setError("");
 
-    if (!email.trim()) {
-      setSubmitError("Email is required");
+    const supabase = supabaseBrowser();
+
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError("Email or Password is incorrect");
       return;
     }
 
-    try {
-      setSubmitting(true);
+    const userRole = data.user?.user_metadata?.role;
 
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        setSubmitError(errorData.error || "Invalid email");
-        return;
-      }
-
-      // Success - redirect to /admin
+    // Redirect based on role
+    if (userRole === "admin") {
       router.push("/admin");
-      router.refresh();
-    } catch (err) {
-      console.error("Error logging in:", err);
-      setSubmitError("Failed to login. Please try again.");
-    } finally {
-      setSubmitting(false);
+    } else {
+      router.push("/");
     }
-  };
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Admin Login</h1>
-          <p className="text-foreground/70 mt-2">Sign in to access the admin dashboard</p>
-        </div>
+    <div className="p-8 max-w-sm mx-auto">
+      <h1 className="text-xl font-bold mb-4">Admin Login</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 border rounded"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        {submitError && (
-          <div className="rounded-md border border-destructive bg-destructive/10 p-4">
-            <p className="text-sm text-destructive">{submitError}</p>
-          </div>
-        )}
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full p-2 border rounded"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border p-6">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (submitError) {
-                  setSubmitError(null);
-                }
-              }}
-              placeholder="admin@example.com"
-              required
-              autoComplete="email"
-              disabled={submitting}
-            />
-          </div>
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
-          {submitError && (
-            <p className="text-sm text-destructive">{submitError}</p>
-          )}
-
-          <Button type="submit" className="w-full" disabled={submitting}>
-            {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Logging in...
-              </>
-            ) : (
-              <>
-                <LogIn className="h-4 w-4 mr-2" />
-                Login
-              </>
-            )}
-          </Button>
-        </form>
-      </div>
+        <button type="submit" className="bg-black text-white w-full p-2 rounded">
+          Login
+        </button>
+      </form>
     </div>
   );
 }
-

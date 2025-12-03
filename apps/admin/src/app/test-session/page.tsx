@@ -1,14 +1,14 @@
-import { getAdminSession } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 
 export default async function TestSessionPage() {
-  const session = await getAdminSession();
+  const user = await requireAdmin();
 
   const output = {
-    session: session
+    session: user
       ? {
           user: {
-            id: session.id,
-            email: session.email,
+            id: user.id,
+            email: user.email,
           },
           expires: null,
         }
@@ -24,4 +24,3 @@ export default async function TestSessionPage() {
     </div>
   );
 }
-
