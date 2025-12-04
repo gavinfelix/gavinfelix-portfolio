@@ -1,3 +1,4 @@
+// Settings page wrapper that fetches admin user data and renders client component
 import { requireAdmin } from "@/lib/auth";
 import { getAdminUserById } from "@/lib/queries";
 import { SettingsPage } from "./settings-client";
