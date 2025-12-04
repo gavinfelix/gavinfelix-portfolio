@@ -1,5 +1,6 @@
 "use client";
 
+// Admin login page with role-based authentication
 import { useState, useEffect } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
