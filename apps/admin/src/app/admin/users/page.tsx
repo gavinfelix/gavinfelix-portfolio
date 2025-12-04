@@ -1,3 +1,4 @@
+// Admin users management page displaying user list with pagination
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { adminUsers } from "@/lib/db/schema";
