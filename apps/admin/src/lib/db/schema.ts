@@ -30,3 +30,4 @@ export const adminUsers = pgTable("admin_users", {
 export type AdminUser = InferSelectModel<typeof adminUsers>;
 export type NewAdminUser = InferInsertModel<typeof adminUsers>;
 
+
