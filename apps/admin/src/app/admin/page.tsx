@@ -1,3 +1,4 @@
+// Admin dashboard page displaying metrics and recent activity overview
 import { requireAdmin } from "@/lib/auth";
 
 export default async function AdminDashboard() {
