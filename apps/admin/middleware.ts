@@ -1,3 +1,4 @@
+// Middleware for handling authentication and route protection in admin panel
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
