@@ -1,3 +1,4 @@
+// Authentication utility function to require admin role for protected routes
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase/server";
 
