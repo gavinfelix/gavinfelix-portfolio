@@ -1,6 +1,18 @@
 import "server-only";
 
-import { and, count, desc, eq, ilike, or, asc, max, sql, inArray } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  ilike,
+  or,
+  asc,
+  max,
+  sql,
+  inArray,
+  gte,
+} from "drizzle-orm";
 import { db } from "./client";
 import {
   adminUsers,
@@ -346,6 +358,137 @@ export async function getUserUsageStats(): Promise<UserUsageStats[]> {
     return result;
   } catch (error) {
     console.error("Error fetching user usage stats:", error);
+    throw error;
+  }
+}
+
+/**
+ * Dashboard metrics interface
+ */
+export interface DashboardMetrics {
+  totalUsers: number;
+  activeUsersLast7Days: number;
+  totalChats: number;
+  totalMessages: number;
+}
+
+/**
+ * Get dashboard metrics
+ */
+export async function getDashboardMetrics(): Promise<DashboardMetrics> {
+  try {
+    // Total Users
+    const [totalUsersResult] = await db
+      .select({ count: count() })
+      .from(aiAppUsers);
+
+    // Total Chats
+    const [totalChatsResult] = await db
+      .select({ count: count() })
+      .from(aiAppChat);
+
+    // Total Messages
+    const [totalMessagesResult] = await db
+      .select({ count: count() })
+      .from(aiAppMessage);
+
+    // Active Users (Last 7 days) - users who had messages or chats in last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Get distinct user IDs from messages in last 7 days
+    const activeUsersFromMessages = await db
+      .selectDistinct({
+        userId: aiAppChat.userId,
+      })
+      .from(aiAppMessage)
+      .innerJoin(aiAppChat, eq(aiAppMessage.chatId, aiAppChat.id))
+      .where(gte(aiAppMessage.createdAt, sevenDaysAgo));
+
+    // Get distinct user IDs from chats in last 7 days
+    const activeUsersFromChats = await db
+      .selectDistinct({
+        userId: aiAppChat.userId,
+      })
+      .from(aiAppChat)
+      .where(gte(aiAppChat.createdAt, sevenDaysAgo));
+
+    // Combine and count unique users
+    const activeUserIds = new Set<string>();
+    activeUsersFromMessages.forEach((u) => activeUserIds.add(u.userId));
+    activeUsersFromChats.forEach((u) => activeUserIds.add(u.userId));
+
+    return {
+      totalUsers: Number(totalUsersResult?.count ?? 0),
+      activeUsersLast7Days: activeUserIds.size,
+      totalChats: Number(totalChatsResult?.count ?? 0),
+      totalMessages: Number(totalMessagesResult?.count ?? 0),
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard metrics:", error);
+    throw error;
+  }
+}
+
+/**
+ * Message trend data point
+ */
+export interface MessageTrendPoint {
+  date: string; // YYYY-MM-DD format
+  count: number;
+}
+
+/**
+ * Get messages over time (last 30 days, grouped by day)
+ */
+export async function getMessageTrend(
+  days: number = 30
+): Promise<MessageTrendPoint[]> {
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Use raw SQL to group by date (PostgreSQL date casting)
+    const result = await db
+      .select({
+        date: sql<string>`${aiAppMessage.createdAt}::date`,
+        count: count(aiAppMessage.id),
+      })
+      .from(aiAppMessage)
+      .where(gte(aiAppMessage.createdAt, startDate))
+      .groupBy(sql`${aiAppMessage.createdAt}::date`)
+      .orderBy(asc(sql`${aiAppMessage.createdAt}::date`));
+
+    // Fill in missing dates with 0 count
+    const dateMap = new Map<string, number>();
+    result.forEach((row) => {
+      // PostgreSQL returns date as string in YYYY-MM-DD format or as Date object
+      const dateStr =
+        typeof row.date === "string"
+          ? row.date.split("T")[0] // Extract YYYY-MM-DD if ISO string
+          : new Date(row.date).toISOString().split("T")[0]; // Convert Date to YYYY-MM-DD
+      dateMap.set(dateStr, Number(row.count));
+    });
+
+    // Generate all dates in the range
+    const trendData: MessageTrendPoint[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split("T")[0];
+      trendData.push({
+        date: dateStr,
+        count: dateMap.get(dateStr) ?? 0,
+      });
+    }
+
+    return trendData;
+  } catch (error) {
+    console.error("Error fetching message trend:", error);
     throw error;
   }
 }
