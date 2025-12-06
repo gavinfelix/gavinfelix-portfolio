@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { StatusToggleButton } from "./_components/StatusToggleButton";
 
 function formatDate(date: Date | string | null): string {
   if (!date) return "Never";
@@ -154,6 +155,12 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
                   {user.type === "regular" ? "Registered" : "Guest"}
                 </Badge>
               </dd>
+            </div>
+            <div className="sm:col-span-2">
+              <StatusToggleButton
+                userId={user.id}
+                currentStatus={(user.status as "active" | "banned") || "active"}
+              />
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">

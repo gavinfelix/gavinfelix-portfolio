@@ -203,6 +203,7 @@ export async function getAIAppUsers(params: {
         id: aiAppUsers.id,
         email: aiAppUsers.email,
         type: aiAppUsers.type,
+        status: aiAppUsers.status,
         createdAt: aiAppUsers.createdAt,
         updatedAt: aiAppUsers.updatedAt,
       })
@@ -240,6 +241,30 @@ export async function getAIAppUserById(id: string): Promise<AIAppUser | null> {
     .limit(1);
 
   return user ?? null;
+}
+
+/**
+ * Update user status (ban/unban)
+ */
+export async function updateUserStatus(
+  userId: string,
+  status: "active" | "banned"
+): Promise<AIAppUser | null> {
+  try {
+    const [updatedUser] = await db
+      .update(aiAppUsers)
+      .set({
+        status,
+        updatedAt: new Date(),
+      })
+      .where(eq(aiAppUsers.id, userId))
+      .returning();
+
+    return updatedUser ?? null;
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    throw error;
+  }
 }
 
 /**

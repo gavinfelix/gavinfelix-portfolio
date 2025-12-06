@@ -45,6 +45,10 @@ export const aiAppUsers = pgTable("users", {
   type: varchar("type", { enum: ["regular", "guest"] })
     .notNull()
     .default("regular"), // User type: regular (registered) or guest (temporary)
+  status: varchar("status", { length: 20 })
+    .notNull()
+    .default("active")
+    .$type<"active" | "banned">(), // User status: active or banned
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });

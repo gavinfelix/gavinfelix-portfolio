@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SearchForm } from "./_components/SearchForm";
 import { PaginationControls } from "./_components/PaginationControls";
 import { Suspense } from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface UsersPageProps {
   searchParams: Promise<{ search?: string; page?: string }>;
@@ -89,6 +90,9 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                   Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Created
                 </th>
               </tr>
@@ -96,7 +100,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             <tbody className="bg-white divide-y">
               {result.users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
                     {search ? "No users found matching your search" : "No users found"}
                   </td>
                 </tr>
@@ -129,6 +133,19 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                       >
                         {user.type === "regular" ? "Registered" : "Guest"}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Badge
+                        variant={
+                          (user.status || "active") === "active"
+                            ? "default"
+                            : "destructive"
+                        }
+                      >
+                        {(user.status || "active") === "active"
+                          ? "Active"
+                          : "Banned"}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}
