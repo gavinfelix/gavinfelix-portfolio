@@ -197,8 +197,10 @@ export async function getAIAppUsers(params: {
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-  const [users, totalResult] = await Promise.all([
-    db
+  // Try to select with status, fallback to without status if column doesn't exist
+  let users;
+  try {
+    users = await db
       .select({
         id: aiAppUsers.id,
         email: aiAppUsers.email,
@@ -211,7 +213,34 @@ export async function getAIAppUsers(params: {
       .where(whereClause)
       .orderBy(desc(aiAppUsers.createdAt))
       .limit(limit)
-      .offset(offset),
+      .offset(offset);
+  } catch (error: any) {
+    // If status column doesn't exist, select without it and add default
+    if (error?.code === "42703" || error?.message?.includes("status")) {
+      const usersWithoutStatus = await db
+        .select({
+          id: aiAppUsers.id,
+          email: aiAppUsers.email,
+          type: aiAppUsers.type,
+          createdAt: aiAppUsers.createdAt,
+          updatedAt: aiAppUsers.updatedAt,
+        })
+        .from(aiAppUsers)
+        .where(whereClause)
+        .orderBy(desc(aiAppUsers.createdAt))
+        .limit(limit)
+        .offset(offset);
+      
+      users = usersWithoutStatus.map((u) => ({
+        ...u,
+        status: "active" as const,
+      }));
+    } else {
+      throw error;
+    }
+  }
+
+  const [totalResult] = await Promise.all([
     db
       .select({ count: count() })
       .from(aiAppUsers)
@@ -234,13 +263,39 @@ export async function getAIAppUsers(params: {
  * Get a single AI app user by ID
  */
 export async function getAIAppUserById(id: string): Promise<AIAppUser | null> {
-  const [user] = await db
-    .select()
-    .from(aiAppUsers)
-    .where(eq(aiAppUsers.id, id))
-    .limit(1);
+  try {
+    const [user] = await db
+      .select()
+      .from(aiAppUsers)
+      .where(eq(aiAppUsers.id, id))
+      .limit(1);
 
-  return user ?? null;
+    return user ?? null;
+  } catch (error: any) {
+    // If status column doesn't exist, select without it and add default
+    if (error?.code === "42703" || error?.message?.includes("status")) {
+      const [userWithoutStatus] = await db
+        .select({
+          id: aiAppUsers.id,
+          email: aiAppUsers.email,
+          password: aiAppUsers.password,
+          type: aiAppUsers.type,
+          createdAt: aiAppUsers.createdAt,
+          updatedAt: aiAppUsers.updatedAt,
+        })
+        .from(aiAppUsers)
+        .where(eq(aiAppUsers.id, id))
+        .limit(1);
+
+      return userWithoutStatus
+        ? {
+            ...userWithoutStatus,
+            status: "active" as const,
+          }
+        : null;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -261,7 +316,14 @@ export async function updateUserStatus(
       .returning();
 
     return updatedUser ?? null;
-  } catch (error) {
+  } catch (error: any) {
+    // If status column doesn't exist, the update will fail
+    // This is expected if the migration hasn't been run yet
+    if (error?.code === "42703" || error?.message?.includes("status")) {
+      throw new Error(
+        "Status column does not exist. Please run the database migration to add the status column."
+      );
+    }
     console.error("Error updating user status:", error);
     throw error;
   }
