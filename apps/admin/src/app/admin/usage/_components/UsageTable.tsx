@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
 
 export interface UsageStats {
   userId: string;
@@ -56,8 +57,15 @@ export function UsageTable({ stats }: UsageTableProps) {
       </TableHeader>
       <TableBody>
         {stats.map((stat) => (
-          <TableRow key={stat.userId}>
-            <TableCell className="font-medium">{stat.email}</TableCell>
+          <TableRow key={stat.userId} className="cursor-pointer">
+            <TableCell className="font-medium">
+              <Link
+                href={`/admin/users/${stat.userId}`}
+                className="hover:underline"
+              >
+                {stat.email}
+              </Link>
+            </TableCell>
             <TableCell className="text-right">
               {formatNumber(stat.totalChats)}
             </TableCell>

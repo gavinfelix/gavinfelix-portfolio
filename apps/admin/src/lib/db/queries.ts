@@ -242,6 +242,131 @@ export async function getAIAppUserById(id: string): Promise<AIAppUser | null> {
 }
 
 /**
+ * User usage summary for detail page
+ */
+export interface UserUsageSummary {
+  totalChats: number;
+  totalMessages: number;
+  lastActivity: Date | null;
+}
+
+/**
+ * Get usage summary for a specific user
+ */
+export async function getUserUsageSummary(
+  userId: string
+): Promise<UserUsageSummary> {
+  try {
+    // Get chat count and last chat time
+    const [chatStats] = await db
+      .select({
+        chatCount: count(aiAppChat.id),
+        lastChatTime: max(aiAppChat.createdAt),
+      })
+      .from(aiAppChat)
+      .where(eq(aiAppChat.userId, userId));
+
+    // Get message count and last message time
+    const [messageStats] = await db
+      .select({
+        messageCount: count(aiAppMessage.id),
+        lastMessageTime: max(aiAppMessage.createdAt),
+      })
+      .from(aiAppMessage)
+      .innerJoin(aiAppChat, eq(aiAppMessage.chatId, aiAppChat.id))
+      .where(eq(aiAppChat.userId, userId));
+
+    const lastChatTime = chatStats?.lastChatTime;
+    const lastMessageTime = messageStats?.lastMessageTime;
+
+    // Use the latest of message time or chat time
+    let lastActivity: Date | null = null;
+    if (lastChatTime && lastMessageTime) {
+      lastActivity =
+        new Date(lastMessageTime) > new Date(lastChatTime)
+          ? lastMessageTime
+          : lastChatTime;
+    } else {
+      lastActivity = lastMessageTime || lastChatTime;
+    }
+
+    return {
+      totalChats: Number(chatStats?.chatCount ?? 0),
+      totalMessages: Number(messageStats?.messageCount ?? 0),
+      lastActivity,
+    };
+  } catch (error) {
+    console.error("Error fetching user usage summary:", error);
+    throw error;
+  }
+}
+
+/**
+ * Recent chat for user detail page
+ */
+export interface RecentChat {
+  id: string;
+  title: string;
+  createdAt: Date | string;
+  messageCount: number;
+}
+
+/**
+ * Get recent chats for a specific user
+ */
+export async function getUserRecentChats(
+  userId: string,
+  limit: number = 20
+): Promise<RecentChat[]> {
+  try {
+    // Get recent chats with message counts
+    const chats = await db
+      .select({
+        id: aiAppChat.id,
+        title: aiAppChat.title,
+        createdAt: aiAppChat.createdAt,
+      })
+      .from(aiAppChat)
+      .where(eq(aiAppChat.userId, userId))
+      .orderBy(desc(aiAppChat.createdAt))
+      .limit(limit);
+
+    // Get message counts for each chat
+    const chatIds = chats.map((chat) => chat.id);
+    if (chatIds.length === 0) {
+      return [];
+    }
+
+    const messageCounts = await db
+      .select({
+        chatId: aiAppMessage.chatId,
+        count: count(aiAppMessage.id),
+      })
+      .from(aiAppMessage)
+      .where(
+        chatIds.length === 1
+          ? eq(aiAppMessage.chatId, chatIds[0])
+          : inArray(aiAppMessage.chatId, chatIds as [string, ...string[]])
+      )
+      .groupBy(aiAppMessage.chatId);
+
+    const countMap = new Map(
+      messageCounts.map((mc) => [mc.chatId, Number(mc.count)])
+    );
+
+    return chats.map((chat) => ({
+      id: chat.id,
+      title: chat.title,
+      createdAt: chat.createdAt,
+      messageCount: countMap.get(chat.id) ?? 0,
+    }));
+  } catch (error) {
+    console.error("Error fetching user recent chats:", error);
+    throw error;
+  }
+}
+
+/**
  * Usage statistics interface
  */
 export interface UserUsageStats {

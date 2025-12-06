@@ -1,6 +1,7 @@
 // Admin users management page displaying user list with pagination
 import { requireAdmin } from "@/lib/auth";
 import { getAIAppUsers } from "@/lib/db/queries";
+import Link from "next/link";
 
 async function getUsers() {
   const result = await getAIAppUsers({
@@ -53,10 +54,20 @@ export default async function UsersPage() {
               result.users.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                    {user.id.slice(0, 8)}...
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="hover:underline block"
+                    >
+                      {user.id.slice(0, 8)}...
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.email}
+                    <Link
+                      href={`/admin/users/${user.id}`}
+                      className="hover:underline font-medium block"
+                    >
+                      {user.email}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
