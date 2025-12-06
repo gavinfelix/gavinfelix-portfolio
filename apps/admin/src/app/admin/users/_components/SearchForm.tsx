@@ -50,13 +50,13 @@ export function SearchForm() {
           className="w-full"
         />
       </div>
-      <Button type="submit" variant="outline" size="default">
+      <Button type="submit" variant="default" size="default">
         Search
       </Button>
       {searchParams.get("search") && (
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="default"
           onClick={handleClear}
         >

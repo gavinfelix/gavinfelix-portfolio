@@ -4,6 +4,8 @@
 import { useState, useEffect } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,30 +56,31 @@ export default function LoginPage() {
       <h1 className="text-xl font-bold mb-4">Admin Login</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
+        <Input
           type="email"
           placeholder="Email"
-          className="w-full p-2 border rounded"
+          className="w-full"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
-        <input
+        <Input
           type="password"
           placeholder="Password"
-          className="w-full p-2 border rounded"
+          className="w-full"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
-        <button
+        <Button
           type="submit"
-          className="bg-black text-white w-full p-2 rounded"
+          variant="default"
+          className="w-full"
         >
           Login
-        </button>
+        </Button>
       </form>
     </div>
   );

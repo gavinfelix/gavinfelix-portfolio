@@ -55,7 +55,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold mb-2">Users</h1>
-        <p className="text-gray-500 text-sm">
+        <p className="text-muted-foreground text-sm">
           {result.total} {result.total === 1 ? "user" : "users"}
           {search ? " found" : " total"}
         </p>
@@ -63,7 +63,9 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
       {/* Search Form */}
       <Suspense fallback={<div>Loading search...</div>}>
-        <SearchForm />
+        <div className="mb-6">
+          <SearchForm />
+        </div>
       </Suspense>
 
       {/* Users Table */}
@@ -75,18 +77,18 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       ) : (
         <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-muted/50 border-b">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Created
                 </th>
               </tr>
@@ -94,14 +96,14 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             <tbody className="bg-white divide-y">
               {result.users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
                     {search ? "No users found matching your search" : "No users found"}
                   </td>
                 </tr>
               ) : (
                 result.users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                  <tr key={user.id} className="hover:bg-muted/50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground font-mono">
                       <Link
                         href={`/admin/users/${user.id}`}
                         className="hover:underline block"
@@ -109,7 +111,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                         {user.id.slice(0, 8)}...
                       </Link>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       <Link
                         href={`/admin/users/${user.id}`}
                         className="hover:underline font-medium block"
@@ -121,14 +123,14 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
                           user.type === "regular"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {user.type === "regular" ? "Registered" : "Guest"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -141,7 +143,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
 
       {/* Pagination */}
       {(result.totalPages > 1 || hasMore || result.page > 1) && (
-        <div className="flex items-center justify-between text-sm text-gray-500">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             Showing {result.users.length > 0 ? (result.page - 1) * result.limit + 1 : 0} to{" "}
             {Math.min(result.page * result.limit, result.total)} of {result.total} users

@@ -44,7 +44,7 @@ export function PaginationControls({
         size="sm"
         onClick={handlePrevious}
         disabled={currentPage === 1}
-        className="text-white"
+        className="text-foreground"
       >
         Previous
       </Button>
@@ -56,7 +56,7 @@ export function PaginationControls({
         size="sm"
         onClick={handleNext}
         disabled={isNextDisabled}
-        className="text-white"
+        className="text-foreground"
       >
         Next
       </Button>

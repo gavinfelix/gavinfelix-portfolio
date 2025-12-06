@@ -20,7 +20,13 @@ export default function AdminLayout({
 
   const pathname = usePathname();
 
-
+  // Check if a path is active (including sub-paths)
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      return pathname === "/admin";
+    }
+    return pathname.startsWith(href);
+  };
 
   const navItems = [
 
@@ -40,7 +46,7 @@ export default function AdminLayout({
 
   return (
 
-    <div className="flex h-screen w-full bg-gray-50 text-gray-900">
+    <div className="flex h-screen w-full bg-white text-foreground">
 
       {/* Sidebar */}
 
@@ -62,13 +68,13 @@ export default function AdminLayout({
 
               className={clsx(
 
-                "px-4 py-2 rounded-md text-sm font-medium",
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
 
-                pathname === item.href
+                isActive(item.href)
 
-                  ? "bg-gray-900 text-white"
+                  ? "bg-black text-white"
 
-                  : "text-gray-700 hover:bg-gray-200"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
 
               )}
 
@@ -88,7 +94,7 @@ export default function AdminLayout({
 
       {/* Main content */}
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-white">
 
         {/* Header */}
 
@@ -102,7 +108,7 @@ export default function AdminLayout({
 
         {/* Page content */}
 
-        <div className="p-6">{children}</div>
+        <div className="p-6 bg-white">{children}</div>
 
       </main>
 
