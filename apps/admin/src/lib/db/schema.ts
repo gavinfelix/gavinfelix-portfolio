@@ -1,10 +1,5 @@
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
-import {
-  pgTable,
-  uuid,
-  varchar,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, timestamp } from "drizzle-orm/pg-core";
 
 /**
  * Admin Users table schema
@@ -30,4 +25,20 @@ export const adminUsers = pgTable("admin_users", {
 export type AdminUser = InferSelectModel<typeof adminUsers>;
 export type NewAdminUser = InferInsertModel<typeof adminUsers>;
 
+/**
+ * AI App Users table schema
+ * Stores users from the AI app (regular and guest users)
+ * This is the same table used by the AI app
+ */
+export const aiAppUsers = pgTable("users", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  email: varchar("email", { length: 64 }).notNull(),
+  password: varchar("password", { length: 64 }), // Hashed password or null for guest users
+  type: varchar("type", { enum: ["regular", "guest"] })
+    .notNull()
+    .default("regular"), // User type: regular (registered) or guest (temporary)
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
 
+export type AIAppUser = InferSelectModel<typeof aiAppUsers>;

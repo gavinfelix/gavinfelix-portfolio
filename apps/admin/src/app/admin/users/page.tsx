@@ -1,32 +1,27 @@
 // Admin users management page displaying user list with pagination
 import { requireAdmin } from "@/lib/auth";
-import { db } from "@/lib/db/client";
-import { adminUsers } from "@/lib/db/schema";
-import { desc } from "drizzle-orm";
+import { getAIAppUsers } from "@/lib/db/queries";
 
 async function getUsers() {
-  const users = await db
-    .select({
-      id: adminUsers.id,
-      email: adminUsers.email,
-      createdAt: adminUsers.createdAt,
-    })
-    .from(adminUsers)
-    .orderBy(desc(adminUsers.createdAt))
-    .limit(50);
+  const result = await getAIAppUsers({
+    page: 1,
+    limit: 50,
+  });
 
-  return users;
+  return result;
 }
 
 export default async function UsersPage() {
-  const user = await requireAdmin();
-  const users = await getUsers();
+  const adminUser = await requireAdmin();
+  const result = await getUsers();
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold mb-2">Users</h1>
-        <p className="text-gray-500 text-sm">{users.length} users</p>
+        <p className="text-gray-500 text-sm">
+          {result.total} {result.total === 1 ? "user" : "users"} total
+        </p>
       </div>
 
       <div className="rounded-lg border bg-white shadow-sm overflow-hidden">
@@ -40,36 +35,42 @@ export default async function UsersPage() {
                 Email
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
+                Type
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                Created
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y">
-            {users.length === 0 ? (
+            {result.users.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                   No users found
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
+              result.users.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                     {user.id.slice(0, 8)}...
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.email}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        user.type === "regular"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {user.type === "regular" ? "Registered" : "Guest"}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                      Active
-                    </span>
                   </td>
                 </tr>
               ))
@@ -79,17 +80,19 @@ export default async function UsersPage() {
       </div>
 
       <div className="flex items-center justify-between text-sm text-gray-500">
-        <span>Showing {users.length} users</span>
+        <span>
+          Showing {result.users.length} of {result.total} users
+        </span>
         <div className="flex gap-2">
           <button
-            className="px-3 py-1 border rounded hover:bg-gray-50"
-            disabled
+            className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={result.page === 1}
           >
             Previous
           </button>
           <button
-            className="px-3 py-1 border rounded hover:bg-gray-50"
-            disabled
+            className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={result.page >= result.totalPages}
           >
             Next
           </button>

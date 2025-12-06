@@ -1,11 +1,16 @@
 // Admin dashboard page displaying metrics and recent activity overview
 import { requireAdmin } from "@/lib/auth";
+import { getAIAppUsers } from "@/lib/db/queries";
 
 export default async function AdminDashboard() {
   const user = await requireAdmin();
+  
+  // Get total user count from AI app
+  const usersResult = await getAIAppUsers({ limit: 1 });
+  const totalUsers = usersResult.total;
 
   const metrics = [
-    { label: "Total Users", value: 102 },
+    { label: "Total Users", value: totalUsers },
     { label: "Documents Uploaded", value: 54 },
     { label: "AI Chats", value: 1421 },
     { label: "Active Today", value: 27 },
