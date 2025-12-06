@@ -28,6 +28,8 @@ export default function AdminLayout({
 
     { label: "Users", href: "/admin/users" },
 
+    { label: "Usage", href: "/admin/usage" },
+
     { label: "Documents", href: "/admin/documents" },
 
     { label: "Settings", href: "/admin/settings" },

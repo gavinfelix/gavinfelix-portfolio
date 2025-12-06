@@ -1,8 +1,16 @@
 import "server-only";
 
-import { and, count, desc, eq, ilike, or, asc } from "drizzle-orm";
+import { and, count, desc, eq, ilike, or, asc, max, sql, inArray } from "drizzle-orm";
 import { db } from "./client";
-import { adminUsers, aiAppUsers, type AdminUser, type NewAdminUser, type AIAppUser } from "./schema";
+import {
+  adminUsers,
+  aiAppUsers,
+  aiAppChat,
+  aiAppMessage,
+  type AdminUser,
+  type NewAdminUser,
+  type AIAppUser,
+} from "./schema";
 
 /**
  * Get all users with pagination and search
@@ -219,5 +227,126 @@ export async function getAIAppUserById(id: string): Promise<AIAppUser | null> {
     .limit(1);
 
   return user ?? null;
+}
+
+/**
+ * Usage statistics interface
+ */
+export interface UserUsageStats {
+  userId: string;
+  email: string;
+  totalChats: number;
+  totalMessages: number;
+  lastActivity: Date | null;
+}
+
+/**
+ * Get usage statistics per user
+ * Aggregates chat and message counts, and finds last activity time
+ */
+export async function getUserUsageStats(): Promise<UserUsageStats[]> {
+  try {
+    // Get chat counts per user
+    const chatStats = await db
+      .select({
+        userId: aiAppChat.userId,
+        chatCount: count(aiAppChat.id),
+        lastChatTime: max(aiAppChat.createdAt),
+      })
+      .from(aiAppChat)
+      .groupBy(aiAppChat.userId);
+
+    // Get message counts per user (via chat join)
+    const messageStats = await db
+      .select({
+        userId: aiAppChat.userId,
+        messageCount: count(aiAppMessage.id),
+        lastMessageTime: max(aiAppMessage.createdAt),
+      })
+      .from(aiAppMessage)
+      .innerJoin(aiAppChat, eq(aiAppMessage.chatId, aiAppChat.id))
+      .groupBy(aiAppChat.userId);
+
+    // Collect all unique user IDs
+    const userIds = new Set<string>();
+    chatStats.forEach((stat) => userIds.add(stat.userId));
+    messageStats.forEach((stat) => userIds.add(stat.userId));
+
+    if (userIds.size === 0) {
+      return [];
+    }
+
+    const userIdArray = Array.from(userIds);
+
+    // Get user emails
+    const users = await db
+      .select({
+        id: aiAppUsers.id,
+        email: aiAppUsers.email,
+      })
+      .from(aiAppUsers)
+      .where(
+        userIdArray.length === 1
+          ? eq(aiAppUsers.id, userIdArray[0])
+          : inArray(aiAppUsers.id, userIdArray as [string, ...string[]])
+      );
+
+    const userMap = new Map(users.map((u) => [u.id, u.email]));
+
+    // Combine stats
+    const statsMap = new Map<string, UserUsageStats>();
+
+    // Process chat stats first
+    chatStats.forEach((stat) => {
+      statsMap.set(stat.userId, {
+        userId: stat.userId,
+        email: userMap.get(stat.userId) || stat.userId,
+        totalChats: Number(stat.chatCount),
+        totalMessages: 0,
+        lastActivity: stat.lastChatTime,
+      });
+    });
+
+    // Process message stats
+    messageStats.forEach((stat) => {
+      const existing = statsMap.get(stat.userId);
+      if (existing) {
+        existing.totalMessages = Number(stat.messageCount);
+        // Use the latest of message time or chat time
+        const msgTime = stat.lastMessageTime;
+        const chatTime = existing.lastActivity;
+        if (msgTime && chatTime) {
+          existing.lastActivity =
+            new Date(msgTime) > new Date(chatTime) ? msgTime : chatTime;
+        } else {
+          existing.lastActivity = msgTime || chatTime;
+        }
+      } else {
+        // User has messages but no chats (shouldn't happen, but handle it)
+        statsMap.set(stat.userId, {
+          userId: stat.userId,
+          email: userMap.get(stat.userId) || stat.userId,
+          totalChats: 0,
+          totalMessages: Number(stat.messageCount),
+          lastActivity: stat.lastMessageTime,
+        });
+      }
+    });
+
+    const result = Array.from(statsMap.values()).sort((a, b) => {
+      // Sort by last activity descending (most recent first)
+      if (!a.lastActivity && !b.lastActivity) return 0;
+      if (!a.lastActivity) return 1;
+      if (!b.lastActivity) return -1;
+      return (
+        new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime()
+      );
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching user usage stats:", error);
+    throw error;
+  }
 }
 

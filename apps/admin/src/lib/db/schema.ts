@@ -1,5 +1,12 @@
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
-import { pgTable, uuid, varchar, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  varchar,
+  timestamp,
+  text,
+  json,
+} from "drizzle-orm/pg-core";
 
 /**
  * Admin Users table schema
@@ -42,3 +49,38 @@ export const aiAppUsers = pgTable("users", {
 });
 
 export type AIAppUser = InferSelectModel<typeof aiAppUsers>;
+
+/**
+ * AI App Chat table schema
+ * Stores chat conversations with users
+ */
+export const aiAppChat = pgTable("chat", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  createdAt: timestamp("created_at").notNull(),
+  title: text("title").notNull(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => aiAppUsers.id),
+  visibility: varchar("visibility", { length: 10 })
+    .notNull()
+    .default("private"),
+});
+
+export type AIAppChat = InferSelectModel<typeof aiAppChat>;
+
+/**
+ * AI App Message table schema
+ * Stores messages in chat conversations
+ */
+export const aiAppMessage = pgTable("message", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  chatId: uuid("chat_id")
+    .notNull()
+    .references(() => aiAppChat.id),
+  role: varchar("role", { length: 20 }).notNull(),
+  parts: json("parts").notNull(),
+  attachments: json("attachments").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+});
+
+export type AIAppMessage = InferSelectModel<typeof aiAppMessage>;
