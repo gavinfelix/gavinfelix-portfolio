@@ -19,6 +19,7 @@ import {
   aiAppUsers,
   aiAppChat,
   aiAppMessage,
+  aiAppDocument,
   type AdminUser,
   type NewAdminUser,
   type AIAppUser,
@@ -363,6 +364,308 @@ export async function getUserRecentChats(
   } catch (error) {
     console.error("Error fetching user recent chats:", error);
     throw error;
+  }
+}
+
+/**
+ * Chat detail with user info
+ */
+export interface ChatDetail {
+  id: string;
+  title: string;
+  userId: string;
+  userEmail: string;
+  createdAt: Date | string;
+  visibility: string;
+  messageCount: number;
+}
+
+/**
+ * Get chat detail by ID with user email
+ */
+export async function getChatById(chatId: string): Promise<ChatDetail | null> {
+  try {
+    const [chat] = await db
+      .select({
+        id: aiAppChat.id,
+        title: aiAppChat.title,
+        userId: aiAppChat.userId,
+        createdAt: aiAppChat.createdAt,
+        visibility: aiAppChat.visibility,
+      })
+      .from(aiAppChat)
+      .where(eq(aiAppChat.id, chatId))
+      .limit(1);
+
+    if (!chat) {
+      return null;
+    }
+
+    // Get user email
+    const [user] = await db
+      .select({
+        email: aiAppUsers.email,
+      })
+      .from(aiAppUsers)
+      .where(eq(aiAppUsers.id, chat.userId))
+      .limit(1);
+
+    // Get message count
+    const [messageCountResult] = await db
+      .select({ count: count() })
+      .from(aiAppMessage)
+      .where(eq(aiAppMessage.chatId, chatId));
+
+    return {
+      id: chat.id,
+      title: chat.title,
+      userId: chat.userId,
+      userEmail: user?.email || chat.userId,
+      createdAt: chat.createdAt,
+      visibility: chat.visibility,
+      messageCount: Number(messageCountResult?.count ?? 0),
+    };
+  } catch (error) {
+    console.error("Error fetching chat detail:", error);
+    throw error;
+  }
+}
+
+/**
+ * Message for chat detail page
+ */
+export interface ChatMessage {
+  id: string;
+  role: string;
+  content: string;
+  createdAt: Date | string;
+}
+
+/**
+ * Extract text content from message parts
+ */
+function extractTextFromParts(parts: unknown): string {
+  if (!Array.isArray(parts)) {
+    return "";
+  }
+
+  return parts
+    .filter((part: any) => part?.type === "text" && part?.text)
+    .map((part: any) => part.text)
+    .join("\n");
+}
+
+/**
+ * Get messages for a specific chat
+ */
+export async function getChatMessages(
+  chatId: string,
+  limit: number = 200
+): Promise<ChatMessage[]> {
+  try {
+    const messages = await db
+      .select({
+        id: aiAppMessage.id,
+        role: aiAppMessage.role,
+        parts: aiAppMessage.parts,
+        createdAt: aiAppMessage.createdAt,
+      })
+      .from(aiAppMessage)
+      .where(eq(aiAppMessage.chatId, chatId))
+      .orderBy(asc(aiAppMessage.createdAt))
+      .limit(limit);
+
+    return messages.map((msg) => ({
+      id: msg.id,
+      role: msg.role,
+      content: extractTextFromParts(msg.parts),
+      createdAt: msg.createdAt,
+    }));
+  } catch (error) {
+    console.error("Error fetching chat messages:", error);
+    throw error;
+  }
+}
+
+/**
+ * Document with user email for list page
+ */
+export interface DocumentWithUser {
+  id: string;
+  title: string;
+  kind: string;
+  userId: string;
+  userEmail: string;
+  createdAt: Date | string;
+  content: string | null;
+}
+
+/**
+ * Get all documents with pagination
+ */
+export async function getDocuments(
+  limit: number = 100
+): Promise<DocumentWithUser[]> {
+  try {
+    const documents = await db
+      .select({
+        id: aiAppDocument.id,
+        title: aiAppDocument.title,
+        kind: aiAppDocument.kind,
+        userId: aiAppDocument.userId,
+        createdAt: aiAppDocument.createdAt,
+        content: aiAppDocument.content,
+      })
+      .from(aiAppDocument)
+      .orderBy(desc(aiAppDocument.createdAt))
+      .limit(limit);
+
+    if (documents.length === 0) {
+      return [];
+    }
+
+    // Get user emails
+    const userIds = Array.from(new Set(documents.map((d) => d.userId)));
+    const users = await db
+      .select({
+        id: aiAppUsers.id,
+        email: aiAppUsers.email,
+      })
+      .from(aiAppUsers)
+      .where(
+        userIds.length === 1
+          ? eq(aiAppUsers.id, userIds[0])
+          : inArray(aiAppUsers.id, userIds as [string, ...string[]])
+      );
+
+    const userMap = new Map(users.map((u) => [u.id, u.email]));
+
+    return documents.map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      kind: doc.kind,
+      userId: doc.userId,
+      userEmail: userMap.get(doc.userId) || doc.userId,
+      createdAt: doc.createdAt,
+      content: doc.content,
+    }));
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get total document count
+ */
+export async function getDocumentsCount(): Promise<number> {
+  try {
+    const [result] = await db
+      .select({ count: count() })
+      .from(aiAppDocument);
+
+    return Number(result?.count ?? 0);
+  } catch (error) {
+    console.error("Error fetching document count:", error);
+    throw error;
+  }
+}
+
+/**
+ * Document detail with user info
+ */
+export interface DocumentDetail {
+  id: string;
+  title: string;
+  kind: string;
+  userId: string;
+  userEmail: string;
+  createdAt: Date | string;
+  content: string | null;
+}
+
+/**
+ * Get document by ID (gets latest version by createdAt)
+ */
+export async function getDocumentById(
+  documentId: string
+): Promise<DocumentDetail | null> {
+  try {
+    // Get latest version of document (ordered by createdAt desc)
+    const documents = await db
+      .select({
+        id: aiAppDocument.id,
+        title: aiAppDocument.title,
+        kind: aiAppDocument.kind,
+        userId: aiAppDocument.userId,
+        createdAt: aiAppDocument.createdAt,
+        content: aiAppDocument.content,
+      })
+      .from(aiAppDocument)
+      .where(eq(aiAppDocument.id, documentId))
+      .orderBy(desc(aiAppDocument.createdAt))
+      .limit(1);
+
+    if (documents.length === 0) {
+      return null;
+    }
+
+    const doc = documents[0];
+
+    // Get user email
+    const [user] = await db
+      .select({
+        email: aiAppUsers.email,
+      })
+      .from(aiAppUsers)
+      .where(eq(aiAppUsers.id, doc.userId))
+      .limit(1);
+
+    return {
+      id: doc.id,
+      title: doc.title,
+      kind: doc.kind,
+      userId: doc.userId,
+      userEmail: user?.email || doc.userId,
+      createdAt: doc.createdAt,
+      content: doc.content,
+    };
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    throw error;
+  }
+}
+
+/**
+ * Related chat for document
+ */
+export interface RelatedChat {
+  id: string;
+  title: string;
+  createdAt: Date | string;
+}
+
+/**
+ * Get related chats for a document
+ * Since there's no direct FK, we search message attachments for document references
+ * This is a best-effort approach
+ */
+export async function getDocumentRelatedChats(
+  documentId: string,
+  limit: number = 20
+): Promise<RelatedChat[]> {
+  try {
+    // Note: Since there's no direct relationship between documents and chats,
+    // we'll search for document references in message attachments
+    // This is a simplified approach - in reality, documents might be referenced
+    // in various ways (attachments, RAG chunks, etc.)
+    
+    // For now, we'll return an empty array as the relationship isn't clear
+    // This can be enhanced later if document-chat relationships are tracked
+    return [];
+  } catch (error) {
+    console.error("Error fetching related chats:", error);
+    return [];
   }
 }
 

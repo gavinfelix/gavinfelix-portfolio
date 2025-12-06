@@ -241,9 +241,21 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
                   {recentChats.map((chat) => (
                     <TableRow key={chat.id}>
                       <TableCell className="font-mono text-xs">
-                        {chat.id.slice(0, 8)}...
+                        <Link
+                          href={`/admin/chats/${chat.id}?userId=${user.id}`}
+                          className="hover:underline"
+                        >
+                          {chat.id.slice(0, 8)}...
+                        </Link>
                       </TableCell>
-                      <TableCell className="font-medium">{chat.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/admin/chats/${chat.id}?userId=${user.id}`}
+                          className="hover:underline"
+                        >
+                          {chat.title}
+                        </Link>
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatDate(chat.createdAt)}
                       </TableCell>

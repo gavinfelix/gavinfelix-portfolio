@@ -6,6 +6,7 @@ import {
   timestamp,
   text,
   json,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -84,3 +85,28 @@ export const aiAppMessage = pgTable("message", {
 });
 
 export type AIAppMessage = InferSelectModel<typeof aiAppMessage>;
+
+/**
+ * AI App Document table schema
+ * Stores uploaded documents for RAG
+ */
+export const aiAppDocument = pgTable(
+  "document",
+  {
+    id: uuid("id").notNull().defaultRandom(),
+    createdAt: timestamp("created_at").notNull(),
+    title: text("title").notNull(),
+    content: text("content"),
+    kind: varchar("kind", { length: 10 }).notNull().default("text"),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => aiAppUsers.id),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.id, table.createdAt] }),
+    };
+  }
+);
+
+export type AIAppDocument = InferSelectModel<typeof aiAppDocument>;
