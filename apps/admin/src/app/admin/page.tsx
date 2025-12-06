@@ -2,7 +2,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { getAIAppUsers } from "@/lib/db/queries";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserTable } from "./_components/UserTable";
+import { UserTableWithFilters } from "./_components/UserTableWithFilters";
 
 export default async function AdminDashboard() {
   // Ensure user is authenticated and has admin role
@@ -13,10 +13,11 @@ export default async function AdminDashboard() {
   let error: string | null = null;
 
   try {
-    // Fetch users from the AI app database
+    // Fetch all users from the AI app database for client-side filtering/pagination
+    // Using a large limit to get all users (adjust if needed)
     usersResult = await getAIAppUsers({
       page: 1,
-      limit: 50,
+      limit: 1000, // Fetch a large batch for client-side operations
     });
   } catch (err) {
     console.error("Error fetching users:", err);
@@ -25,7 +26,7 @@ export default async function AdminDashboard() {
       users: [],
       total: 0,
       page: 1,
-      limit: 50,
+      limit: 1000,
       totalPages: 0,
     };
   }
@@ -59,12 +60,7 @@ export default async function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <UserTable users={usersResult.users} />
-            {usersResult.total > usersResult.users.length && (
-              <div className="mt-4 text-sm text-muted-foreground text-center">
-                Showing {usersResult.users.length} of {usersResult.total} users
-              </div>
-            )}
+            <UserTableWithFilters users={usersResult.users} pageSize={20} />
           </CardContent>
         </Card>
       )}
