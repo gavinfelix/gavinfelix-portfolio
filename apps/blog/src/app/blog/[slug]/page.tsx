@@ -3,6 +3,7 @@ import { getPostBySlug, getAllPosts } from "@/lib/mdx";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import AlgorithmPostHeader from "@/components/AlgorithmPostHeader";
+import ComplexityCard from "@/components/ComplexityCard";
 
 export async function generateStaticParams() {
   const posts = getAllPosts();
@@ -46,6 +47,9 @@ export default async function Page({
     source: post.content,
     options: {
       parseFrontmatter: false,
+    },
+    components: {
+      ComplexityCard,
     },
   });
 
