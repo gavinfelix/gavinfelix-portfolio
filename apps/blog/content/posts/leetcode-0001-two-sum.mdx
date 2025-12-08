@@ -1,0 +1,61 @@
+---
+type: "algorithm"
+platform: "leetcode"
+problemId: 1
+title: "LeetCode 1 - Two Sum 解题记录"
+difficulty: "easy"
+tags: ["array", "hash-table"]
+date: "2025-12-07"
+description: "用哈希表把 Two Sum 从 O(n^2) 降到 O(n) 的思路总结"
+---
+
+## 题目理解
+
+给定一个整数数组 `nums` 和一个目标值 `target`，在其中找出两数之和等于 `target` 的那两个整数，返回它们的下标。
+
+- 只会有一个有效答案
+- 同一个元素不能使用两遍
+
+## 思路一：暴力枚举（O(n^2)）
+
+直接两层循环，枚举所有组合。
+
+优点：好理解  
+缺点：时间复杂度 O(n^2)，在数据量大时会超时或性能很差。
+
+## 思路二：哈希表（O(n) 推荐）
+
+核心想法：
+
+- 遍历数组 `nums`
+- 对于当前数字 `x = nums[i]`，我们需要的另一个数字是 `target - x`
+- 只要之前出现过 `target - x`，就找到答案了
+
+伪代码：
+
+1. 准备一个 `map`： key = 数值，value = 下标
+2. 遍历每个 `nums[i]`
+   - 看 `map` 里有没有 `target - nums[i]`
+   - 有 → 返回 `[map.get(target - nums[i]), i]`
+   - 没有 → `map.set(nums[i], i)`
+
+### 代码实现（TypeScript）
+
+```ts
+function twoSum(nums: number[], target: number): number[] {
+  const map = new Map<number, number>();
+
+  for (let i = 0; i < nums.length; i++) {
+    const x = nums[i];
+    const y = target - x;
+
+    if (map.has(y)) {
+      return [map.get(y)!, i];
+    }
+
+    map.set(x, i);
+  }
+
+  return [];
+}
+```
