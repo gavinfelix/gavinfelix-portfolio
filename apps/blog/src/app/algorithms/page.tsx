@@ -9,6 +9,18 @@ export default async function Page() {
     (post) => post.frontmatter.type === "algorithm"
   );
 
+  // Compute stats
+  const totalCount = posts.length;
+  const easyCount = posts.filter(
+    (post) => post.frontmatter.difficulty === "easy"
+  ).length;
+  const mediumCount = posts.filter(
+    (post) => post.frontmatter.difficulty === "medium"
+  ).length;
+  const hardCount = posts.filter(
+    (post) => post.frontmatter.difficulty === "hard"
+  ).length;
+
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-8">Algorithms</h1>
@@ -16,7 +28,17 @@ export default async function Page() {
       {posts.length === 0 ? (
         <p className="text-gray-600">No algorithm posts yet.</p>
       ) : (
-        <div>
+        <>
+          <section className="mb-8 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+            <div className="flex flex-wrap items-center gap-4">
+              <span>总题数: <strong>{totalCount}</strong></span>
+              <span>Easy: <strong>{easyCount}</strong></span>
+              <span>Medium: <strong>{mediumCount}</strong></span>
+              <span>Hard: <strong>{hardCount}</strong></span>
+            </div>
+          </section>
+          
+          <div>
           {posts.map((post) => (
             <article
               key={post.slug}
@@ -52,7 +74,8 @@ export default async function Page() {
               )}
             </article>
           ))}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
