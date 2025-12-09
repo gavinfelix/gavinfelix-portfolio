@@ -11,10 +11,12 @@
   "dependencies": {
     "@next/mdx": "^16.0.7",
     "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
     "next": "15.5.4",
     "next-mdx-remote": "^5.0.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "rehype-highlight": "^7.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
