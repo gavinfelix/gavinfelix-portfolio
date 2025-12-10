@@ -1,3 +1,4 @@
+// Algorithms page displaying filtered algorithm posts with statistics and difficulty breakdown
 import Link from "next/link";
 import { getAllPosts } from "@/lib/mdx";
 
