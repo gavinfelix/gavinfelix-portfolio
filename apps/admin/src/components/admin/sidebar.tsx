@@ -1,3 +1,4 @@
+// Admin sidebar navigation component with collapsible menu and active route highlighting
 "use client";
 
 import Link from "next/link";
