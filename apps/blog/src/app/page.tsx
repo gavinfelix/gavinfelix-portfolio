@@ -1,3 +1,4 @@
+// Home page component for the blog application with navigation links and branding
 import Image from "next/image";
 
 export default function Home() {
