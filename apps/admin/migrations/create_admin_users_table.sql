@@ -37,3 +37,4 @@ CREATE TRIGGER update_admin_users_updated_at
 COMMENT ON TABLE admin_users IS 'Stores admin panel user accounts with roles and status';
 
 
+
