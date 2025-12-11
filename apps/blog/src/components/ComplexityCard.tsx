@@ -1,3 +1,4 @@
+// Component for displaying time and space complexity analysis in algorithm posts
 interface ComplexityCardProps {
   time: string;
   space: string;
