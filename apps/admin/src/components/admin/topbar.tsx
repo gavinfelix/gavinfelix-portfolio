@@ -1,3 +1,4 @@
+// Admin topbar component with sidebar trigger and user avatar display
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
