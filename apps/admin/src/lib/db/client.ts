@@ -1,3 +1,4 @@
+// Database client configuration using Drizzle ORM with PostgreSQL connection
 import "server-only";
 
 import { drizzle } from "drizzle-orm/postgres-js";
