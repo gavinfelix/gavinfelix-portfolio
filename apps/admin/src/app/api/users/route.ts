@@ -1,3 +1,4 @@
+// API route handlers for user management: GET (list users) and POST (create user)
 import { NextRequest } from "next/server";
 import { getUsers, createUser } from "@/lib/db/queries";
 import type { NewAdminUser } from "@/lib/db/schema";
