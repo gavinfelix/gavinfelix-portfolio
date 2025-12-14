@@ -1,3 +1,4 @@
+// API route handler for updating current admin user settings (display name)
 import { requireAdmin } from "@/lib/auth";
 import { updateAdminUser } from "@/lib/queries";
 
