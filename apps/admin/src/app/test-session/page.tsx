@@ -1,3 +1,4 @@
+// Test session page for debugging admin authentication and session data
 import { requireAdmin } from "@/lib/auth";
 
 export default async function TestSessionPage() {
