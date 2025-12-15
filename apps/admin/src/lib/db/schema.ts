@@ -1,3 +1,4 @@
+// Database schema definitions using Drizzle ORM for admin users and AI app entities
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import {
   pgTable,
