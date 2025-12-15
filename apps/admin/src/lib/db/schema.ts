@@ -8,6 +8,8 @@ import {
   text,
   json,
   primaryKey,
+  boolean,
+  integer,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -115,3 +117,18 @@ export const aiAppDocument = pgTable(
 );
 
 export type AIAppDocument = InferSelectModel<typeof aiAppDocument>;
+
+/**
+ * Admin Settings table schema
+ * Stores admin panel system settings (singleton pattern)
+ */
+export const adminSettings = pgTable("admin_settings", {
+  id: text("id").primaryKey().notNull().default("singleton"),
+  siteName: text("site_name").notNull().default("Admin Panel"),
+  allowSignup: boolean("allow_signup").notNull().default(true),
+  dailyTokenLimit: integer("daily_token_limit").notNull().default(20000),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type AdminSettings = InferSelectModel<typeof adminSettings>;
+export type NewAdminSettings = InferInsertModel<typeof adminSettings>;

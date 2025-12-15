@@ -21,9 +21,11 @@ import {
   aiAppChat,
   aiAppMessage,
   aiAppDocument,
+  adminSettings,
   type AdminUser,
   type NewAdminUser,
   type AIAppUser,
+  type AdminSettings,
 } from "./schema";
 
 /**
@@ -1005,6 +1007,49 @@ export async function getMessageTrend(
     return trendData;
   } catch (error) {
     console.error("Error fetching message trend:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get admin settings (singleton)
+ */
+export async function getAdminSettings(): Promise<AdminSettings | null> {
+  try {
+    const [settings] = await db
+      .select()
+      .from(adminSettings)
+      .where(eq(adminSettings.id, "singleton"))
+      .limit(1);
+
+    return settings ?? null;
+  } catch (error) {
+    console.error("Error fetching admin settings:", error);
+    throw error;
+  }
+}
+
+/**
+ * Update admin settings
+ */
+export async function updateAdminSettings(data: {
+  siteName?: string;
+  allowSignup?: boolean;
+  dailyTokenLimit?: number;
+}): Promise<AdminSettings | null> {
+  try {
+    const [updated] = await db
+      .update(adminSettings)
+      .set({
+        ...data,
+        updatedAt: new Date(),
+      })
+      .where(eq(adminSettings.id, "singleton"))
+      .returning();
+
+    return updated ?? null;
+  } catch (error) {
+    console.error("Error updating admin settings:", error);
     throw error;
   }
 }

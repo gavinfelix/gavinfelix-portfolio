@@ -9,6 +9,7 @@ import {
   aiAppChat,
   aiAppMessage,
   aiAppDocument,
+  adminSettings,
 } from "./schema";
 
 // Database connection setup
@@ -26,6 +27,7 @@ export const db = drizzle(client, {
     aiAppChat,
     aiAppMessage,
     aiAppDocument,
+    adminSettings,
   },
 });
 
