@@ -1,3 +1,4 @@
+// Database query functions for admin users, AI app users, chats, messages, and documents
 import "server-only";
 
 import {
