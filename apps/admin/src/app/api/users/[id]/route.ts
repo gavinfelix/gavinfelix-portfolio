@@ -1,9 +1,6 @@
+// API route handlers for individual user operations: GET, PATCH (update), and DELETE
 import { NextRequest } from "next/server";
-import {
-  getUserById,
-  updateUser,
-  deleteUser,
-} from "@/lib/db/queries";
+import { getUserById, updateUser, deleteUser } from "@/lib/db/queries";
 import type { NewAdminUser } from "@/lib/db/schema";
 
 /**
@@ -18,28 +15,19 @@ export async function GET(
     const { id } = await params;
 
     if (!id) {
-      return Response.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: "User ID is required" }, { status: 400 });
     }
 
     const user = await getUserById(id);
 
     if (!user) {
-      return Response.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return Response.json({ error: "User not found" }, { status: 404 });
     }
 
     return Response.json(user);
   } catch (error) {
     console.error("[GET /api/users/[id]] Error:", error);
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -55,10 +43,7 @@ export async function PATCH(
     const { id } = await params;
 
     if (!id) {
-      return Response.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: "User ID is required" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -102,10 +87,7 @@ export async function PATCH(
     // Check if user exists
     const existingUser = await getUserById(id);
     if (!existingUser) {
-      return Response.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return Response.json({ error: "User not found" }, { status: 404 });
     }
 
     // Check if email is being changed and if it's already taken
@@ -126,15 +108,13 @@ export async function PATCH(
     if (name !== undefined) updateData.name = name || null;
     if (role !== undefined) updateData.role = role;
     if (status !== undefined) updateData.status = status;
-    if (passwordHash !== undefined) updateData.passwordHash = passwordHash || null;
+    if (passwordHash !== undefined)
+      updateData.passwordHash = passwordHash || null;
 
     const updatedUser = await updateUser(id, updateData);
 
     if (!updatedUser) {
-      return Response.json(
-        { error: "Failed to update user" },
-        { status: 500 }
-      );
+      return Response.json({ error: "Failed to update user" }, { status: 500 });
     }
 
     return Response.json(updatedUser);
@@ -149,10 +129,7 @@ export async function PATCH(
       );
     }
 
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -168,42 +145,24 @@ export async function DELETE(
     const { id } = await params;
 
     if (!id) {
-      return Response.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return Response.json({ error: "User ID is required" }, { status: 400 });
     }
 
     // Check if user exists
     const existingUser = await getUserById(id);
     if (!existingUser) {
-      return Response.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return Response.json({ error: "User not found" }, { status: 404 });
     }
 
     const deleted = await deleteUser(id);
 
     if (!deleted) {
-      return Response.json(
-        { error: "Failed to delete user" },
-        { status: 500 }
-      );
+      return Response.json({ error: "Failed to delete user" }, { status: 500 });
     }
 
     return Response.json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("[DELETE /api/users/[id]] Error:", error);
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
-
-
-
-
-
