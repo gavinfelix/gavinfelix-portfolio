@@ -31,6 +31,7 @@ import {
   type User,
   user,
   vote,
+  type Vote,
 } from "./schema";
 import { generateHashedPassword } from "./utils";
 import type { UserType } from "@/app/(auth)/auth";
@@ -159,7 +160,7 @@ export async function getChatsByUserId({
     // Fetch one extra record so we can detect if another page exists
     const extendedLimit = limit + 1;
 
-    const query = (whereCondition?: SQL<any>) =>
+    const query = (whereCondition?: SQL<unknown>) =>
       db
         .select()
         .from(chat)
@@ -275,7 +276,7 @@ export async function voteMessage({
   type: "up" | "down";
 }) {
   try {
-    const [existingVote] = await db
+    const [existingVote]: (Vote | undefined)[] = await db
       .select()
       .from(vote)
       .where(and(eq(vote.messageId, messageId)));
@@ -540,7 +541,7 @@ export async function getMessageCountByUserId({
         and(
           eq(chat.userId, id),
           gte(message.createdAt, twentyFourHoursAgo),
-          eq(message.role, "user")
+          eq(message.role, "user" as const)
         )
       )
       .execute();
