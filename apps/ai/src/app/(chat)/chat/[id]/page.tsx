@@ -9,6 +9,11 @@ import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { convertToUIMessages } from "@/lib/utils";
 
+const toVisibilityType = (v: unknown): VisibilityType => {
+  if (v === "public" || v === "private") return v; // 按你真实的 VisibilityType 值补全
+  return "private"; // 给个兜底，避免脏数据直接炸构建
+};
+
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const { id } = params;
@@ -44,6 +49,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   // Get selected model from cookie, fallback to default if not set
   const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get("chat-model");
+  const initialVisibilityType = toVisibilityType(chat.visibility);
 
   if (!chatModelFromCookie) {
     return (
@@ -55,7 +61,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialChatModel={DEFAULT_CHAT_MODEL}
           initialLastContext={chat.lastContext ?? undefined}
           initialMessages={uiMessages}
-          initialVisibilityType={chat.visibility as VisibilityType}
+          initialVisibilityType={initialVisibilityType}
           isReadonly={session?.user?.id !== chat.userId}
         />
         <DataStreamHandler />
@@ -72,7 +78,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialChatModel={chatModelFromCookie.value}
         initialLastContext={chat.lastContext ?? undefined}
         initialMessages={uiMessages}
-        initialVisibilityType={chat.visibility}
+        initialVisibilityType={chat.visibility as VisibilityType}
         isReadonly={session?.user?.id !== chat.userId}
       />
       <DataStreamHandler />
