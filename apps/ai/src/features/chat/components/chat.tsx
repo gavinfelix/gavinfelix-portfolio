@@ -3,6 +3,7 @@
 // Main chat interface component handling message streaming, state management, and user interactions
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
+import type { DataUIPart } from "ai";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
@@ -23,7 +24,7 @@ import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
-import type { Attachment, ChatMessage } from "@/lib/types";
+import type { Attachment, ChatMessage, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
 import { Artifact } from "@/components/artifact";
@@ -96,7 +97,15 @@ export function Chat({
       // Include current model, visibility, template, and documentId in request
       prepareSendMessagesRequest(request) {
         // Build base body with required fields
-        const body = {
+        const body: {
+          id: string;
+          message: ChatMessage | undefined;
+          selectedChatModel: string;
+          selectedVisibilityType: VisibilityType;
+          templateId: string | undefined;
+          templateContent: string | undefined;
+          documentId?: string;
+        } = {
           id: request.id,
           message: request.messages.at(-1),
           selectedChatModel: currentModelIdRef.current,
@@ -106,20 +115,23 @@ export function Chat({
           // Spread any additional fields from request.body first
           ...request.body,
         };
-        
+
         // Add documentId after spreading request.body to ensure it's not overwritten
         // and is always included if a document is attached
         if (currentDocumentIdRef.current) {
           body.documentId = currentDocumentIdRef.current;
         }
-        
+
         // Determine documentId status for logging
-        const documentIdStatus = 
-          body.documentId === undefined ? "MISSING" :
-          body.documentId === null ? "NULL" :
-          typeof body.documentId === "string" && body.documentId.length > 0 ? "VALID_STRING" :
-          "INVALID";
-        
+        const documentIdStatus =
+          body.documentId === undefined
+            ? "MISSING"
+            : body.documentId === null
+            ? "NULL"
+            : typeof body.documentId === "string" && body.documentId.length > 0
+            ? "VALID_STRING"
+            : "INVALID";
+
         // Enhanced logging: Log full request details just before sending
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         console.log("[Chat] 📤 SENDING REQUEST TO /api/chat");
@@ -130,18 +142,28 @@ export function Chat({
         console.log("documentId Value:", body.documentId ?? "undefined");
         console.log("documentId Type:", typeof body.documentId);
         console.log("Has documentId in body:", "documentId" in body);
-        console.log("Current documentId from ref:", currentDocumentIdRef.current ?? "undefined");
-        console.log("Current documentName:", currentDocumentName ?? "undefined");
+        console.log(
+          "Current documentId from ref:",
+          currentDocumentIdRef.current ?? "undefined"
+        );
+        console.log(
+          "Current documentName:",
+          currentDocumentName ?? "undefined"
+        );
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        
+
         return { body };
       },
     }),
     // Handle streaming data and update usage statistics
     onData: (dataPart) => {
-      setDataStream((ds) => (ds ? [...ds, dataPart] : []));
+      setDataStream((ds) =>
+        ds
+          ? [...ds, dataPart as DataUIPart<CustomUIDataTypes>]
+          : [dataPart as DataUIPart<CustomUIDataTypes>]
+      );
       if (dataPart.type === "data-usage") {
-        setUsage(dataPart.data);
+        setUsage(dataPart.data as AppUsage);
       }
     },
     // Refresh chat history when message finishes
@@ -250,11 +272,15 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [currentDocumentId, setCurrentDocumentId] = useState<string | undefined>(undefined);
-  const [currentDocumentName, setCurrentDocumentName] = useState<string | undefined>(undefined);
+  const [currentDocumentId, setCurrentDocumentId] = useState<
+    string | undefined
+  >(undefined);
+  const [currentDocumentName, setCurrentDocumentName] = useState<
+    string | undefined
+  >(undefined);
   const currentDocumentIdRef = useRef<string | undefined>(undefined);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
-  
+
   // Keep ref in sync with state for use in prepareSendMessagesRequest
   useEffect(() => {
     currentDocumentIdRef.current = currentDocumentId;
@@ -294,41 +320,41 @@ export function Chat({
           id="input-container"
         >
           {!isReadonly && (
-              <MultimodalInput
-                attachments={attachments}
-                chatId={id}
-                documentId={currentDocumentId}
-                documentName={currentDocumentName}
-                input={input}
-                messages={messages}
-                onDocumentChange={(id, name) => {
-                  console.log("[Chat] Document state updated:", {
-                    documentId: id || null,
-                    documentName: name || null,
-                    previousDocumentId: currentDocumentId || null,
-                  });
-                  setCurrentDocumentId(id);
-                  setCurrentDocumentName(name);
-                }}
-                onModelChange={setCurrentModelId}
+            <MultimodalInput
+              attachments={attachments}
+              chatId={id}
+              documentId={currentDocumentId}
+              documentName={currentDocumentName}
+              input={input}
+              messages={messages}
+              onDocumentChange={(id, name) => {
+                console.log("[Chat] Document state updated:", {
+                  documentId: id || null,
+                  documentName: name || null,
+                  previousDocumentId: currentDocumentId || null,
+                });
+                setCurrentDocumentId(id);
+                setCurrentDocumentName(name);
+              }}
+              onModelChange={setCurrentModelId}
               onTemplateSelect={(template) => {
                 setSelectedTemplate(template);
                 if (template) {
                   setInput(template.content);
                 }
               }}
-                selectedModelId={currentModelId}
+              selectedModelId={currentModelId}
               selectedTemplate={selectedTemplate}
-                selectedVisibilityType={visibilityType}
-                sendMessage={sendMessage}
-                setAttachments={setAttachments}
-                setInput={setInput}
-                setMessages={setMessages}
-                status={status}
-                stop={stop}
+              selectedVisibilityType={visibilityType}
+              sendMessage={sendMessage}
+              setAttachments={setAttachments}
+              setInput={setInput}
+              setMessages={setMessages}
+              status={status}
+              stop={stop}
               templates={promptTemplates}
-                usage={usage}
-              />
+              usage={usage}
+            />
           )}
         </div>
       </div>

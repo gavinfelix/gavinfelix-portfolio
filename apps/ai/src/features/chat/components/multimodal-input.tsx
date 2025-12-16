@@ -49,7 +49,7 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/elements/loader";
 import type { VisibilityType } from "@/components/visibility-selector";
 import { TemplateSelectorCompact } from "@/features/templates/components/template-selector-compact";
-import type { PromptTemplate } from "@/features/templates/types";
+import type { PromptTemplate } from "@/lib/db/schema";
 
 function PureMultimodalInput({
   chatId,
