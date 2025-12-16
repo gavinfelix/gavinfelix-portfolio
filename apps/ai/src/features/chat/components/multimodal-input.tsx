@@ -94,7 +94,10 @@ function PureMultimodalInput({
   onTemplateSelect?: (template: PromptTemplate | null) => void;
   documentId?: string;
   documentName?: string;
-  onDocumentChange?: (documentId: string | undefined, documentName: string | undefined) => void;
+  onDocumentChange?: (
+    documentId: string | undefined,
+    documentName: string | undefined
+  ) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -235,7 +238,9 @@ function PureMultimodalInput({
 
   // Upload RAG document to server and return document ID and name
   const uploadRagDocument = useCallback(
-    async (file: File): Promise<{ documentId: string; documentName: string } | undefined> => {
+    async (
+      file: File
+    ): Promise<{ documentId: string; documentName: string } | undefined> => {
       const formData = new FormData();
       formData.append("file", file);
 
@@ -360,9 +365,12 @@ function PureMultimodalInput({
             onDocumentChange?.(documentId, documentName);
             toast.success(`Document "${documentName}" processed successfully`);
           } else {
-            console.warn("[MultimodalInput] RAG upload failed or returned no result:", {
-              filename: ragFile.name,
-            });
+            console.warn(
+              "[MultimodalInput] RAG upload failed or returned no result:",
+              {
+                filename: ragFile.name,
+              }
+            );
           }
         }
 
@@ -392,13 +400,7 @@ function PureMultimodalInput({
         }
       }
     },
-    [
-      setAttachments,
-      uploadFile,
-      isRagFile,
-      uploadRagDocument,
-      onDocumentChange,
-    ]
+    [setAttachments, uploadFile, isRagFile, uploadRagDocument, onDocumentChange]
   );
 
   return (
