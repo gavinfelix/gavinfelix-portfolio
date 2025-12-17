@@ -17,7 +17,7 @@ type SuggestedActionsProps = {
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   // Predefined prompt suggestions for empty chat state - English learning focused
   const suggestedActions = [
-    "Practice IELTS Speaking with me",
+    "IELTS Speaking Framework & Model Answers",
     "Explain grammar rules with clear examples",
     "Teach me 5 useful phrases for daily English",
     "Improve my English writing with corrections",
