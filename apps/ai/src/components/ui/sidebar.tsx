@@ -583,6 +583,12 @@ const SidebarMenuButton = React.forwardRef<
     if (typeof tooltip === "string") {
       tooltip = {
         children: tooltip,
+        className: "opacity-100",
+      };
+    } else if (tooltip && typeof tooltip === "object") {
+      tooltip = {
+        ...tooltip,
+        className: cn("opacity-100", tooltip.className),
       };
     }
 
