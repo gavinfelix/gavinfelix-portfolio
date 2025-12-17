@@ -223,9 +223,29 @@ export async function getChatsByUserId({
     };
   } catch (error) {
     console.error("[getChatsByUserId] Error:", error);
+    // Preserve original error information for debugging
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails =
+      error instanceof Error && error.cause ? String(error.cause) : undefined;
+    const errorStack =
+      error instanceof Error && error.stack ? error.stack : undefined;
+
+    // Log full error details for debugging
+    console.error("[getChatsByUserId] Full error details:", {
+      message: errorMessage,
+      cause: errorDetails,
+      stack: errorStack,
+      userId: id,
+      limit,
+      startingAfter,
+      endingBefore,
+    });
+
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get chats by user id"
+      `Failed to get chats by user id: ${errorMessage}${
+        errorDetails ? ` (${errorDetails})` : ""
+      }`
     );
   }
 }
