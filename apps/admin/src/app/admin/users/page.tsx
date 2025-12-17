@@ -14,7 +14,7 @@ interface UsersPageProps {
 async function getUsers(search?: string, page?: number) {
   const result = await getAIAppUsers({
     page: page ?? 1,
-    limit: 20, // Page size of 20
+    limit: 10, // Page size of 10
     search: search?.trim() || undefined,
   });
 
@@ -44,7 +44,7 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       users: [],
       total: 0,
       page: 1,
-      limit: 20,
+      limit: 10,
       totalPages: 0,
     };
   }
@@ -100,8 +100,13 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
             <tbody className="bg-white divide-y">
               {result.users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                    {search ? "No users found matching your search" : "No users found"}
+                  <td
+                    colSpan={5}
+                    className="px-6 py-8 text-center text-muted-foreground"
+                  >
+                    {search
+                      ? "No users found matching your search"
+                      : "No users found"}
                   </td>
                 </tr>
               ) : (
@@ -162,8 +167,10 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
       {(result.totalPages > 1 || hasMore || result.page > 1) && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            Showing {result.users.length > 0 ? (result.page - 1) * result.limit + 1 : 0} to{" "}
-            {Math.min(result.page * result.limit, result.total)} of {result.total} users
+            Showing{" "}
+            {result.users.length > 0 ? (result.page - 1) * result.limit + 1 : 0}{" "}
+            to {Math.min(result.page * result.limit, result.total)} of{" "}
+            {result.total} users
           </span>
           <Suspense fallback={<div>Loading pagination...</div>}>
             <PaginationControls
