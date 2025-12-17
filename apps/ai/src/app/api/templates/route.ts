@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { ChatSDKError } from "@/lib/errors";
 import { promptTemplates, type PromptTemplate } from "@/lib/db/schema";
+import { isValidUUID } from "@/lib/utils";
 
 // Database connection setup
 const client = postgres(process.env.POSTGRES_URL!);
@@ -19,6 +20,16 @@ export async function GET() {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Validate user ID is a valid UUID before querying database
+    // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+    if (!isValidUUID(session.user.id)) {
+      console.log(
+        "[GET /api/templates] Invalid UUID for user ID, returning empty array:",
+        session.user.id
+      );
+      return Response.json([]);
     }
 
     const userId = session.user.id;
@@ -53,6 +64,19 @@ export async function POST(request: Request) {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Validate user ID is a valid UUID before querying database
+    // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+    if (!isValidUUID(session.user.id)) {
+      console.log(
+        "[POST /api/templates] Invalid UUID for user ID, returning error:",
+        session.user.id
+      );
+      return new Response(
+        JSON.stringify({ error: "Invalid user ID format" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const userId = session.user.id;

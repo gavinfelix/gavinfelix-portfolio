@@ -4,6 +4,7 @@ import {
   upsertUserSettings,
 } from "@/features/settings/lib/user-settings-client";
 import { ChatSDKError } from "@/lib/errors";
+import { isValidUUID } from "@/lib/utils";
 
 // API route for user settings
 export async function GET() {
@@ -15,6 +16,16 @@ export async function GET() {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Validate user ID is a valid UUID before querying database
+    // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+    if (!isValidUUID(session.user.id)) {
+      console.log(
+        "[GET /api/settings] Invalid UUID for user ID, returning null:",
+        session.user.id
+      );
+      return Response.json(null);
     }
 
     const settings = await getUserSettings(session.user.id);
@@ -41,6 +52,22 @@ export async function PUT(request: Request) {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Validate user ID is a valid UUID before querying database
+    // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+    if (!isValidUUID(session.user.id)) {
+      console.log(
+        "[PUT /api/settings] Invalid UUID for user ID, returning error:",
+        session.user.id
+      );
+      return new Response(
+        JSON.stringify({ error: "Invalid user ID format" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const body = await request.json();

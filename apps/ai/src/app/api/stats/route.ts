@@ -11,6 +11,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { chat, message } from "@/lib/db/schema";
+import { isValidUUID } from "@/lib/utils";
 
 // Database connection setup
 const client = postgres(process.env.POSTGRES_URL!);
@@ -40,6 +41,29 @@ export async function GET() {
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // Validate user ID is a valid UUID before querying database
+    // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+    if (!isValidUUID(session.user.id)) {
+      console.log(
+        "[GET /api/stats] Invalid UUID for user ID, returning empty stats:",
+        session.user.id
+      );
+      return Response.json({
+        totalSessions: 0,
+        totalMessages: 0,
+        last7Days: Array.from({ length: 7 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - (6 - i));
+          date.setHours(0, 0, 0, 0);
+          return {
+            date: date.toISOString().split("T")[0],
+            messagesCount: 0,
+          };
+        }),
+        recentSessions: [],
+      });
     }
 
     const userId = session.user.id;

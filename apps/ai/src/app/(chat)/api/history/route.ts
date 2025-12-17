@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getChatsByUserId } from "@/lib/db/queries";
 import { ChatSDKError } from "@/lib/errors";
+import { isValidUUID } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -22,6 +23,19 @@ export async function GET(request: NextRequest) {
 
   if (!session?.user) {
     return new ChatSDKError("unauthorized:chat").toResponse();
+  }
+
+  // Validate user ID is a valid UUID before querying database
+  // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+  if (!isValidUUID(session.user.id)) {
+    console.log(
+      "[GET /api/history] Invalid UUID for user ID, returning empty result:",
+      session.user.id
+    );
+    return Response.json({
+      chats: [],
+      hasMore: false,
+    });
   }
 
   console.log("[GET /api/history] Fetching chats for user:", session.user.id);

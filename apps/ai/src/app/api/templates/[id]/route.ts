@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { ChatSDKError } from "@/lib/errors";
 import { promptTemplates, type PromptTemplate } from "@/lib/db/schema";
+import { isValidUUID } from "@/lib/utils";
 
 // Database connection setup
 const client = postgres(process.env.POSTGRES_URL!);
@@ -129,6 +130,19 @@ export async function DELETE(
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Validate user ID is a valid UUID before querying database
+    // Fallback users (e.g., "fallback-1764403716806") are not valid UUIDs
+    if (!isValidUUID(session.user.id)) {
+      console.log(
+        "[DELETE /api/templates/:id] Invalid UUID for user ID, returning error:",
+        session.user.id
+      );
+      return new Response(
+        JSON.stringify({ error: "Invalid user ID format" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     const { id } = await params;
