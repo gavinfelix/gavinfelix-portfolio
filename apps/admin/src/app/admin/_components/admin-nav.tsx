@@ -61,7 +61,10 @@ export function AdminNav({ siteName }: AdminNavProps) {
         {navItems.map((item) => {
           const active = isActive(item.href);
           const isNavigating = navigatingTo === item.href;
-          const disabled = (isPending || isNavigating) && !active;
+          // Only disable if navigating to this specific item or if pending and not active
+          const disabled = isNavigating || (isPending && !active);
+          // Only show loading icon on the item being navigated to
+          const showLoading = isNavigating && !active;
 
           return (
             <Link
@@ -77,12 +80,12 @@ export function AdminNav({ siteName }: AdminNavProps) {
                   : disabled
                   ? "text-muted-foreground/50 cursor-wait pointer-events-none"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer",
-                (isPending || isNavigating) && !active && "opacity-50"
+                isPending && !active && !isNavigating && "opacity-50"
               )}
               aria-disabled={disabled}
             >
               {item.label}
-              {disabled && (
+              {showLoading && (
                 <span className="absolute right-2 top-1/2 -translate-y-1/2">
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 </span>
