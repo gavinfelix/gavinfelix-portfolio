@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import type { Metadata } from "next";
 import { getAdminSettings } from "@/lib/admin-settings";
 import { AdminNav } from "./_components/admin-nav";
+import AdminLoading from "./loading";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getAdminSettings();
@@ -29,8 +30,14 @@ export default async function AdminLayout({
           <span className="font-medium">{settings.siteName}</span>
         </header>
 
-        {/* Page content */}
-        <div className="p-6 bg-white">{children}</div>
+        {/* Page content with Suspense and animation */}
+        <div className="p-6 bg-white">
+          <Suspense fallback={<AdminLoading />}>
+            <div className="animate-in fade-in-50 slide-in-from-left-4 duration-300">
+              {children}
+            </div>
+          </Suspense>
+        </div>
       </main>
     </div>
   );
