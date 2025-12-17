@@ -2,7 +2,6 @@
 
 // User navigation menu component in sidebar footer with theme toggle and authentication
 import { ChevronUp } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -18,20 +17,44 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { LoaderIcon } from "./icons";
+import { LoaderIcon, UserIcon } from "./icons";
 import { toast } from "./toast";
+import { cn } from "@/lib/utils";
+
+// Helper function to get user initials from email or name
+function getUserInitials(email: string, name?: string | null): string {
+  if (name) {
+    // Extract initials from name (e.g., "John Doe" -> "JD")
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name[0]?.toUpperCase() || "";
+  }
+
+  // Extract initials from email (e.g., "john.doe@example.com" -> "JD")
+  const emailPart = email.split("@")[0];
+  const parts = emailPart.split(/[._-]/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return emailPart[0]?.toUpperCase() || "";
+}
 
 // User account menu shown in the sidebar footer
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
   const { data, status } = useSession();
-  console.log(data, "useSession, data");
   const { setTheme, resolvedTheme } = useTheme();
+  const { state } = useSidebar();
 
   const email = data?.user?.email ?? user?.email ?? "";
+  const name = data?.user?.name ?? user?.name ?? null;
   const isGuest = !email || data?.user?.type === "guest";
-  console.log(isGuest, "isGuest");
+  const initials = !isGuest ? getUserInitials(email, name) : "";
+  const isCollapsed = state === "collapsed";
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -51,22 +74,26 @@ export function SidebarUserNav({ user }: { user: User }) {
               </SidebarMenuButton>
             ) : (
               <SidebarMenuButton
-                className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="h-10 cursor-pointer bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="user-nav-button"
-                tooltip={isGuest ? "Guest" : email}
+                tooltip={{
+                  children: isGuest ? "Guest" : email,
+                  className: "whitespace-nowrap",
+                }}
               >
-                <Image
-                  alt={user.email ?? "User Avatar"}
-                  className="rounded-full"
-                  height={24}
-                  src={
-                    user?.name
-                      ? `https://avatar.vercel.sh/${user.name}`
-                      : "/default-avatar.png"
-                  }
-                  width={24}
-                />
-                <span className="truncate group-data-[collapsible=icon]:hidden" data-testid="user-email">
+                {isGuest ? (
+                  <div className="flex size-6 items-center justify-center">
+                    <UserIcon />
+                  </div>
+                ) : (
+                  <div className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                    {initials}
+                  </div>
+                )}
+                <span
+                  className="truncate group-data-[collapsible=icon]:hidden"
+                  data-testid="user-email"
+                >
                   {isGuest ? "Guest" : email}
                 </span>
                 <ChevronUp className="ml-auto group-data-[collapsible=icon]:hidden" />
@@ -74,23 +101,30 @@ export function SidebarUserNav({ user }: { user: User }) {
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-popper-anchor-width)"
+            className={cn(
+              "whitespace-nowrap",
+              isCollapsed ? "min-w-[180px]" : "w-(--radix-popper-anchor-width)"
+            )}
             data-testid="user-nav-menu"
             side="top"
           >
             <DropdownMenuItem
-              className="cursor-pointer"
+              className="cursor-pointer whitespace-nowrap"
               data-testid="user-nav-item-theme"
-              onSelect={() =>
-                setTheme(resolvedTheme === "dark" ? "light" : "dark")
-              }
+              onSelect={(e) => {
+                e.preventDefault();
+                const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+                setTheme(newTheme);
+              }}
             >
-              {`Toggle ${resolvedTheme === "light" ? "dark" : "light"} mode`}
+              {resolvedTheme === "dark"
+                ? "Switch to light mode"
+                : "Switch to dark mode"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">
               <button
-                className="w-full cursor-pointer"
+                className="w-full cursor-pointer whitespace-nowrap"
                 onClick={() => {
                   if (status === "loading") {
                     toast({
