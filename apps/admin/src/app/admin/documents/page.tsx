@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { DocumentLink } from "./_components/document-link";
 
 function formatDate(date: Date | string): string {
   const dateObj = typeof date === "string" ? new Date(date) : date;
@@ -101,12 +102,9 @@ export default async function DocumentsPage() {
                           className="hover:bg-muted/50 cursor-pointer"
                         >
                           <TableCell className="font-medium">
-                            <Link
-                              href={`/admin/documents/${doc.id}`}
-                              className="hover:underline"
-                            >
+                            <DocumentLink href={`/admin/documents/${doc.id}`}>
                               {doc.title}
-                            </Link>
+                            </DocumentLink>
                           </TableCell>
                           <TableCell>
                             <Link
