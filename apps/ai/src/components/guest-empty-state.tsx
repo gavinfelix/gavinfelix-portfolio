@@ -1,7 +1,27 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { LoaderIcon } from "@/components/icons";
 
 export function GuestEmptyState() {
+  const router = useRouter();
+  const [loadingAction, setLoadingAction] = useState<"chat" | "login" | null>(
+    null
+  );
+
+  const handleNewChat = () => {
+    setLoadingAction("chat");
+    router.push("/");
+  };
+
+  const handleSignIn = () => {
+    setLoadingAction("login");
+    router.push("/login");
+  };
+
   return (
     <div className="flex h-dvh w-full flex-col items-center justify-center bg-background px-4">
       <div className="flex max-w-md flex-col items-center gap-6 text-center">
@@ -36,11 +56,33 @@ export function GuestEmptyState() {
         </div>
 
         <div className="flex items-center justify-center gap-4">
-          <Button asChild>
-            <Link href="/">Start a new chat</Link>
+          <Button disabled={loadingAction !== null} onClick={handleNewChat}>
+            {loadingAction === "chat" ? (
+              <>
+                <span className="animate-spin">
+                  <LoaderIcon />
+                </span>
+                Loading...
+              </>
+            ) : (
+              "Start a new chat"
+            )}
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/login">Sign in</Link>
+          <Button
+            disabled={loadingAction !== null}
+            onClick={handleSignIn}
+            variant="outline"
+          >
+            {loadingAction === "login" ? (
+              <>
+                <span className="animate-spin">
+                  <LoaderIcon />
+                </span>
+                Loading...
+              </>
+            ) : (
+              "Sign in"
+            )}
           </Button>
         </div>
       </div>
