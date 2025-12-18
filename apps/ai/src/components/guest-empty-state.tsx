@@ -1,9 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function GuestEmptyState() {
+  const router = useRouter();
+
+  const handleStartNewChat = () => {
+    // Use router.replace to ensure clean navigation without history stack pollution
+    router.replace("/");
+  };
+
   return (
     <div className="flex h-dvh w-full flex-col items-center justify-center bg-background px-4">
       <div className="flex max-w-md flex-col items-center gap-6 text-center">
@@ -24,20 +32,21 @@ export function GuestEmptyState() {
           </svg>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h1 className="text-2xl font-semibold tracking-tight">
             This chat isn't available
           </h1>
-          <p className="text-muted-foreground">
-            Guest chats are not saved. Please start a new chat or sign in to
-            keep your history.
-          </p>
+          <div className="space-y-1 text-muted-foreground">
+            <p>This link may have expired or you may not have access.</p>
+            <p>
+              Guest chats are not saved. Please start a new chat or sign in to
+              keep your history.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild>
-            <Link href="/chat">Start a new chat</Link>
-          </Button>
+          <Button onClick={handleStartNewChat}>Start a new chat</Button>
           <Button asChild variant="outline">
             <Link href="/login">Sign in</Link>
           </Button>
@@ -46,4 +55,3 @@ export function GuestEmptyState() {
     </div>
   );
 }
-
