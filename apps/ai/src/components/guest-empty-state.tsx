@@ -1,17 +1,7 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function GuestEmptyState() {
-  const router = useRouter();
-
-  const handleStartNewChat = () => {
-    // Use router.replace to ensure clean navigation without history stack pollution
-    router.replace("/");
-  };
-
   return (
     <div className="flex h-dvh w-full flex-col items-center justify-center bg-background px-4">
       <div className="flex max-w-md flex-col items-center gap-6 text-center">
@@ -45,8 +35,10 @@ export function GuestEmptyState() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button onClick={handleStartNewChat}>Start a new chat</Button>
+        <div className="flex items-center justify-center gap-4">
+          <Button asChild>
+            <Link href="/">Start a new chat</Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href="/login">Sign in</Link>
           </Button>
