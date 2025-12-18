@@ -25,10 +25,7 @@ import type { ChatModel } from "@/lib/ai/models";
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { getEmbeddingModel, myProvider } from "@/lib/ai/providers";
-import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
-import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-import { updateDocument } from "@/lib/ai/tools/update-document";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -1023,25 +1020,14 @@ export async function POST(request: Request) {
           messages: convertToModelMessages(uiMessages),
           temperature: effectiveTemperature,
           stopWhen: stepCountIs(5),
-          // Disable tools for reasoning model, enable for others
+          // Disable document/artifact tools - only allow weather
           experimental_activeTools:
             effectiveModel === "chat-model-reasoning"
               ? []
-              : [
-                  "getWeather",
-                  "createDocument",
-                  "updateDocument",
-                  "requestSuggestions",
-                ],
+              : ["getWeather"],
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
             getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,

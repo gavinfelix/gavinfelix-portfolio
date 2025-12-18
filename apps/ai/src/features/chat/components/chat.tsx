@@ -19,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Vote } from "@/lib/db/schema";
@@ -27,7 +26,6 @@ import { ChatSDKError } from "@/lib/errors";
 import type { Attachment, ChatMessage, CustomUIDataTypes } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
-import { Artifact } from "@/components/artifact";
 import { useDataStream } from "@/components/data-stream-provider";
 import { Messages } from "./messages";
 import { MultimodalInput } from "./multimodal-input";
@@ -279,7 +277,6 @@ export function Chat({
     string | undefined
   >(undefined);
   const currentDocumentIdRef = useRef<string | undefined>(undefined);
-  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   // Keep ref in sync with state for use in prepareSendMessagesRequest
   useEffect(() => {
@@ -305,7 +302,7 @@ export function Chat({
 
         <Messages
           chatId={id}
-          isArtifactVisible={isArtifactVisible}
+          isArtifactVisible={false}
           isReadonly={isReadonly}
           messages={messages}
           regenerate={regenerate}
@@ -358,24 +355,6 @@ export function Chat({
           )}
         </div>
       </div>
-
-      <Artifact
-        attachments={attachments}
-        chatId={id}
-        input={input}
-        isReadonly={isReadonly}
-        messages={messages}
-        regenerate={regenerate}
-        selectedModelId={currentModelId}
-        selectedVisibilityType={visibilityType}
-        sendMessage={sendMessage}
-        setAttachments={setAttachments}
-        setInput={setInput}
-        setMessages={setMessages}
-        status={status}
-        stop={stop}
-        votes={votes}
-      />
 
       <AlertDialog
         onOpenChange={setShowCreditCardAlert}
