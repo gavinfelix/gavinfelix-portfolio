@@ -23,7 +23,8 @@ const ChatContext = createContext<ChatContextType | null>(null);
 
 export function ChatContextProvider({ children }: { children: ReactNode }) {
   const [chatId, setChatId] = useState<string | null>(null);
-  const [visibilityType, setVisibilityType] = useState<VisibilityType>("private");
+  const [visibilityType, setVisibilityType] =
+    useState<VisibilityType>("private");
   const [isReadonly, setIsReadonly] = useState<boolean>(false);
 
   return (
@@ -57,4 +58,3 @@ export function useChatContext() {
   }
   return context;
 }
-
