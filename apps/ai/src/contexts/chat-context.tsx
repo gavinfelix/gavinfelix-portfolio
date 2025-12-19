@@ -45,7 +45,15 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
 export function useChatContext() {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error("useChatContext must be used within ChatContextProvider");
+    // Return default values if context is not available
+    return {
+      chatId: null,
+      visibilityType: "private" as const,
+      isReadonly: false,
+      setChatId: () => {},
+      setVisibilityType: () => {},
+      setIsReadonly: () => {},
+    };
   }
   return context;
 }

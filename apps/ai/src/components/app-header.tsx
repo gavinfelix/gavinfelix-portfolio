@@ -6,6 +6,7 @@ import { VisibilitySelector } from "@/components/visibility-selector";
 import { useChatContext } from "@/contexts/chat-context";
 
 export function AppHeader() {
+  // Context will return default values if not available
   const { chatId, visibilityType, isReadonly } = useChatContext();
 
   return (
