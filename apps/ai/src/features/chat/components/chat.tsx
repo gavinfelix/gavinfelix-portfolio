@@ -307,65 +307,128 @@ export function Chat({
     setMessages,
   });
 
+  const isEmpty = messages.length === 0;
+
   return (
     <>
       <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
         <ChatHeader />
 
-        <Messages
-          chatId={id}
-          isArtifactVisible={false}
-          isReadonly={isReadonly}
-          messages={messages}
-          regenerate={regenerate}
-          selectedModelId={initialChatModel}
-          setMessages={setMessages}
-          status={status}
-          votes={votes}
-        />
-
-        <div
-          className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl flex-col gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4"
-          id="input-container"
-        >
-          {!isReadonly && (
-            <MultimodalInput
-              attachments={attachments}
+        {isEmpty ? (
+          <div className="flex flex-1 items-center justify-center">
+            <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-6 px-2 md:px-4">
+              <div className="w-full max-w-2xl">
+                <Messages
+                  chatId={id}
+                  isArtifactVisible={false}
+                  isReadonly={isReadonly}
+                  messages={messages}
+                  regenerate={regenerate}
+                  selectedModelId={initialChatModel}
+                  setMessages={setMessages}
+                  status={status}
+                  votes={votes}
+                />
+              </div>
+              <div className="w-full max-w-2xl" id="input-container">
+                {!isReadonly && (
+                  <MultimodalInput
+                    attachments={attachments}
+                    chatId={id}
+                    documentId={currentDocumentId}
+                    documentName={currentDocumentName}
+                    input={input}
+                    messages={messages}
+                    onDocumentChange={(id, name) => {
+                      console.log("[Chat] Document state updated:", {
+                        documentId: id || null,
+                        documentName: name || null,
+                        previousDocumentId: currentDocumentId || null,
+                      });
+                      setCurrentDocumentId(id);
+                      setCurrentDocumentName(name);
+                    }}
+                    onModelChange={setCurrentModelId}
+                    onTemplateSelect={(template) => {
+                      setSelectedTemplate(template);
+                      if (template) {
+                        setInput(template.content);
+                      }
+                    }}
+                    selectedModelId={currentModelId}
+                    selectedTemplate={selectedTemplate}
+                    selectedVisibilityType={visibilityType}
+                    sendMessage={sendMessage}
+                    setAttachments={setAttachments}
+                    setInput={setInput}
+                    setMessages={setMessages}
+                    status={status}
+                    stop={stop}
+                    templates={promptTemplates}
+                    usage={usage}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <Messages
               chatId={id}
-              documentId={currentDocumentId}
-              documentName={currentDocumentName}
-              input={input}
+              isArtifactVisible={false}
+              isReadonly={isReadonly}
               messages={messages}
-              onDocumentChange={(id, name) => {
-                console.log("[Chat] Document state updated:", {
-                  documentId: id || null,
-                  documentName: name || null,
-                  previousDocumentId: currentDocumentId || null,
-                });
-                setCurrentDocumentId(id);
-                setCurrentDocumentName(name);
-              }}
-              onModelChange={setCurrentModelId}
-              onTemplateSelect={(template) => {
-                setSelectedTemplate(template);
-                if (template) {
-                  setInput(template.content);
-                }
-              }}
-              selectedModelId={currentModelId}
-              selectedTemplate={selectedTemplate}
-              selectedVisibilityType={visibilityType}
-              sendMessage={sendMessage}
-              setAttachments={setAttachments}
-              setInput={setInput}
+              regenerate={regenerate}
+              selectedModelId={initialChatModel}
               setMessages={setMessages}
               status={status}
-              stop={stop}
-              templates={promptTemplates}
-              usage={usage}
+              votes={votes}
             />
-          )}
-        </div>
+
+            <div
+              className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl flex-col gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4"
+              id="input-container"
+            >
+              {!isReadonly && (
+                <MultimodalInput
+                  attachments={attachments}
+                  chatId={id}
+                  documentId={currentDocumentId}
+                  documentName={currentDocumentName}
+                  input={input}
+                  messages={messages}
+                  onDocumentChange={(id, name) => {
+                    console.log("[Chat] Document state updated:", {
+                      documentId: id || null,
+                      documentName: name || null,
+                      previousDocumentId: currentDocumentId || null,
+                    });
+                    setCurrentDocumentId(id);
+                    setCurrentDocumentName(name);
+                  }}
+                  onModelChange={setCurrentModelId}
+                  onTemplateSelect={(template) => {
+                    setSelectedTemplate(template);
+                    if (template) {
+                      setInput(template.content);
+                    }
+                  }}
+                  selectedModelId={currentModelId}
+                  selectedTemplate={selectedTemplate}
+                  selectedVisibilityType={visibilityType}
+                  sendMessage={sendMessage}
+                  setAttachments={setAttachments}
+                  setInput={setInput}
+                  setMessages={setMessages}
+                  status={status}
+                  stop={stop}
+                  templates={promptTemplates}
+                  usage={usage}
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <AlertDialog
