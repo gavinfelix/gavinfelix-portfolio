@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DataStreamProvider } from "@/components/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ChatContextProvider } from "@/contexts/chat-context";
 import { auth } from "../(auth)/auth";
 import { SessionProvider } from "next-auth/react";
 
@@ -24,13 +25,15 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <DataStreamProvider>
-        <SidebarProvider defaultOpen={!isCollapsed}>
-          <AppSidebar user={session?.user} />
-          <SidebarInset>
-            <AppHeader />
-            {children}
-          </SidebarInset>
-        </SidebarProvider>
+        <ChatContextProvider>
+          <SidebarProvider defaultOpen={!isCollapsed}>
+            <AppSidebar user={session?.user} />
+            <SidebarInset>
+              <AppHeader />
+              {children}
+            </SidebarInset>
+          </SidebarProvider>
+        </ChatContextProvider>
       </DataStreamProvider>
     </SessionProvider>
   );

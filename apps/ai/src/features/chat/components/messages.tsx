@@ -165,7 +165,7 @@ function PureMessages({
       style={{ overflowAnchor: "none" }}
     >
       <Conversation className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 md:gap-6">
-        <ConversationContent className="flex flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
+        <ConversationContent className="flex flex-col gap-4 px-2 py-6 md:gap-6 md:px-4 md:py-8">
           {/* Show loading animation when switching chats */}
           {isLoadingChat && messages.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-12">

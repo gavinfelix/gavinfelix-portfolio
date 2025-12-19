@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import { useChatContext } from "@/contexts/chat-context";
 import type { Vote } from "@/lib/db/schema";
 import { ChatSDKError } from "@/lib/errors";
 import type { Attachment, ChatMessage, CustomUIDataTypes } from "@/lib/types";
@@ -56,6 +57,14 @@ export function Chat({
     chatId: id,
     initialVisibilityType,
   });
+
+  // Update chat context for AppHeader
+  const { setChatId, setVisibilityType, setIsReadonly } = useChatContext();
+  useEffect(() => {
+    setChatId(id);
+    setVisibilityType(visibilityType);
+    setIsReadonly(isReadonly);
+  }, [id, visibilityType, isReadonly, setChatId, setVisibilityType, setIsReadonly]);
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
@@ -294,11 +303,7 @@ export function Chat({
   return (
     <>
       <div className="overscroll-behavior-contain flex h-dvh min-w-0 touch-pan-y flex-col bg-background">
-        <ChatHeader
-          chatId={id}
-          isReadonly={isReadonly}
-          selectedVisibilityType={initialVisibilityType}
-        />
+        <ChatHeader />
 
         <Messages
           chatId={id}
