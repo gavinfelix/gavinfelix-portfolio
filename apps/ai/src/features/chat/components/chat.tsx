@@ -64,7 +64,14 @@ export function Chat({
     setChatId(id);
     setVisibilityType(visibilityType);
     setIsReadonly(isReadonly);
-  }, [id, visibilityType, isReadonly, setChatId, setVisibilityType, setIsReadonly]);
+  }, [
+    id,
+    visibilityType,
+    isReadonly,
+    setChatId,
+    setVisibilityType,
+    setIsReadonly,
+  ]);
 
   const { mutate } = useSWRConfig();
   const { setDataStream } = useDataStream();
