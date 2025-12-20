@@ -33,11 +33,13 @@ export default async function Layout({
       />
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
-          <AppSidebar user={session.user} />
-          <SidebarInset>
-            <AppHeader />
-            {children}
-          </SidebarInset>
+          <div className="flex h-dvh min-w-0">
+            <AppSidebar user={session.user} />
+            <SidebarInset>
+              <AppHeader />
+              {children}
+            </SidebarInset>
+          </div>
         </SidebarProvider>
       </DataStreamProvider>
     </SessionProvider>
