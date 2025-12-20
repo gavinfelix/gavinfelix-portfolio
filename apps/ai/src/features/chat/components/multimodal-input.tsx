@@ -24,9 +24,7 @@ import { SelectItem } from "@/components/ui/select";
 import { chatModels } from "@/lib/ai/models";
 import { myProvider } from "@/lib/ai/providers";
 import type { Attachment, ChatMessage } from "@/lib/types";
-import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
-import { Context } from "@/components/elements/context";
 import {
   PromptInput,
   PromptInputModelSelect,
@@ -66,7 +64,6 @@ function PureMultimodalInput({
   selectedVisibilityType,
   selectedModelId,
   onModelChange,
-  usage,
   templates,
   selectedTemplate,
   onTemplateSelect,
@@ -88,7 +85,6 @@ function PureMultimodalInput({
   selectedVisibilityType: VisibilityType;
   selectedModelId: string;
   onModelChange?: (modelId: string) => void;
-  usage?: AppUsage;
   templates?: PromptTemplate[];
   selectedTemplate?: PromptTemplate | null;
   onTemplateSelect?: (template: PromptTemplate | null) => void;
@@ -129,7 +125,7 @@ function PureMultimodalInput({
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
       // Reset to one line height
-      textareaRef.current.style.height = "44px";
+      textareaRef.current.style.height = "28px";
     }
   }, []);
 
@@ -147,7 +143,7 @@ function PureMultimodalInput({
       setInput(finalValue);
       // Set initial height to one line (44px) if no content
       if (!finalValue && textareaRef.current) {
-        textareaRef.current.style.height = "44px";
+        textareaRef.current.style.height = "28px";
       } else {
         adjustHeight();
       }
@@ -320,13 +316,6 @@ function PureMultimodalInput({
     return myProvider.languageModel(selectedModelId);
   }, [selectedModelId]);
 
-  const contextProps = useMemo(
-    () => ({
-      usage,
-    }),
-    [usage]
-  );
-
   // Handle multiple file uploads - route to RAG for text files, otherwise use regular upload
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -446,7 +435,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
+        className="rounded-2xl border border-border bg-background shadow-sm transition-all duration-200 focus-within:border-primary/50 focus-within:shadow-md hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== "ready") {
@@ -460,7 +449,7 @@ function PureMultimodalInput({
           uploadQueue.length > 0 ||
           ragUploadStatus) && (
           <div
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-2 px-3 pt-2"
             data-testid="attachments-preview"
           >
             {ragUploadStatus && (
@@ -509,48 +498,30 @@ function PureMultimodalInput({
             )}
           </div>
         )}
-        <div className="flex flex-row items-start gap-1 sm:gap-2">
+        <div className="flex flex-row items-center gap-2 px-3 py-2.5">
+          <AttachmentsButton
+            fileInputRef={fileInputRef}
+            selectedModelId={selectedModelId}
+            status={status}
+          />
           <PromptInputTextarea
             autoFocus
-            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden overflow-y-auto"
+            className="grow resize-none border-0! border-none! bg-transparent p-0 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden overflow-y-auto py-1 leading-5"
             data-testid="multimodal-input"
-            disableAutoResize={true}
+            disableAutoResize={false}
             maxHeight={264}
-            minHeight={44}
+            minHeight={32}
             onChange={handleInput}
             placeholder="Ask anything about English"
             ref={textareaRef}
             rows={1}
             value={input}
-          />{" "}
-          <Context {...contextProps} />
-        </div>
-        <PromptInputToolbar className="!border-top-0 border-t-0! p-0 shadow-none dark:border-0 dark:border-transparent!">
-          <PromptInputTools className="gap-0 sm:gap-0.5">
-            <AttachmentsButton
-              fileInputRef={fileInputRef}
-              selectedModelId={selectedModelId}
-              status={status}
-            />
-            <ModelSelectorCompact
-              onModelChange={onModelChange}
-              selectedModelId={selectedModelId}
-            />
-            {templates && templates.length > 0 && (
-              <TemplateSelectorCompact
-                templates={templates}
-                selectedTemplate={selectedTemplate}
-                onTemplateSelect={onTemplateSelect}
-                setInput={setInput}
-              />
-            )}
-          </PromptInputTools>
-
+          />
           {status === "submitted" ? (
             <StopButton setMessages={setMessages} stop={stop} />
           ) : (
             <PromptInputSubmit
-              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="mb-0.5 size-7 shrink-0 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-50"
               disabled={
                 !input.trim() ||
                 uploadQueue.length > 0 ||
@@ -561,7 +532,19 @@ function PureMultimodalInput({
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
           )}
-        </PromptInputToolbar>
+        </div>
+        {templates && templates.length > 0 && (
+          <PromptInputToolbar className="!border-top-0 border-t-0! px-3 pb-2 pt-1 shadow-none dark:border-0 dark:border-transparent!">
+            <PromptInputTools className="gap-1 sm:gap-1.5">
+              <TemplateSelectorCompact
+                templates={templates}
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={onTemplateSelect}
+                setInput={setInput}
+              />
+            </PromptInputTools>
+          </PromptInputToolbar>
+        )}
       </PromptInput>
     </div>
   );

@@ -365,7 +365,6 @@ export function Chat({
                     status={status}
                     stop={stop}
                     templates={promptTemplates}
-                    usage={usage}
                   />
                 )}
               </div>
@@ -423,7 +422,6 @@ export function Chat({
                   status={status}
                   stop={stop}
                   templates={promptTemplates}
-                  usage={usage}
                 />
               )}
             </div>
