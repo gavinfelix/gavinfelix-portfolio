@@ -177,7 +177,9 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
                         Number.parseFloat(usage.costUSD.totalUSD.toString())
                       )
                         ? "—"
-                        : `$${Number.parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`}
+                        : `$${Number.parseFloat(
+                            usage.costUSD.totalUSD.toString()
+                          ).toFixed(6)}`}
                     </span>
                   </div>
                 </div>
