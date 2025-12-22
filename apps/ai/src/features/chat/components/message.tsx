@@ -28,6 +28,7 @@ import { MessageReasoning } from "@/components/message-reasoning";
 import { PreviewAttachment } from "@/components/preview-attachment";
 import { Weather } from "@/components/weather";
 
+// Pure component for rendering individual chat messages with optimized re-rendering
 const PurePreviewMessage = ({
   chatId,
   message,
