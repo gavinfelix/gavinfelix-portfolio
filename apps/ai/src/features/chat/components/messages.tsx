@@ -161,6 +161,7 @@ function PureMessages({
 
   const isEmpty = messages.length === 0;
 
+  // Render messages container with conditional layout based on empty state
   return (
     <div
       className={cn(
