@@ -180,7 +180,7 @@ function PureMultimodalInput({
     status: "uploading" | "processing";
   } | null>(null);
 
-  // Submit message with text and attachments, then reset form
+  // Submit message with text and attachments, then reset form state
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
 
