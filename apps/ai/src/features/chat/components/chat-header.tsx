@@ -16,6 +16,7 @@ function PureChatHeader() {
 
   const { width: windowWidth } = useWindowSize();
 
+  // Render header with responsive new chat button for mobile devices
   return (
     <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
       {/* Show new chat button only on mobile (desktop always has sidebar visible, even when collapsed) */}
