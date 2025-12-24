@@ -137,7 +137,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     ? paginatedChatHistories.every((page) => page.chats.length === 0)
     : false;
 
-  // Delete chat and update local cache optimistically
+  // Delete chat and update local cache optimistically with toast notification
   const handleDelete = () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
       method: "DELETE",
