@@ -64,11 +64,13 @@ const PureChatItem = ({
   // Show loading state when clicking or navigating
   const showLoading = isNavigating;
 
+  // Handle navigation click and close mobile sidebar
   const handleClick = () => {
     setIsNavigating(true);
     setOpenMobile(false);
   };
 
+  // Render chat item with loading state and context menu for actions
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={isActive}>
