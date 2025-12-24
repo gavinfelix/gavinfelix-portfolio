@@ -14,6 +14,7 @@ type SuggestedActionsProps = {
   selectedVisibilityType: VisibilityType;
 };
 
+// Render suggested action buttons with animated entrance effects for empty chat state
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   // Predefined prompt suggestions for empty chat state - English learning focused
   const suggestedActions = [
