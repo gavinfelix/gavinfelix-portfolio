@@ -18,12 +18,14 @@ type TemplateSelectorCompactProps = {
   setInput: Dispatch<SetStateAction<string>>;
 };
 
+// Compact template selector with dropdown for selecting prompt templates
 function PureTemplateSelectorCompact({
   templates,
   selectedTemplate,
   onTemplateSelect,
   setInput,
 }: TemplateSelectorCompactProps) {
+  // Handle template selection and populate input with template content
   const handleValueChange = (value: string) => {
     if (value === "none") {
       onTemplateSelect?.(null);
