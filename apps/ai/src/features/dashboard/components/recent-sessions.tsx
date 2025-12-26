@@ -60,6 +60,7 @@ export function RecentSessions({
     );
   }
 
+  // Render list of recent chat sessions with navigation links
   return (
     <Card>
       <CardHeader>
