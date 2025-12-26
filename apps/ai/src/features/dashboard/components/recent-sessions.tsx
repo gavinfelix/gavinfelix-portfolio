@@ -70,9 +70,7 @@ export function RecentSessions({
       <CardContent>
         <div className="space-y-2">
           {recentSessions.map((session) => {
-            return (
-              <RecentSessionItem key={session.id} session={session} />
-            );
+            return <RecentSessionItem key={session.id} session={session} />;
           })}
         </div>
       </CardContent>
@@ -138,4 +136,3 @@ function RecentSessionItem({
     </Link>
   );
 }
-
