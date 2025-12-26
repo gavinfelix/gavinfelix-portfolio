@@ -7,15 +7,16 @@ import { generateUUID } from "@/lib/utils";
 import { auth } from "../(auth)/auth";
 import { decode } from "next-auth/jwt";
 
+// Main chat page component handling session authentication and chat initialization
 export default async function Page() {
-  // 1️⃣ 打 cookie
+  // Get cookies to check session and model preferences
   const cookieStore = await cookies();
   console.log("cookieStore:", cookieStore.getAll());
 
   const rawToken = cookieStore.get("next-auth.session-token")?.value;
   console.log("raw next-auth.session-token:", rawToken);
 
-  // 2️⃣ 尝试 decode JWT
+  // Decode JWT token to verify session authentication
   if (rawToken) {
     try {
       const decoded = await decode({
