@@ -65,6 +65,7 @@ export function SettingsDialog() {
     }
   }, [open, session?.user?.id]);
 
+  // Save user settings to server with error handling and toast notifications
   const handleSave = async () => {
     if (!session?.user?.id) {
       return;
@@ -72,6 +73,7 @@ export function SettingsDialog() {
 
     setSaving(true);
     try {
+      // Update settings with current form values
       await updateUserSettings({
         model: model === DEFAULT_CHAT_MODEL ? null : model,
         temperature: temperature,
