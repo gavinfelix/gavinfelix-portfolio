@@ -165,7 +165,10 @@ export function TemplateForm({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !name.trim() || !content.trim()}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || !name.trim() || !content.trim()}
+            >
               {isSubmitting
                 ? isEditMode
                   ? "Updating..."
@@ -180,4 +183,3 @@ export function TemplateForm({
     </Dialog>
   );
 }
-
