@@ -36,8 +36,10 @@ export function UsageChart({ last7Days, isLoading }: UsageChartProps) {
     );
   }
 
+  // Calculate maximum message count for proportional bar heights
   const maxCount = Math.max(...last7Days.map((day) => day.messagesCount), 1);
 
+  // Render bar chart with proportional heights and date labels
   return (
     <Card>
       <CardHeader>
@@ -81,4 +83,3 @@ export function UsageChart({ last7Days, isLoading }: UsageChartProps) {
     </Card>
   );
 }
-
