@@ -59,6 +59,7 @@ export function TemplateForm({
     }
   }, [open, initialValue]);
 
+  // Handle form submission with validation and data formatting
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -66,6 +67,7 @@ export function TemplateForm({
       return;
     }
 
+    // Submit trimmed form data to parent component
     await onSubmit({
       name: name.trim(),
       description: description.trim() || undefined,
