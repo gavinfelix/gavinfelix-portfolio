@@ -59,6 +59,7 @@ export function TemplatesList({
     );
   }
 
+  // Render list of template items with edit and delete actions
   return (
     <Card>
       <CardHeader>
@@ -81,6 +82,7 @@ export function TemplatesList({
   );
 }
 
+// Individual template item card with metadata and action buttons
 function TemplateItem({
   template,
   onEdit,
@@ -93,6 +95,7 @@ function TemplateItem({
   const updatedAt = new Date(template.updatedAt);
   const timeAgo = formatDistanceToNow(updatedAt, { addSuffix: true });
 
+  // Render template card with name, description, favorite indicator, and action buttons
   return (
     <div className="flex items-start justify-between gap-4 rounded-lg border p-4 hover:bg-accent/50 transition-colors">
       <div className="flex-1 min-w-0 space-y-1">
