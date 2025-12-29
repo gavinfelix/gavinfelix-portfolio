@@ -30,7 +30,7 @@ export function useChatVisibility({
     }
   );
 
-  // Determine current visibility from cache or local state
+  // Compute current visibility type from cache or fallback to local state
   const visibilityType = useMemo(() => {
     if (!history) {
       return localVisibility;
@@ -42,7 +42,7 @@ export function useChatVisibility({
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 
-  // Update visibility locally and sync with server
+  // Update visibility with optimistic local update and server synchronization
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
     mutate(unstable_serialize(getChatHistoryPaginationKey));
