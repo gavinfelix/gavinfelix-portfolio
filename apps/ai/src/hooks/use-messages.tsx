@@ -22,12 +22,14 @@ export function useMessages({
   // Track if user has sent a message (for UI state)
   const [hasSentMessage, setHasSentMessage] = useState(false);
 
+  // Update hasSentMessage flag when message is submitted
   useEffect(() => {
     if (status === "submitted") {
       setHasSentMessage(true);
     }
   }, [status]);
 
+  // Return scroll utilities and message state for component use
   return {
     containerRef,
     endRef,
