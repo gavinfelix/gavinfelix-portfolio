@@ -21,6 +21,7 @@ type DeleteTemplateDialogProps = {
   isDeleting?: boolean;
 };
 
+// Confirmation dialog for deleting a prompt template with async handling
 export function DeleteTemplateDialog({
   open,
   onOpenChange,
@@ -28,6 +29,7 @@ export function DeleteTemplateDialog({
   onConfirm,
   isDeleting = false,
 }: DeleteTemplateDialogProps) {
+  // Handle delete confirmation by calling parent's onConfirm callback
   const handleConfirm = async () => {
     await onConfirm();
   };
@@ -59,4 +61,3 @@ export function DeleteTemplateDialog({
     </AlertDialog>
   );
 }
-
