@@ -21,7 +21,7 @@ export function useAutoResume({
 }: UseAutoResumeParams) {
   const { dataStream } = useDataStream();
 
-  // Resume stream if last message was from user (incomplete conversation)
+  // Resume interrupted stream if last message was from user (incomplete conversation)
   useEffect(() => {
     if (!autoResume) {
       return;
