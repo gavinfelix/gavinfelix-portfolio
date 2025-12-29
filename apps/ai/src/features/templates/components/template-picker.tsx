@@ -17,11 +17,13 @@ type TemplatePickerProps = {
   className?: string;
 };
 
+// Dropdown selector for choosing prompt templates with null option support
 export function TemplatePicker({
   templates,
   onSelect,
   className,
 }: TemplatePickerProps) {
+  // Handle template selection from dropdown, supporting "none" option
   const handleValueChange = (value: string) => {
     if (value === "none") {
       onSelect(null);
