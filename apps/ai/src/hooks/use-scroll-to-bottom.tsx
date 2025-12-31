@@ -92,7 +92,7 @@ export function useScrollToBottom() {
     }
   }, [scrollBehavior, setScrollBehavior]);
 
-  // Trigger scroll to bottom with specified behavior
+  // Trigger scroll to bottom with specified behavior (smooth or auto)
   const scrollToBottom = useCallback(
     (currentScrollBehavior: ScrollBehavior = "smooth") => {
       setScrollBehavior(currentScrollBehavior);
@@ -100,7 +100,7 @@ export function useScrollToBottom() {
     [setScrollBehavior]
   );
 
-  // Callbacks for intersection observer to detect when end ref is visible
+  // Callbacks for intersection observer to detect when end ref enters viewport
   function onViewportEnter() {
     setIsAtBottom(true);
   }
