@@ -31,12 +31,12 @@ export function useTemplates() {
     return mutate();
   }, [mutate]);
 
-  // Create a new template and update local state
+  // Create a new template with optimistic cache update and server revalidation
   const create = useCallback(
     async (input: CreateTemplateInput): Promise<PromptTemplate> => {
       const newTemplate = await createTemplate(input);
 
-      // Optimistically update the cache
+      // Optimistically update the cache by prepending new template
       await mutate(
         (current) => {
           if (!current) return [newTemplate];
@@ -53,12 +53,12 @@ export function useTemplates() {
     [mutate]
   );
 
-  // Update an existing template and update local state
+  // Update an existing template with optimistic cache update and server revalidation
   const update = useCallback(
     async (id: string, input: UpdateTemplateInput): Promise<PromptTemplate> => {
       const updatedTemplate = await updateTemplate(id, input);
 
-      // Optimistically update the cache
+      // Optimistically update the cache by replacing matching template
       await mutate(
         (current) => {
           if (!current) return [updatedTemplate];
@@ -77,12 +77,12 @@ export function useTemplates() {
     [mutate]
   );
 
-  // Delete a template and update local state
+  // Delete a template with optimistic cache update and server revalidation
   const remove = useCallback(
     async (id: string): Promise<void> => {
       await deleteTemplate(id);
 
-      // Optimistically update the cache
+      // Optimistically update the cache by filtering out deleted template
       await mutate(
         (current) => {
           if (!current) return [];
