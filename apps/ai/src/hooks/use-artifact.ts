@@ -55,11 +55,13 @@ export function useArtifact() {
     return localArtifact;
   }, [localArtifact]);
 
+  // Update artifact state with support for both direct values and updater functions
   const setArtifact = useCallback(
     (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
       setLocalArtifact((currentArtifact) => {
         const artifactToUpdate = currentArtifact || initialArtifactData;
 
+        // Support both function updaters and direct value assignment
         if (typeof updaterFn === "function") {
           return updaterFn(artifactToUpdate);
         }
