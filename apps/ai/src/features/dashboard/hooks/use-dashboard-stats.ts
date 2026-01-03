@@ -15,6 +15,7 @@ export function useDashboardStats() {
     }
   );
 
+  // Return dashboard statistics with loading and error states
   return {
     stats: data,
     isLoading,
