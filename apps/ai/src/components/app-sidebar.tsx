@@ -24,10 +24,12 @@ export function AppSidebar({ user }: { user: User | undefined }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
 
+  // Determine active navigation item based on current pathname
   const isDashboardActive = pathname === "/dashboard";
   const isChatActive = pathname === "/" || pathname.startsWith("/chat/");
   const isTemplatesActive = pathname === "/templates";
 
+  // Render sidebar with navigation menu, chat history, and user navigation
   return (
     <Sidebar collapsible="icon" className="group-data-[side=left]:border-r-0">
       <SidebarHeader>
