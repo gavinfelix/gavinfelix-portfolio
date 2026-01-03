@@ -22,9 +22,11 @@ export default async function Layout({
     redirect("/login");
   }
 
+  // Get sidebar state from cookie to restore user preference
   const cookieStore = await cookies();
   const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
+  // Render main app layout with sidebar, header, and data stream provider
   return (
     <SessionProvider session={session}>
       <Script
