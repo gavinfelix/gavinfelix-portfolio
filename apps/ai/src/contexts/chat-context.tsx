@@ -21,6 +21,7 @@ type ChatContextType = {
 
 const ChatContext = createContext<ChatContextType | null>(null);
 
+// Context provider for managing global chat state (chatId, visibility, readonly mode)
 export function ChatContextProvider({ children }: { children: ReactNode }) {
   const [chatId, setChatId] = useState<string | null>(null);
   const [visibilityType, setVisibilityType] =
@@ -43,10 +44,11 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Hook to access chat context with fallback to default values when context is unavailable
 export function useChatContext() {
   const context = useContext(ChatContext);
   if (!context) {
-    // Return default values if context is not available
+    // Return default values if context is not available (graceful degradation)
     return {
       chatId: null,
       visibilityType: "private" as const,
