@@ -55,11 +55,13 @@ export function VisibilitySelector({
     initialVisibilityType: selectedVisibilityType,
   });
 
+  // Find the selected visibility configuration based on current visibility type
   const selectedVisibility = useMemo(
     () => visibilities.find((visibility) => visibility.id === visibilityType),
     [visibilityType]
   );
 
+  // Render dropdown menu for selecting chat visibility (private/public)
   return (
     <DropdownMenu onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger
@@ -75,8 +77,10 @@ export function VisibilitySelector({
           variant="outline"
         >
           {selectedVisibility?.icon}
-          <span className="hidden text-xs sm:inline">{selectedVisibility?.label}</span>
-          <ChevronDownIcon className="size-3" />
+          <span className="hidden text-xs sm:inline">
+            {selectedVisibility?.label}
+          </span>
+          <ChevronDownIcon size={12} />
         </Button>
       </DropdownMenuTrigger>
 
