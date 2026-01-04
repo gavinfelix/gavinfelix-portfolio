@@ -13,11 +13,13 @@ import { Button } from "./ui/button";
 
 // Button that toggles the responsive sidebar and shows tooltip on desktop
 // Icon-only button without border for minimal visual footprint
+// Toggle button for collapsing/expanding the sidebar with tooltip on desktop
 export function SidebarToggle({
   className,
 }: ComponentProps<typeof SidebarTrigger>) {
   const { toggleSidebar } = useSidebar();
 
+  // Render icon-only toggle button with tooltip support
   return (
     <Tooltip>
       <TooltipTrigger asChild>
