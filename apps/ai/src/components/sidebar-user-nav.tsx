@@ -50,11 +50,14 @@ export function SidebarUserNav({ user }: { user: User }) {
   const { setTheme, resolvedTheme } = useTheme();
   const { state } = useSidebar();
 
+  // Extract user information from session or props with fallback values
   const email = data?.user?.email ?? user?.email ?? "";
   const name = data?.user?.name ?? user?.name ?? null;
   const isGuest = !email || data?.user?.type === "guest";
   const initials = !isGuest ? getUserInitials(email, name) : "";
   const isCollapsed = state === "collapsed";
+  
+  // Render user navigation menu with theme toggle and authentication actions
   return (
     <SidebarMenu>
       <SidebarMenuItem>
