@@ -165,9 +165,9 @@ function PureMessages({
   return (
     <div
       className={cn(
-        "overscroll-behavior-contain -webkit-overflow-scrolling-touch touch-pan-y",
+        "overscroll-behavior-contain -webkit-overflow-scrolling-touch touch-pan-y h-full",
         isEmpty
-          ? "flex flex-1 items-center justify-center"
+          ? "flex flex-1 items-center justify-center overflow-hidden"
           : "flex-1 overflow-y-scroll"
       )}
       ref={messagesContainerRef}
@@ -214,20 +214,12 @@ function PureMessages({
           ))}
 
           {/* Show thinking indicator when waiting for AI response */}
+          {/* Only show when status is "submitted" and last message is from user */}
+          {/* Don't show when status is "streaming" even if no text content yet, 
+              because the assistant message object already exists and we should wait for content to fill in */}
           {status === "submitted" &&
             messages.length > 0 &&
             messages.at(-1)?.role === "user" &&
-            selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
-
-          {/* Show thinking indicator when streaming starts but no text content yet */}
-          {status === "streaming" &&
-            messages.length > 0 &&
-            messages.at(-1)?.role === "assistant" &&
-            !messages
-              .at(-1)
-              ?.parts?.some(
-                (part) => part.type === "text" && part.text?.trim()
-              ) &&
             selectedModelId !== "chat-model-reasoning" && <ThinkingMessage />}
 
           {/* Anchor element for scroll position detection */}

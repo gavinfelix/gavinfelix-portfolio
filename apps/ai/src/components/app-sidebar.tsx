@@ -31,7 +31,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
 
   // Render sidebar with navigation menu, chat history, and user navigation
   return (
-    <Sidebar collapsible="icon" className="group-data-[side=left]:border-r-0">
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           {/* Chatbot title and Toggle Sidebar button */}

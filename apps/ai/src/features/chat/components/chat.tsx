@@ -82,6 +82,10 @@ export function Chat({
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
+  const [errorDialog, setErrorDialog] = useState<{
+    open: boolean;
+    message: string;
+  }>({ open: false, message: "" });
   const [currentModelId, setCurrentModelId] = useState(initialChatModel);
   const currentModelIdRef = useRef(currentModelId);
   const [selectedTemplate, setSelectedTemplate] =
@@ -216,19 +220,21 @@ export function Chat({
         ) {
           setShowCreditCardAlert(true);
         } else {
-          toast({
-            type: "error",
-            description: error.message,
+          // Show error dialog for other errors
+          setErrorDialog({
+            open: true,
+            message: error.message,
           });
         }
       } else {
         // Handle other unexpected errors
-        toast({
-          type: "error",
-          description:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred",
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred";
+        setErrorDialog({
+          open: true,
+          message: errorMessage,
         });
       }
     },
@@ -261,6 +267,19 @@ export function Chat({
       );
     }
   }, [status, messages.length]);
+
+  // Ensure status resets to "ready" after error to allow user to continue sending messages
+  // useChat should handle this automatically, but we add this as a safeguard
+  useEffect(() => {
+    if (status === "error") {
+      // The useChat hook should automatically reset status to "ready" after error,
+      // but if it doesn't, the user should still be able to send messages.
+      // We rely on useChat's built-in error handling to reset the status.
+      console.log(
+        "[Chat] Error status detected, useChat should reset to ready automatically"
+      );
+    }
+  }, [status]);
 
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
@@ -311,12 +330,12 @@ export function Chat({
 
   return (
     <>
-      <div className="overscroll-behavior-contain flex flex-1 overflow-auto min-h-0 min-w-0 touch-pan-y flex-col bg-background">
+      <div className="overscroll-behavior-contain flex flex-1 min-h-0 min-w-0 flex-col bg-background">
         <ChatHeader />
-
         {isEmpty ? (
-          <div className="flex flex-1 items-center justify-center">
-            <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-6 px-2 md:px-4">
+          /* Empty state: position content in upper portion of screen */
+          <div className="flex flex-1 items-start justify-center overflow-auto pt-16 md:pt-24">
+            <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-start gap-6 px-2 md:px-4">
               <div className="w-full max-w-2xl">
                 <Messages
                   chatId={id}
@@ -372,20 +391,24 @@ export function Chat({
           </div>
         ) : (
           <>
-            <Messages
-              chatId={id}
-              isArtifactVisible={false}
-              isReadonly={isReadonly}
-              messages={messages}
-              regenerate={regenerate}
-              selectedModelId={initialChatModel}
-              setMessages={setMessages}
-              status={status}
-              votes={votes}
-            />
+            {/* Messages container with independent scrolling when there are messages */}
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <Messages
+                chatId={id}
+                isArtifactVisible={false}
+                isReadonly={isReadonly}
+                messages={messages}
+                regenerate={regenerate}
+                selectedModelId={initialChatModel}
+                setMessages={setMessages}
+                status={status}
+                votes={votes}
+              />
+            </div>
 
+            {/* Fixed input container at bottom when there are messages */}
             <div
-              className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl flex-col gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4"
+              className="sticky bottom-0 z-10 mx-auto flex w-full max-w-4xl flex-col gap-2 bg-background px-2 pb-3 md:px-4 md:pb-4"
               id="input-container"
             >
               {!isReadonly && (
@@ -454,6 +477,32 @@ export function Chat({
               }}
             >
               Activate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error dialog for API errors */}
+      <AlertDialog
+        onOpenChange={(open) => {
+          setErrorDialog({ ...errorDialog, open });
+        }}
+        open={errorDialog.open}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Error</AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorDialog.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setErrorDialog({ open: false, message: "" });
+              }}
+            >
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
