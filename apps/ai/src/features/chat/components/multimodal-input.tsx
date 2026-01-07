@@ -438,7 +438,9 @@ function PureMultimodalInput({
         className="rounded-2xl border border-border bg-background shadow-sm transition-all duration-200 focus-within:border-primary/50 focus-within:shadow-md hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
-          if (status !== "ready") {
+          // Allow sending messages when status is "ready" or "error"
+          // Error status means the previous request failed, but user should be able to retry
+          if (status !== "ready" && status !== "error") {
             toast.error("Please wait for the model to finish its response!");
           } else {
             submitForm();
