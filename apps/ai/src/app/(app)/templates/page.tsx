@@ -3,7 +3,7 @@
 // Templates management page for creating, editing, and deleting prompt templates
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSessionContext } from "@/contexts/session-context";
 import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,25 +17,36 @@ import type { PromptTemplate } from "@/lib/db/schema";
 
 export default function TemplatesPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const { templates, isLoading, isError, error, reload, create, update, remove } =
-    useTemplates();
+  const { session, isLoading: isSessionLoading } = useSessionContext();
+  const {
+    templates,
+    isLoading,
+    isError,
+    error,
+    reload,
+    create,
+    update,
+    remove,
+  } = useTemplates();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<PromptTemplate | null>(null);
-  const [deletingTemplate, setDeletingTemplate] = useState<PromptTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<PromptTemplate | null>(
+    null
+  );
+  const [deletingTemplate, setDeletingTemplate] =
+    useState<PromptTemplate | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isSessionLoading && !session) {
       router.push("/login");
     }
-  }, [status, router]);
+  }, [isSessionLoading, session, router]);
 
-  if (status === "loading" || isLoading) {
+  if (isSessionLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader size={32} />
@@ -216,4 +227,3 @@ export default function TemplatesPage() {
     </div>
   );
 }
-

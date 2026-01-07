@@ -6,7 +6,6 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { DataStreamProvider } from "@/components/data-stream-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { auth } from "../(auth)/auth";
-import { SessionProvider } from "next-auth/react";
 
 export const experimental_ppr = true;
 
@@ -27,8 +26,9 @@ export default async function Layout({
   const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
   // Render main app layout with sidebar, header, and data stream provider
+  // Note: SessionProvider is already at root layout, no need to duplicate here
   return (
-    <SessionProvider session={session}>
+    <>
       <Script
         src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"
         strategy="beforeInteractive"
@@ -44,6 +44,6 @@ export default async function Layout({
           </div>
         </SidebarProvider>
       </DataStreamProvider>
-    </SessionProvider>
+    </>
   );
 }

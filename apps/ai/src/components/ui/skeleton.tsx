@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Skeleton({
   className,
@@ -8,7 +8,7 @@ function Skeleton({
   variant?: "default" | "shimmer" | "pulse";
 }) {
   const baseClasses = "rounded-md";
-  
+
   const variantClasses = {
     default: "bg-muted",
     shimmer: "bg-muted animate-shimmer",
@@ -20,7 +20,7 @@ function Skeleton({
       className={cn(baseClasses, variantClasses[variant], className)}
       {...props}
     />
-  )
+  );
 }
 
-export { Skeleton }
+export { Skeleton };

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
+import { SessionProvider } from "@/contexts/session-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>{children}</SessionProvider>
+        {/* NextAuth SessionProvider for update() functionality in login/register pages */}
+        {/* Configured to not refetch automatically - we use our custom provider for data */}
+        <NextAuthSessionProvider
+          refetchInterval={0}
+          refetchOnWindowFocus={false}
+        >
+          {/* Custom SessionProvider for optimized session fetching */}
+          <SessionProvider>{children}</SessionProvider>
+        </NextAuthSessionProvider>
       </body>
     </html>
   );

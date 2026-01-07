@@ -4,7 +4,8 @@
 import { ChevronUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useSessionContext } from "@/contexts/session-context";
 import { useTheme } from "next-themes";
 import {
   DropdownMenu,
@@ -46,14 +47,14 @@ function getUserInitials(email: string, name?: string | null): string {
 // User account menu shown in the sidebar footer
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
-  const { data, status } = useSession();
+  const { session, isLoading } = useSessionContext();
   const { setTheme, resolvedTheme } = useTheme();
   const { state } = useSidebar();
 
   // Extract user information from session or props with fallback values
-  const email = data?.user?.email ?? user?.email ?? "";
-  const name = data?.user?.name ?? user?.name ?? null;
-  const isGuest = !email || data?.user?.type === "guest";
+  const email = session?.email ?? user?.email ?? "";
+  const name = session?.name ?? user?.name ?? null;
+  const isGuest = !email || session?.role === "guest";
   const initials = !isGuest ? getUserInitials(email, name) : "";
   const isCollapsed = state === "collapsed";
   
@@ -63,7 +64,7 @@ export function SidebarUserNav({ user }: { user: User }) {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            {status === "loading" ? (
+            {isLoading ? (
               <SidebarMenuButton className="h-10 justify-between bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                 <div className="flex flex-row gap-2">
                   <div className="size-6 animate-pulse rounded-full bg-zinc-500/30" />
@@ -129,7 +130,7 @@ export function SidebarUserNav({ user }: { user: User }) {
               <button
                 className="w-full cursor-pointer whitespace-nowrap"
                 onClick={() => {
-                  if (status === "loading") {
+                  if (isLoading) {
                     toast({
                       type: "error",
                       description:

@@ -2,7 +2,7 @@
 
 // Settings dialog component for managing user chat preferences
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSessionContext } from "@/contexts/session-context";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ import { chatModels, DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
 import { fetchUserSettings, updateUserSettings } from "../lib/settings-client";
 
 export function SettingsDialog() {
-  const { data: session } = useSession();
+  const { session } = useSessionContext();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,7 +44,7 @@ export function SettingsDialog() {
 
   // Fetch user settings when dialog opens
   useEffect(() => {
-    if (open && session?.user?.id) {
+    if (open && session?.userId) {
       setLoading(true);
       fetchUserSettings()
         .then((settings) => {
@@ -63,11 +63,11 @@ export function SettingsDialog() {
           setLoading(false);
         });
     }
-  }, [open, session?.user?.id]);
+  }, [open, session?.userId]);
 
   // Save user settings to server with error handling and toast notifications
   const handleSave = async () => {
-    if (!session?.user?.id) {
+    if (!session?.userId) {
       return;
     }
 

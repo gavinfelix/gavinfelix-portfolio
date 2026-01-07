@@ -2,7 +2,7 @@
 
 // Dashboard page displaying user statistics and recent activity
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSessionContext } from "@/contexts/session-context";
 import { useEffect } from "react";
 import { RecentSessions } from "@/features/dashboard/components/recent-sessions";
 import { StatsCards } from "@/features/dashboard/components/stats-cards";
@@ -12,16 +12,16 @@ import { Loader } from "@/components/elements/loader";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { session, isLoading: isSessionLoading } = useSessionContext();
   const { stats, isLoading, isError, error } = useDashboardStats();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isSessionLoading && !session) {
       router.push("/login");
     }
-  }, [status, router]);
+  }, [isSessionLoading, session, router]);
 
-  if (status === "loading" || isLoading) {
+  if (isSessionLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader size={32} />
@@ -83,4 +83,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
