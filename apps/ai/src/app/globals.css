@@ -130,11 +130,11 @@ body {
   animation: shimmer 2s infinite;
   background: linear-gradient(
     90deg,
-    hsl(var(--muted)) 0%,
-    hsl(var(--muted)) 30%,
-    hsl(var(--muted) / 0.8) 50%,
-    hsl(var(--muted)) 70%,
-    hsl(var(--muted)) 100%
+    #f1f5f9 0%,
+    #f1f5f9 30%,
+    #e2e8f0 50%,
+    #f1f5f9 70%,
+    #f1f5f9 100%
   );
   background-size: 200% 100%;
 }
@@ -142,11 +142,11 @@ body {
 .dark .animate-shimmer {
   background: linear-gradient(
     90deg,
-    hsl(var(--muted)) 0%,
-    hsl(var(--muted)) 30%,
-    hsl(var(--muted) / 0.6) 50%,
-    hsl(var(--muted)) 70%,
-    hsl(var(--muted)) 100%
+    #1e293b 0%,
+    #1e293b 30%,
+    #334155 50%,
+    #1e293b 70%,
+    #1e293b 100%
   );
   background-size: 200% 100%;
 }

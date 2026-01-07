@@ -48,7 +48,7 @@ export default function ChatLoading() {
       </div>
 
       {/* Input Area Skeleton */}
-      <div className="border-t bg-background p-4">
+      <div className="border-t border-[0.5px] border-gray-200 dark:border-gray-800 bg-background p-4">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-end gap-2">
             <Skeleton variant="shimmer" className="h-24 flex-1 rounded-lg" />

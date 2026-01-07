@@ -18,7 +18,7 @@ export default function TemplatesLoading() {
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
             key={i}
-            className="rounded-xl bg-card border border-border p-6"
+            className="rounded-xl bg-card border border-[0.5px] border-gray-200 dark:border-gray-800 p-6"
           >
             <div className="space-y-4">
               {/* Template Header */}

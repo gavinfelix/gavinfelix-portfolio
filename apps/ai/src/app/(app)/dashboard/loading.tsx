@@ -15,7 +15,7 @@ export default function DashboardLoading() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-xl bg-card border border-border p-6"
+            className="rounded-xl bg-card border border-[0.5px] border-gray-200 dark:border-gray-800 p-6"
           >
             <div className="space-y-4">
               {/* Card Title */}
@@ -33,8 +33,8 @@ export default function DashboardLoading() {
       {/* Charts and Recent Sessions Grid */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Usage Chart Skeleton */}
-        <div className="rounded-xl bg-card border border-border overflow-hidden">
-          <div className="px-6 py-5 border-b border-border">
+        <div className="rounded-xl bg-card border border-[0.5px] border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="px-6 py-5 border-b border-[0.5px] border-gray-200 dark:border-gray-800">
             <div className="space-y-2">
               <Skeleton variant="shimmer" className="h-6 w-48 rounded-lg" />
               <Skeleton variant="shimmer" className="h-4 w-64 rounded-lg" />
@@ -46,8 +46,8 @@ export default function DashboardLoading() {
         </div>
 
         {/* Recent Sessions Skeleton */}
-        <div className="rounded-xl bg-card border border-border overflow-hidden">
-          <div className="px-6 py-5 border-b border-border">
+        <div className="rounded-xl bg-card border border-[0.5px] border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="px-6 py-5 border-b border-[0.5px] border-gray-200 dark:border-gray-800">
             <div className="space-y-2">
               <Skeleton variant="shimmer" className="h-6 w-48 rounded-lg" />
               <Skeleton variant="shimmer" className="h-4 w-64 rounded-lg" />
