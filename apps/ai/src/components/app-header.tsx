@@ -19,12 +19,12 @@ export function AppHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {chatId && !isReadonly && (
+          {/* {chatId && !isReadonly && (
             <VisibilitySelector
               chatId={chatId}
               selectedVisibilityType={visibilityType}
             />
-          )}
+          )} */}
           <SettingsDialog />
         </div>
       </div>
