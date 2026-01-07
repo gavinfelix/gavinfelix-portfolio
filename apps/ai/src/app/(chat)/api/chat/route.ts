@@ -632,9 +632,25 @@ export async function POST(request: Request) {
         }
       } else {
         // Generate title from first user message
-        const title = await generateTitleFromUserMessage({
-          message,
-        });
+        // If title generation fails, use a fallback title from the user message
+        let title: string;
+        try {
+          title = await generateTitleFromUserMessage({
+            message,
+          });
+        } catch (error) {
+          console.warn(
+            "[POST /api/chat] Failed to generate title, using fallback:",
+            error
+          );
+          // Extract text from user message as fallback title
+          const textParts = message.parts
+            .filter((part) => part.type === "text")
+            .map((part) => part.text)
+            .join(" ");
+          // Use first 50 characters of the message as title, or "New Chat" if empty
+          title = textParts.trim().slice(0, 50) || "New Chat";
+        }
 
         console.log("[POST /api/chat] Creating new chat:", {
           id,
@@ -1022,9 +1038,7 @@ export async function POST(request: Request) {
           stopWhen: stepCountIs(5),
           // Disable document/artifact tools - only allow weather
           experimental_activeTools:
-            effectiveModel === "chat-model-reasoning"
-              ? []
-              : ["getWeather"],
+            effectiveModel === "chat-model-reasoning" ? [] : ["getWeather"],
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
             getWeather,
