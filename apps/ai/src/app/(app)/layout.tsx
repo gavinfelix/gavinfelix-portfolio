@@ -35,7 +35,7 @@ export default async function Layout({
       />
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
-          <div className="flex h-dvh min-w-0">
+          <div className="flex w-full h-dvh min-w-0">
             <AppSidebar user={session.user} />
             <SidebarInset>
               <AppHeader />
