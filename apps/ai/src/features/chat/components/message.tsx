@@ -336,7 +336,7 @@ export const ThinkingMessage = () => {
         <div className="flex w-full flex-col gap-2 md:gap-4">
           <div className="flex items-center gap-2 px-0 py-2 text-muted-foreground text-sm">
             <LoadingDots />
-            <LoadingText>Thinking...</LoadingText>
+            {/* <LoadingText>Thinking...</LoadingText> */}
           </div>
         </div>
       </div>
