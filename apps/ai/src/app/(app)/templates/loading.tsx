@@ -8,7 +8,10 @@ export default function TemplatesLoading() {
       <div className="flex items-center justify-between">
         <div className="space-y-3">
           <Skeleton variant="shimmer" className="h-9 w-56 rounded-lg" />
-          <Skeleton variant="shimmer" className="h-5 w-96 max-w-full rounded-lg" />
+          <Skeleton
+            variant="shimmer"
+            className="h-5 w-96 max-w-full rounded-lg"
+          />
         </div>
         <Skeleton variant="shimmer" className="h-10 w-32 rounded-lg" />
       </div>
@@ -53,4 +56,3 @@ export default function TemplatesLoading() {
     </div>
   );
 }
-
