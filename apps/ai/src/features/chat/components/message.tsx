@@ -56,6 +56,7 @@ const PurePreviewMessage = ({
 
   useDataStream();
 
+  // Render individual message with user/assistant styling and actions
   return (
     <motion.div
       animate={{ opacity: 1 }}
