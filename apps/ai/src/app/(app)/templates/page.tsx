@@ -167,7 +167,7 @@ export default function TemplatesPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Page header */}
+      {/* Page header with title and create button */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Prompt Templates</h1>
