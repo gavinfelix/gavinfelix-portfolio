@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
 // Conversation container with auto-scroll to bottom behavior
+// Provides smooth scrolling experience for chat messages
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
     className={cn(
