@@ -41,6 +41,7 @@ import type { UserType } from "@/app/(auth)/auth";
 // https://authjs.dev/reference/adapter/drizzle
 
 // Database connection setup
+// Initialize PostgreSQL client and Drizzle ORM instance
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
