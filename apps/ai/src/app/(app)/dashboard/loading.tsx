@@ -31,6 +31,7 @@ export default function DashboardLoading() {
       </div>
 
       {/* Charts and Recent Sessions Grid */}
+      {/* Two-column layout for usage chart and recent sessions */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Usage Chart Skeleton */}
         <div className="rounded-xl bg-card border border-[0.5px] border-gray-200 dark:border-gray-800 overflow-hidden">
