@@ -48,6 +48,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   }
 
   const messagesFromDb = await getMessagesByChatId({ id });
+  // Convert database messages to UI format for rendering
   const uiMessages = convertToUIMessages(messagesFromDb);
 
   const cookieStore = await cookies();
