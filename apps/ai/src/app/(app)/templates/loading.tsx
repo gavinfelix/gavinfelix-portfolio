@@ -17,6 +17,7 @@ export default function TemplatesLoading() {
       </div>
 
       {/* Templates List Skeleton */}
+      {/* Render multiple skeleton cards to simulate loading state */}
       <div className="space-y-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <div
