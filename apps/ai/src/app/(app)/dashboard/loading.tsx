@@ -7,7 +7,10 @@ export default function DashboardLoading() {
       {/* Header Section */}
       <div className="space-y-3">
         <Skeleton variant="shimmer" className="h-9 w-56 rounded-lg" />
-        <Skeleton variant="shimmer" className="h-5 w-96 max-w-full rounded-lg" />
+        <Skeleton
+          variant="shimmer"
+          className="h-5 w-96 max-w-full rounded-lg"
+        />
       </div>
 
       {/* Stats Cards Grid */}
@@ -59,8 +62,14 @@ export default function DashboardLoading() {
               <div key={i} className="flex items-center gap-4 py-3">
                 <Skeleton variant="shimmer" className="h-12 w-12 rounded-lg" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton variant="shimmer" className="h-4 w-3/4 rounded-lg" />
-                  <Skeleton variant="shimmer" className="h-3 w-1/2 rounded-lg" />
+                  <Skeleton
+                    variant="shimmer"
+                    className="h-4 w-3/4 rounded-lg"
+                  />
+                  <Skeleton
+                    variant="shimmer"
+                    className="h-3 w-1/2 rounded-lg"
+                  />
                 </div>
                 <Skeleton variant="shimmer" className="h-4 w-16 rounded-lg" />
               </div>
@@ -71,4 +80,3 @@ export default function DashboardLoading() {
     </div>
   );
 }
-
