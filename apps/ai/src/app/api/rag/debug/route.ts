@@ -33,7 +33,8 @@ export async function GET(request: Request) {
       return NextResponse.json(
         {
           error: "Missing documentId parameter",
-          message: "Please provide documentId as a query parameter: /api/rag/debug?documentId=<uuid>",
+          message:
+            "Please provide documentId as a query parameter: /api/rag/debug?documentId=<uuid>",
         },
         { status: 400 }
       );
@@ -114,17 +115,38 @@ export async function GET(request: Request) {
       console.log("      - document_id:", firstChunk.document_id);
       console.log("      - document_id type:", typeof firstChunk.document_id);
       console.log("      - chunk_index:", firstChunk.chunk_index);
-      console.log("      - Content preview (200 chars):", firstChunk.content?.substring(0, 200) || "null");
+      console.log(
+        "      - Content preview (200 chars):",
+        firstChunk.content?.substring(0, 200) || "null"
+      );
       console.log("      - Content length:", firstChunk.content?.length || 0);
       console.log("      - has_embedding:", firstChunk.has_embedding);
       console.log("      - created_at:", firstChunk.created_at);
 
       // Compare documentId formats
       console.log("    * documentId comparison:");
-      console.log("      - Requested documentId:", documentId, "(type:", typeof documentId, ")");
-      console.log("      - DB document_id:", firstChunk.document_id, "(type:", typeof firstChunk.document_id, ")");
-      console.log("      - Values match:", String(documentId) === String(firstChunk.document_id));
-      console.log("      - Types match:", typeof documentId === typeof firstChunk.document_id);
+      console.log(
+        "      - Requested documentId:",
+        documentId,
+        "(type:",
+        typeof documentId,
+        ")"
+      );
+      console.log(
+        "      - DB document_id:",
+        firstChunk.document_id,
+        "(type:",
+        typeof firstChunk.document_id,
+        ")"
+      );
+      console.log(
+        "      - Values match:",
+        String(documentId) === String(firstChunk.document_id)
+      );
+      console.log(
+        "      - Types match:",
+        typeof documentId === typeof firstChunk.document_id
+      );
     } else {
       console.warn("    * ⚠️ NO CHUNKS FOUND for documentId:", documentId);
       console.warn("    * This means either:");
@@ -163,14 +185,3 @@ export async function GET(request: Request) {
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-

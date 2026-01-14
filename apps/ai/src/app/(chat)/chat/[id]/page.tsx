@@ -16,7 +16,9 @@ const toVisibilityType = (v: unknown): VisibilityType => {
 };
 
 // Check if user is a guest (guest type or fallback user)
-function isGuestUser(session: { user?: { id?: string; type?: string } } | null) {
+function isGuestUser(
+  session: { user?: { id?: string; type?: string } } | null
+) {
   if (!session?.user) return true;
   if (session.user.type === "guest") return true;
   if (session.user.id?.startsWith("fallback-")) return true;
