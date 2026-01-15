@@ -15,6 +15,7 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const [session, cookieStore] = await Promise.all([auth(), cookies()]);
+  // Determine sidebar state from cookie preference
   const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
 
   return (
