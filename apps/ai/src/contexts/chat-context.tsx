@@ -28,6 +28,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
     useState<VisibilityType>("private");
   const [isReadonly, setIsReadonly] = useState<boolean>(false);
 
+  // Provide chat state to all child components via context
   return (
     <ChatContext.Provider
       value={{
