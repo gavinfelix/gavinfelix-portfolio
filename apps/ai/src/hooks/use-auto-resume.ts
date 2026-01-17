@@ -22,6 +22,7 @@ export function useAutoResume({
   const { dataStream } = useDataStream();
 
   // Resume interrupted stream if last message was from user (incomplete conversation)
+  // Automatically continue chat when user's last message didn't receive a response
   useEffect(() => {
     if (!autoResume) {
       return;
