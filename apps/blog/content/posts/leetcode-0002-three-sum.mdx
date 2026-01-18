@@ -1,0 +1,46 @@
+---
+type: "algorithm"
+platform: "leetcode"
+problemId: 2
+title: "LeetCode 2 - Three Sum 解题记录"
+difficulty: "easy"
+tags: ["array", "hash-table"]
+date: "2026-01-18"
+description: "用哈希表把 Three Sum 从 O(n^2) 降到 O(n) 的思路总结"
+---
+
+
+### 代码实现（TypeScript）
+
+```ts
+function threeSum(nums: number[]): number[][] {
+  nums.sort((a, b) => a - b);
+  const res: number[][] = [];
+
+  for (let i = 0; i < nums.length; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue;
+
+    let l = i + 1;
+    let r = nums.length - 1;
+
+    while (l < r) {
+      const sum = nums[i] + nums[l] + nums[r];
+      if (sum === 0) {
+        res.push([nums[i], nums[l], nums[r]]);
+        while (l < r && nums[l] === nums[l + 1]) l++;
+        while (l < r && nums[r] === nums[r - 1]) r--;
+        l++;
+        r--;
+      } else if (sum < 0) {
+        l++;
+      } else {
+        r--;
+      }
+    }
+  }
+
+  return res;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="哈希表最多存 n 个元素" />
