@@ -10,6 +10,7 @@ export function AppHeader() {
   const { chatId, visibilityType, isReadonly } = useChatContext();
 
   // Render header with app title, visibility selector (when chat is active), and settings
+  // Sticky header with backdrop blur effect for modern UI
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[0.5px] border-gray-200 dark:border-gray-800 border-t-0 border-l-0 border-r-0 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-14 max-w-[100vw] items-center justify-between px-4 md:px-6">
