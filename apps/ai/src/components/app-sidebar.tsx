@@ -109,6 +109,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      {/* Chat history list - hidden when sidebar is collapsed to icon mode */}
       <SidebarContent className="group-data-[collapsible=icon]:hidden">
         <SidebarHistory user={user} />
       </SidebarContent>
