@@ -26,6 +26,7 @@ export function DataStreamProvider({
   );
 
   // Memoize context value to prevent unnecessary re-renders
+  // Optimize performance by only updating when dataStream changes
   const value = useMemo(() => ({ dataStream, setDataStream }), [dataStream]);
 
   return (
