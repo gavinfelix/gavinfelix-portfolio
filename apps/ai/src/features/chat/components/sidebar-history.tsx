@@ -54,6 +54,7 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
       const chatDate = new Date(chat.createdAt);
 
       // Categorize chats by creation date
+      // Organize chats into time-based groups for better UX
       if (isToday(chatDate)) {
         groups.today.push(chat);
       } else if (isYesterday(chatDate)) {
