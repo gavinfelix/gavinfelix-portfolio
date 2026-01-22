@@ -84,6 +84,7 @@ export function VisibilitySelector({
         </Button>
       </DropdownMenuTrigger>
 
+      {/* Dropdown menu with visibility options (private/public) */}
       <DropdownMenuContent align="start" className="min-w-[300px]">
         {visibilities.map((visibility) => (
           <DropdownMenuItem
