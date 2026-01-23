@@ -49,6 +49,7 @@ import type { VisibilityType } from "@/components/visibility-selector";
 import { TemplateSelectorCompact } from "@/features/templates/components/template-selector-compact";
 import type { PromptTemplate } from "@/lib/db/schema";
 
+// Main input component handling text, attachments, model selection, and message sending
 function PureMultimodalInput({
   chatId,
   input,
