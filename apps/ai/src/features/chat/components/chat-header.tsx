@@ -14,6 +14,7 @@ function PureChatHeader() {
   const router = useRouter();
   const { open } = useSidebar();
 
+  // Track viewport width to show new-chat button only on mobile when sidebar is closed
   const { width: windowWidth } = useWindowSize();
 
   // Render header with responsive new chat button for mobile devices
