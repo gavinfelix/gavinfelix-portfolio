@@ -50,6 +50,7 @@ const PurePreviewMessage = ({
 }) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
+  // Extract file attachments from message parts for preview display
   const attachmentsFromMessage = message.parts.filter(
     (part) => part.type === "file"
   );
