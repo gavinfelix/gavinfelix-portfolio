@@ -99,6 +99,7 @@ function PureMultimodalInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
 
+  // Dynamically adjust textarea height as user types, with min/max constraints
   // Auto-resize textarea based on content (default 1 line, max 11 lines)
   const adjustHeight = useCallback(() => {
     if (textareaRef.current) {
