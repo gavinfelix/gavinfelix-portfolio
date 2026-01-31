@@ -1,0 +1,27 @@
+---
+type: "algorithm"
+platform: "leetcode"
+problemId: 349
+title: "LeetCode 349 - Intersection of Two Arrays 解题记录"
+difficulty: "easy"
+tags: ["set"]
+date: "2026-01-30"
+description: "use set to solve this problem"
+---
+
+### 代码实现（TypeScript）
+
+```ts
+function intersection(nums1: number[], nums2: number[]): number[] {
+  const set1 = new Set(nums1);
+  const res = new Set<number>();
+
+  for (let num of nums2) {
+    if (set1.has(num)) res.add(num);
+  }
+
+  return Array.from(res);
+}
+```
+
+<ComplexityCard time="O(N + M)" space="O(N)" note="哈希表最多存 n 个元素" />
