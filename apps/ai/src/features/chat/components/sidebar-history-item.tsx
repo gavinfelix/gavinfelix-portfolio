@@ -45,6 +45,7 @@ const PureChatItem = ({
   const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
 
+  // Track navigation state to show loading indicator during route transition
   // Manage visibility state for this chat
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId: chat.id,
