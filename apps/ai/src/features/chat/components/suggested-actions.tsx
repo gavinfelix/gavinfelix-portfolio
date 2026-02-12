@@ -35,6 +35,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
       >
         What would you like to practice?
       </motion.div>
+      {/* Grid layout adapts to screen size: 2 columns on larger viewports */}
       <div
         className="grid w-full gap-2 sm:grid-cols-2"
         data-testid="suggested-actions"
