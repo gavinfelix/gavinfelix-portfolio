@@ -113,6 +113,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
 
+  // Fetch chat history with infinite scroll using cursor-based pagination
   const {
     data: paginatedChatHistories,
     setSize,
