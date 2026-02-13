@@ -20,6 +20,7 @@ export function AppHeader() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Settings accessible from header on all pages */}
           {/* {chatId && !isReadonly && (
             <VisibilitySelector
               chatId={chatId}
