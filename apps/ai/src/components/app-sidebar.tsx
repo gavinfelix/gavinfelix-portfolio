@@ -24,6 +24,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
 
+  // Close mobile sidebar when user clicks a nav link for better UX
   // Determine active navigation item based on current pathname
   const isDashboardActive = pathname === "/dashboard";
   const isChatActive = pathname === "/" || pathname.startsWith("/chat/");
