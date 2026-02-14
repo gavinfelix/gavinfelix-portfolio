@@ -50,6 +50,7 @@ export function VisibilitySelector({
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
 
+  // Sync visibility with API; persist changes when user selects private/public
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId,
     initialVisibilityType: selectedVisibilityType,
