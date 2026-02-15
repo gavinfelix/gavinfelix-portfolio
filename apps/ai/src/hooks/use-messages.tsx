@@ -29,6 +29,7 @@ export function useMessages({
     }
   }, [status]);
 
+  // hasSentMessage drives scroll padding for the last message
   // Return scroll utilities and message state for component use
   return {
     containerRef,
