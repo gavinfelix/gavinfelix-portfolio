@@ -37,6 +37,7 @@ export function DataStreamProvider({
 }
 
 // Hook to access data stream context (must be used within DataStreamProvider)
+// Used by Message and Chat components to receive usage stats, tool results, etc.
 export function useDataStream() {
   const context = useContext(DataStreamContext);
   if (!context) {
