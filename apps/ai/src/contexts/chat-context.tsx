@@ -23,6 +23,7 @@ const ChatContext = createContext<ChatContextType | null>(null);
 
 // Context provider for managing global chat state (chatId, visibility, readonly mode)
 export function ChatContextProvider({ children }: { children: ReactNode }) {
+  // AppHeader and other components read these from context
   const [chatId, setChatId] = useState<string | null>(null);
   const [visibilityType, setVisibilityType] =
     useState<VisibilityType>("private");
