@@ -21,6 +21,7 @@ export function useAutoResume({
 }: UseAutoResumeParams) {
   const { dataStream } = useDataStream();
 
+  // Skip if autoResume disabled or last message already has assistant reply
   // Resume interrupted stream if last message was from user (incomplete conversation)
   // Automatically continue chat when user's last message didn't receive a response
   useEffect(() => {
