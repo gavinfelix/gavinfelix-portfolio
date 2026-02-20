@@ -21,6 +21,7 @@ export function useChatVisibility({
   const { mutate, cache } = useSWRConfig();
   const history: ChatHistory = cache.get("/api/history")?.data;
 
+  // Key by chatId so each chat has independent visibility state
   // Store visibility in local SWR cache for optimistic updates
   const { data: localVisibility, mutate: setLocalVisibility } = useSWR(
     `${chatId}-visibility`,
