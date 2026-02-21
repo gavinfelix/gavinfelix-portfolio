@@ -9,6 +9,7 @@ export function useScrollToBottom() {
   const endRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
 
+  // endRef anchors bottom of list; used for scroll-into-view and position detection
   // Store scroll behavior preference in SWR cache
   const { data: scrollBehavior = false, mutate: setScrollBehavior } =
     useSWR<ScrollFlag>("messages:should-scroll", null, { fallbackData: false });
