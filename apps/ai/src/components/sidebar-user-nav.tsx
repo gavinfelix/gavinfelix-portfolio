@@ -57,7 +57,8 @@ export function SidebarUserNav({ user }: { user: User }) {
   const isGuest = !email || session?.role === "guest";
   const initials = !isGuest ? getUserInitials(email, name) : "";
   const isCollapsed = state === "collapsed";
-  
+
+  // Show sign-out, theme switch, and user info in sidebar footer
   // Render user navigation menu with theme toggle and authentication actions
   return (
     <SidebarMenu>
@@ -107,7 +108,7 @@ export function SidebarUserNav({ user }: { user: User }) {
           <DropdownMenuContent
             className={cn(
               "whitespace-nowrap",
-              isCollapsed ? "min-w-[180px]" : "w-(--radix-popper-anchor-width)"
+              isCollapsed ? "min-w-[180px]" : "w-(--radix-popper-anchor-width)",
             )}
             data-testid="user-nav-menu"
             side="top"
