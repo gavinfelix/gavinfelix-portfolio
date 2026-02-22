@@ -113,7 +113,7 @@ export function SidebarUserNav({ user }: { user: User }) {
             data-testid="user-nav-menu"
             side="top"
           >
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               className="cursor-pointer whitespace-nowrap"
               data-testid="user-nav-item-theme"
               onSelect={(e) => {
@@ -125,8 +125,8 @@ export function SidebarUserNav({ user }: { user: User }) {
               {resolvedTheme === "dark"
                 ? "Switch to light mode"
                 : "Switch to dark mode"}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            </DropdownMenuItem> */}
+            {/* <DropdownMenuSeparator /> */}
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">
               <button
                 className="w-full cursor-pointer whitespace-nowrap"
