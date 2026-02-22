@@ -42,6 +42,7 @@ export default async function Page() {
   const id = generateUUID();
   const modelIdFromCookie = cookieStore.get("chat-model");
 
+  // New chat: no model cookie yet; use default model and empty messages
   if (!modelIdFromCookie) {
     return (
       <>
