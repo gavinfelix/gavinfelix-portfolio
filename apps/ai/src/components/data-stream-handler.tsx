@@ -9,11 +9,12 @@ import { useDataStream } from "./data-stream-provider";
 // Component to process streaming data parts and update artifact state
 export function DataStreamHandler() {
   const { dataStream } = useDataStream();
-
   const { artifact, setArtifact, setMetadata } = useArtifact();
+
   // Track last processed index to only process new deltas
   const lastProcessedIndex = useRef(-1);
 
+  // Apply new stream deltas to artifact state and run definition handlers
   useEffect(() => {
     if (!dataStream?.length) {
       return;
