@@ -17,6 +17,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // SWR fetcher with error handling for API responses
+// Throws ChatSDKError with code and cause when response is not ok
 export const fetcher = async (url: string) => {
   const response = await fetch(url);
 
