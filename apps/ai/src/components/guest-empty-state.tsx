@@ -12,6 +12,7 @@ export function GuestEmptyState() {
     null
   );
 
+  // Navigate to home or login; loading state disables buttons during transition
   const handleNewChat = () => {
     setLoadingAction("chat");
     router.push("/");
