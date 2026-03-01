@@ -73,6 +73,7 @@ export function generateUUID(): string {
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Used for validating chat and message IDs before API calls
 // Validate if a string is a valid UUID v4
 export function isValidUUID(id: string): boolean {
   return UUID_REGEX.test(id);
