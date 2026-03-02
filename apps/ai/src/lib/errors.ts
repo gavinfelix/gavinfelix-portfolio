@@ -36,6 +36,7 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   activate_gateway: "response",
 };
 
+// Parses errorCode (e.g. "rate_limit:chat") into type and surface for statusCode and visibility
 // Custom error class for chat SDK with structured error codes
 export class ChatSDKError extends Error {
   type: ErrorType;
