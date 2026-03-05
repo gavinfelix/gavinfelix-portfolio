@@ -30,6 +30,7 @@ export type ChatTools = {
   requestSuggestions: requestSuggestionsTool;
 };
 
+// Stream data part types used by AI SDK and DataStreamHandler
 export type CustomUIDataTypes = {
   textDelta: string;
   imageDelta: string;
