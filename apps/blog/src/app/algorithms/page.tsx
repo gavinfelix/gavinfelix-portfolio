@@ -5,9 +5,9 @@ import { getAllPosts } from "@/lib/mdx";
 export default async function Page() {
   const allPosts = getAllPosts();
   
-  // Filter only algorithm posts
+  // Filter only algorithm posts (frontmatter may include type for algorithm MDX)
   const posts = allPosts.filter(
-    (post) => post.frontmatter.type === "algorithm"
+    (post) => (post.frontmatter as { type?: string }).type === "algorithm"
   );
 
   // Compute stats

@@ -6,6 +6,25 @@ import matter from "gray-matter";
 // Absolute path to the content/posts directory
 export const POSTS_PATH = path.join(process.cwd(), "content", "posts");
 
+export type PostFrontmatter = {
+  title?: string;
+  date?: string;
+  summary?: string;
+  tags?: string[];
+  published?: boolean;
+  type?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  platform?: string;
+  problemId?: string | number;
+  description?: string;
+};
+
+export type Post = {
+  slug: string;
+  frontmatter: PostFrontmatter;
+  content: string;
+};
+
 /**
  * Get all post slugs from the posts directory
  * @returns Array of slugs without the .mdx extension
@@ -26,18 +45,14 @@ export function getPostSlugs(): string[] {
  * @param slug - The post slug (without .mdx extension)
  * @returns Post object with slug, frontmatter, and content
  */
-export function getPostBySlug(slug: string): {
-  slug: string;
-  frontmatter: Record<string, any>;
-  content: string;
-} {
+export function getPostBySlug(slug: string): Post {
   const filePath = path.join(POSTS_PATH, `${slug}.mdx`);
   const fileContents = fs.readFileSync(filePath, "utf8");
   const { data, content } = matter(fileContents);
 
   return {
     slug,
-    frontmatter: data,
+    frontmatter: data as PostFrontmatter,
     content,
   };
 }
@@ -46,11 +61,7 @@ export function getPostBySlug(slug: string): {
  * Get all posts sorted by date (newest first)
  * @returns Array of posts sorted by frontmatter.date in descending order
  */
-export function getAllPosts(): Array<{
-  slug: string;
-  frontmatter: Record<string, any>;
-  content: string;
-}> {
+export function getAllPosts(): Post[] {
   const slugs = getPostSlugs();
   const posts = slugs.map((slug) => getPostBySlug(slug));
 
