@@ -43,8 +43,8 @@ export default async function ChatDetailPage({
   const { userId } = await searchParams;
 
   // Fetch chat data with error handling
-  let chat;
-  let messages;
+  let chat: Awaited<ReturnType<typeof getChatById>> | null = null;
+  let messages: Awaited<ReturnType<typeof getChatMessages>> = [];
   let chatError: string | null = null;
   let messagesError: string | null = null;
 
@@ -64,7 +64,8 @@ export default async function ChatDetailPage({
       messages = await getChatMessages(chatId, 200);
     } catch (err) {
       console.error("Error fetching messages:", err);
-      messagesError = err instanceof Error ? err.message : "Failed to fetch messages";
+      messagesError =
+        err instanceof Error ? err.message : "Failed to fetch messages";
       messages = [];
     }
   }
@@ -117,15 +118,21 @@ export default async function ChatDetailPage({
         <CardContent>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Chat ID</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Chat ID
+              </dt>
               <dd className="mt-1 text-sm font-mono">{chat.id}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Title</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Title
+              </dt>
               <dd className="mt-1 text-sm font-medium">{chat.title}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">User</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                User
+              </dt>
               <dd className="mt-1 text-sm">
                 <Link
                   href={`/admin/users/${chat.userId}`}
@@ -136,13 +143,17 @@ export default async function ChatDetailPage({
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Visibility</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Visibility
+              </dt>
               <dd className="mt-1">
                 <Badge variant="outline">{chat.visibility}</Badge>
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Created At</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Created At
+              </dt>
               <dd className="mt-1 text-sm">{formatDate(chat.createdAt)}</dd>
             </div>
             <div>
@@ -167,7 +178,9 @@ export default async function ChatDetailPage({
           {messagesError ? (
             <div className="p-8 text-center text-destructive">
               <p className="font-medium">Error loading messages</p>
-              <p className="text-sm text-muted-foreground mt-1">{messagesError}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {messagesError}
+              </p>
             </div>
           ) : !messages || messages.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
@@ -183,8 +196,8 @@ export default async function ChatDetailPage({
                         message.role === "user"
                           ? "default"
                           : message.role === "assistant"
-                            ? "secondary"
-                            : "outline"
+                          ? "secondary"
+                          : "outline"
                       }
                     >
                       {message.role}
@@ -198,8 +211,8 @@ export default async function ChatDetailPage({
                       message.role === "assistant"
                         ? "bg-muted/50"
                         : message.role === "user"
-                          ? "bg-primary/5"
-                          : "bg-background"
+                        ? "bg-primary/5"
+                        : "bg-background"
                     }`}
                   >
                     {message.content || "(Empty message)"}
@@ -216,4 +229,3 @@ export default async function ChatDetailPage({
     </div>
   );
 }
-

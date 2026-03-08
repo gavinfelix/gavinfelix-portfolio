@@ -3,6 +3,8 @@ import { requireAdmin } from "@/lib/auth";
 import {
   getDashboardMetrics,
   getMessageTrend,
+  type DashboardMetrics,
+  type MessageTrendPoint,
 } from "@/lib/db/queries";
 import {
   Card,
@@ -20,23 +22,22 @@ export default async function AdminDashboard() {
   await requireAdmin();
 
   // Fetch metrics with individual error handling
-  let metrics;
+  let metrics: DashboardMetrics = {
+    totalUsers: 0,
+    activeUsersLast7Days: 0,
+    totalChats: 0,
+    totalMessages: 0,
+  };
   let metricsError: string | null = null;
   try {
     metrics = await getDashboardMetrics();
   } catch (err) {
     console.error("Error fetching dashboard metrics:", err);
     metricsError = err instanceof Error ? err.message : "Failed to fetch metrics";
-    metrics = {
-      totalUsers: 0,
-      activeUsersLast7Days: 0,
-      totalChats: 0,
-      totalMessages: 0,
-    };
   }
 
   // Fetch message trend with error handling
-  let messageTrend;
+  let messageTrend: MessageTrendPoint[] = [];
   let trendError: string | null = null;
   try {
     messageTrend = await getMessageTrend(30); // Last 30 days

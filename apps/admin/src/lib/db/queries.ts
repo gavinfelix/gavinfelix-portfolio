@@ -48,8 +48,8 @@ export async function getUsers(params: {
     conditions.push(
       or(
         ilike(adminUsers.email, `%${params.search}%`),
-        ilike(adminUsers.name, `%${params.search}%`)
-      )!
+        ilike(adminUsers.name, `%${params.search}%`),
+      )!,
     );
   }
 
@@ -71,10 +71,7 @@ export async function getUsers(params: {
       .orderBy(desc(adminUsers.createdAt))
       .limit(limit)
       .offset(offset),
-    db
-      .select({ count: count() })
-      .from(adminUsers)
-      .where(whereClause),
+    db.select({ count: count() }).from(adminUsers).where(whereClause),
   ]);
 
   const total = totalResult[0]?.count ?? 0;
@@ -118,7 +115,9 @@ export async function getUserByEmail(email: string): Promise<AdminUser | null> {
 /**
  * Create a new user
  */
-export async function createUser(data: Omit<NewAdminUser, "id" | "createdAt" | "updatedAt">): Promise<AdminUser> {
+export async function createUser(
+  data: Omit<NewAdminUser, "id" | "createdAt" | "updatedAt">,
+): Promise<AdminUser> {
   const [user] = await db
     .insert(adminUsers)
     .values({
@@ -136,7 +135,7 @@ export async function createUser(data: Omit<NewAdminUser, "id" | "createdAt" | "
  */
 export async function updateUser(
   id: string,
-  data: Partial<Omit<NewAdminUser, "id" | "createdAt">>
+  data: Partial<Omit<NewAdminUser, "id" | "createdAt">>,
 ): Promise<AdminUser | null> {
   const [user] = await db
     .update(adminUsers)
@@ -154,11 +153,12 @@ export async function updateUser(
  * Delete a user by ID
  */
 export async function deleteUser(id: string): Promise<boolean> {
-  const result = await db
+  const deleted = await db
     .delete(adminUsers)
-    .where(eq(adminUsers.id, id));
+    .where(eq(adminUsers.id, id))
+    .returning({ id: adminUsers.id });
 
-  return result.rowCount !== null && result.rowCount > 0;
+  return deleted.length > 0;
 }
 
 /**
@@ -167,7 +167,7 @@ export async function deleteUser(id: string): Promise<boolean> {
  */
 export async function updateAdminUser(
   id: string,
-  data: { name?: string }
+  data: { name?: string },
 ): Promise<AdminUser | null> {
   return updateUser(id, data);
 }
@@ -189,9 +189,7 @@ export async function getAIAppUsers(params: {
   const conditions = [];
 
   if (params.search) {
-    conditions.push(
-      ilike(aiAppUsers.email, `%${params.search}%`)
-    );
+    conditions.push(ilike(aiAppUsers.email, `%${params.search}%`));
   }
 
   if (params.type) {
@@ -217,9 +215,10 @@ export async function getAIAppUsers(params: {
       .orderBy(desc(aiAppUsers.createdAt))
       .limit(limit)
       .offset(offset);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     // If status column doesn't exist, select without it and add default
-    if (error?.code === "42703" || error?.message?.includes("status")) {
+    if (err?.code === "42703" || err?.message?.includes("status")) {
       const usersWithoutStatus = await db
         .select({
           id: aiAppUsers.id,
@@ -233,7 +232,7 @@ export async function getAIAppUsers(params: {
         .orderBy(desc(aiAppUsers.createdAt))
         .limit(limit)
         .offset(offset);
-      
+
       users = usersWithoutStatus.map((u) => ({
         ...u,
         status: "active" as const,
@@ -244,10 +243,7 @@ export async function getAIAppUsers(params: {
   }
 
   const [totalResult] = await Promise.all([
-    db
-      .select({ count: count() })
-      .from(aiAppUsers)
-      .where(whereClause),
+    db.select({ count: count() }).from(aiAppUsers).where(whereClause),
   ]);
 
   const total = totalResult[0]?.count ?? 0;
@@ -274,9 +270,10 @@ export async function getAIAppUserById(id: string): Promise<AIAppUser | null> {
       .limit(1);
 
     return user ?? null;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
     // If status column doesn't exist, select without it and add default
-    if (error?.code === "42703" || error?.message?.includes("status")) {
+    if (err?.code === "42703" || err?.message?.includes("status")) {
       const [userWithoutStatus] = await db
         .select({
           id: aiAppUsers.id,
@@ -306,7 +303,7 @@ export async function getAIAppUserById(id: string): Promise<AIAppUser | null> {
  */
 export async function updateUserStatus(
   userId: string,
-  status: "active" | "banned"
+  status: "active" | "banned",
 ): Promise<AIAppUser | null> {
   try {
     const [updatedUser] = await db
@@ -319,12 +316,14 @@ export async function updateUserStatus(
       .returning();
 
     return updatedUser ?? null;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
+
     // If status column doesn't exist, the update will fail
     // This is expected if the migration hasn't been run yet
-    if (error?.code === "42703" || error?.message?.includes("status")) {
+    if (err?.code === "42703" || err?.message?.includes("status")) {
       throw new Error(
-        "Status column does not exist. Please run the database migration to add the status column."
+        "Status column does not exist. Please run the database migration to add the status column.",
       );
     }
     console.error("Error updating user status:", error);
@@ -345,7 +344,7 @@ export interface UserUsageSummary {
  * Get usage summary for a specific user
  */
 export async function getUserUsageSummary(
-  userId: string
+  userId: string,
 ): Promise<UserUsageSummary> {
   try {
     // Get chat count and last chat time
@@ -407,7 +406,7 @@ export interface RecentChat {
  */
 export async function getUserRecentChats(
   userId: string,
-  limit: number = 20
+  limit: number = 20,
 ): Promise<RecentChat[]> {
   try {
     // Get recent chats with message counts
@@ -437,12 +436,12 @@ export async function getUserRecentChats(
       .where(
         chatIds.length === 1
           ? eq(aiAppMessage.chatId, chatIds[0])
-          : inArray(aiAppMessage.chatId, chatIds as [string, ...string[]])
+          : inArray(aiAppMessage.chatId, chatIds as [string, ...string[]]),
       )
       .groupBy(aiAppMessage.chatId);
 
     const countMap = new Map(
-      messageCounts.map((mc) => [mc.chatId, Number(mc.count)])
+      messageCounts.map((mc) => [mc.chatId, Number(mc.count)]),
     );
 
     return chats.map((chat) => ({
@@ -534,14 +533,31 @@ export interface ChatMessage {
 /**
  * Extract text content from message parts
  */
+type TextPart = {
+  type: "text";
+  text: string;
+};
+
+function isTextPart(part: unknown): part is TextPart {
+  if (typeof part !== "object" || part === null) {
+    return false;
+  }
+
+  if (!("type" in part) || !("text" in part)) {
+    return false;
+  }
+
+  return part.type === "text" && typeof part.text === "string";
+}
+
 function extractTextFromParts(parts: unknown): string {
   if (!Array.isArray(parts)) {
     return "";
   }
 
   return parts
-    .filter((part: any) => part?.type === "text" && part?.text)
-    .map((part: any) => part.text)
+    .filter(isTextPart)
+    .map((part) => part.text)
     .join("\n");
 }
 
@@ -550,7 +566,7 @@ function extractTextFromParts(parts: unknown): string {
  */
 export async function getChatMessages(
   chatId: string,
-  limit: number = 200
+  limit: number = 200,
 ): Promise<ChatMessage[]> {
   try {
     const messages = await db
@@ -594,7 +610,7 @@ export interface DocumentWithUser {
  * Get all documents with pagination
  */
 export async function getDocuments(
-  limit: number = 100
+  limit: number = 100,
 ): Promise<DocumentWithUser[]> {
   try {
     const documents = await db
@@ -625,7 +641,7 @@ export async function getDocuments(
       .where(
         userIds.length === 1
           ? eq(aiAppUsers.id, userIds[0])
-          : inArray(aiAppUsers.id, userIds as [string, ...string[]])
+          : inArray(aiAppUsers.id, userIds as [string, ...string[]]),
       );
 
     const userMap = new Map(users.map((u) => [u.id, u.email]));
@@ -650,9 +666,7 @@ export async function getDocuments(
  */
 export async function getDocumentsCount(): Promise<number> {
   try {
-    const [result] = await db
-      .select({ count: count() })
-      .from(aiAppDocument);
+    const [result] = await db.select({ count: count() }).from(aiAppDocument);
 
     return Number(result?.count ?? 0);
   } catch (error) {
@@ -678,7 +692,7 @@ export interface DocumentDetail {
  * Get document by ID (gets latest version by createdAt)
  */
 export async function getDocumentById(
-  documentId: string
+  documentId: string,
 ): Promise<DocumentDetail | null> {
   try {
     // Get latest version of document (ordered by createdAt desc)
@@ -740,16 +754,15 @@ export interface RelatedChat {
  * Since there's no direct FK, we search message attachments for document references
  * This is a best-effort approach
  */
-export async function getDocumentRelatedChats(
-  documentId: string,
-  limit: number = 20
-): Promise<RelatedChat[]> {
+export async function getDocumentRelatedChats(): Promise<RelatedChat[]> {
+// documentId: string,
+// limit: number = 20,
   try {
     // Note: Since there's no direct relationship between documents and chats,
     // we'll search for document references in message attachments
     // This is a simplified approach - in reality, documents might be referenced
     // in various ways (attachments, RAG chunks, etc.)
-    
+
     // For now, we'll return an empty array as the relationship isn't clear
     // This can be enhanced later if document-chat relationships are tracked
     return [];
@@ -818,7 +831,7 @@ export async function getUserUsageStats(): Promise<UserUsageStats[]> {
       .where(
         userIdArray.length === 1
           ? eq(aiAppUsers.id, userIdArray[0])
-          : inArray(aiAppUsers.id, userIdArray as [string, ...string[]])
+          : inArray(aiAppUsers.id, userIdArray as [string, ...string[]]),
       );
 
     const userMap = new Map(users.map((u) => [u.id, u.email]));
@@ -960,7 +973,7 @@ export interface MessageTrendPoint {
  * Get messages over time (last 30 days, grouped by day)
  */
 export async function getMessageTrend(
-  days: number = 30
+  days: number = 30,
 ): Promise<MessageTrendPoint[]> {
   try {
     const startDate = new Date();
@@ -1053,4 +1066,3 @@ export async function updateAdminSettings(data: {
     throw error;
   }
 }
-

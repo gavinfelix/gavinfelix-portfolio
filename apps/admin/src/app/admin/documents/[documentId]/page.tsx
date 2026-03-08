@@ -3,6 +3,8 @@ import { requireAdmin } from "@/lib/auth";
 import {
   getDocumentById,
   getDocumentRelatedChats,
+  type DocumentDetail,
+  type RelatedChat,
 } from "@/lib/db/queries";
 import {
   Card,
@@ -47,8 +49,8 @@ export default async function DocumentDetailPage({
   const { documentId } = await params;
 
   // Fetch document data with error handling
-  let document;
-  let relatedChats;
+  let document: DocumentDetail | null | undefined;
+  let relatedChats: RelatedChat[] = [];
   let docError: string | null = null;
   let chatsError: string | null = null;
 
@@ -65,7 +67,7 @@ export default async function DocumentDetailPage({
 
   if (document) {
     try {
-      relatedChats = await getDocumentRelatedChats(documentId, 20);
+      relatedChats = await getDocumentRelatedChats();
     } catch (err) {
       console.error("Error fetching related chats:", err);
       chatsError =

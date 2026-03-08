@@ -1,6 +1,9 @@
 // Admin usage analytics page displaying per-user usage statistics
 import { requireAdmin } from "@/lib/auth";
-import { getUserUsageStats } from "@/lib/db/queries";
+import {
+  getUserUsageStats,
+  type UserUsageStats,
+} from "@/lib/db/queries";
 import {
   Card,
   CardContent,
@@ -15,7 +18,7 @@ export default async function UsagePage() {
   // Middleware already handles redirect, but this provides an additional check
   await requireAdmin();
 
-  let usageStats;
+  let usageStats: UserUsageStats[] = [];
   let error: string | null = null;
 
   try {

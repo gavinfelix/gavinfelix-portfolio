@@ -14,8 +14,12 @@ export async function PATCH(request: Request) {
     let body;
     try {
       body = await request.json();
-    } catch (_error) {
-      return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? `Invalid JSON body: ${error.message}`
+          : `Invalid JSON body`;
+      return Response.json({ error: errorMessage }, { status: 400 });
     }
 
     const { name } = body;

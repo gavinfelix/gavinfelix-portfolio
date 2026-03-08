@@ -32,7 +32,13 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   // Validate page number
   const validPage = isNaN(page) || page < 1 ? 1 : page;
 
-  let result;
+  let result: Awaited<ReturnType<typeof getAIAppUsers>> = {
+    users: [],
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  };
   let error: string | null = null;
 
   try {
@@ -40,13 +46,6 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
   } catch (err) {
     console.error("Error fetching users:", err);
     error = err instanceof Error ? err.message : "Failed to fetch users";
-    result = {
-      users: [],
-      total: 0,
-      page: 1,
-      limit: 10,
-      totalPages: 0,
-    };
   }
 
   // Check if there are more results (hasMore)

@@ -4,6 +4,8 @@ import {
   getAIAppUserById,
   getUserUsageSummary,
   getUserRecentChats,
+  type UserUsageSummary,
+  type RecentChat,
 } from "@/lib/db/queries";
 import {
   Card,
@@ -51,9 +53,13 @@ export default async function UserDetailPage({ params }: UserDetailPageProps) {
   const { userId } = await params;
 
   // Fetch user data with error handling
-  let user;
-  let usageSummary;
-  let recentChats;
+  let user: Awaited<ReturnType<typeof getAIAppUserById>> = null;
+  let usageSummary: UserUsageSummary = {
+    totalChats: 0,
+    totalMessages: 0,
+    lastActivity: null,
+  };
+  let recentChats: RecentChat[] = [];
   let userError: string | null = null;
   let usageError: string | null = null;
   let chatsError: string | null = null;

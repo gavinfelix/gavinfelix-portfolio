@@ -1,6 +1,10 @@
 // Documents list page showing all uploaded documents
 import { requireAdmin } from "@/lib/auth";
-import { getDocuments, getDocumentsCount } from "@/lib/db/queries";
+import {
+  getDocuments,
+  getDocumentsCount,
+  type DocumentWithUser,
+} from "@/lib/db/queries";
 import {
   Card,
   CardContent,
@@ -33,8 +37,8 @@ function formatDate(date: Date | string): string {
 export default async function DocumentsPage() {
   await requireAdmin();
 
-  let documents;
-  let totalCount;
+  let documents: DocumentWithUser[] = [];
+  let totalCount: number = 0;
   let error: string | null = null;
 
   try {
