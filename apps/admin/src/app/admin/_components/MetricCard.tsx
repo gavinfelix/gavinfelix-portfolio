@@ -1,4 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "@/components/ui/card";
 
 interface MetricCardProps {
   title: string;
@@ -25,19 +30,13 @@ export function MetricCard({
         <div className="text-3xl font-bold">
           {error ? (
             <span className="text-destructive">Error</span>
+          ) : typeof value === "number" ? (
+            new Intl.NumberFormat("en-US").format(value)
           ) : (
-            typeof value === "number" ? (
-              new Intl.NumberFormat("en-US").format(value)
-            ) : (
-              value
-            )
+            value
           )}
         </div>
       </CardContent>
     </Card>
   );
 }
-
-
-
-

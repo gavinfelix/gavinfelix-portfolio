@@ -14,11 +14,8 @@ export async function PATCH(request: Request) {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
-      return Response.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
+    } catch (_error) {
+      return Response.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const { name } = body;
@@ -28,24 +25,21 @@ export async function PATCH(request: Request) {
       if (typeof name !== "string") {
         return Response.json(
           { error: "Name must be a string" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
       if (name.trim().length === 0) {
         return Response.json(
           { error: "Name cannot be empty" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
 
     // Check if there's anything to update
     if (name === undefined) {
-      return Response.json(
-        { error: "No fields to update" },
-        { status: 400 }
-      );
+      return Response.json({ error: "No fields to update" }, { status: 400 });
     }
 
     // Update user
@@ -54,10 +48,7 @@ export async function PATCH(request: Request) {
     });
 
     if (!updatedUser) {
-      return Response.json(
-        { error: "Failed to update user" },
-        { status: 500 }
-      );
+      return Response.json({ error: "Failed to update user" }, { status: 500 });
     }
 
     return Response.json({
@@ -66,10 +57,6 @@ export async function PATCH(request: Request) {
     });
   } catch (error) {
     console.error("[PATCH /api/settings] Error:", error);
-    return Response.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

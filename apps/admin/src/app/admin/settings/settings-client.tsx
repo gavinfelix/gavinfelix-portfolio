@@ -15,7 +15,7 @@ type AdminSettings = {
 type ApiResponse<T> = { ok: true; data: T } | { ok: false; error: string };
 
 export function SettingsPage() {
-  const [settings, setSettings] = useState<AdminSettings | null>(null);
+  // const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export function SettingsPage() {
         const result: ApiResponse<AdminSettings> = await response.json();
 
         if (result.ok) {
-          setSettings(result.data);
+          // setSettings(result.data);
           setSiteName(result.data.siteName);
           setAllowSignup(result.data.allowSignup);
           setDailyTokenLimit(result.data.dailyTokenLimit);
@@ -74,7 +74,7 @@ export function SettingsPage() {
       const result: ApiResponse<AdminSettings> = await response.json();
 
       if (result.ok) {
-        setSettings(result.data);
+        // setSettings(result.data);
         setSuccess(true);
         // Clear success message after 3 seconds
         setTimeout(() => setSuccess(false), 3000);

@@ -2,9 +2,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { getAdminSettings, updateAdminSettings } from "@/lib/db/queries";
 
-type ApiResponse<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+type ApiResponse<T> = { ok: true; data: T } | { ok: false; error: string };
 
 /**
  * GET /api/admin/settings
@@ -19,7 +17,7 @@ export async function GET(): Promise<Response> {
     if (!settings) {
       return Response.json(
         { ok: false, error: "Settings not found" } as ApiResponse<null>,
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -39,7 +37,7 @@ export async function GET(): Promise<Response> {
     console.error("[GET /api/admin/settings] Error:", error);
     return Response.json(
       { ok: false, error: "Internal server error" } as ApiResponse<null>,
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -57,9 +55,13 @@ export async function PATCH(request: Request): Promise<Response> {
     try {
       body = await request.json();
     } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? `Invalid JSON body: ${error.message}`
+          : "Invalid JSON body";
       return Response.json(
-        { ok: false, error: "Invalid JSON body" } as ApiResponse<null>,
-        { status: 400 }
+        { ok: false, error: errorMessage } as ApiResponse<null>,
+        { status: 400 },
       );
     }
 
@@ -75,14 +77,17 @@ export async function PATCH(request: Request): Promise<Response> {
     if (siteName !== undefined) {
       if (typeof siteName !== "string") {
         return Response.json(
-          { ok: false, error: "siteName must be a string" } as ApiResponse<null>,
-          { status: 400 }
+          {
+            ok: false,
+            error: "siteName must be a string",
+          } as ApiResponse<null>,
+          { status: 400 },
         );
       }
       if (siteName.trim().length === 0) {
         return Response.json(
           { ok: false, error: "siteName cannot be empty" } as ApiResponse<null>,
-          { status: 400 }
+          { status: 400 },
         );
       }
       updateData.siteName = siteName.trim();
@@ -95,7 +100,7 @@ export async function PATCH(request: Request): Promise<Response> {
             ok: false,
             error: "allowSignup must be a boolean",
           } as ApiResponse<null>,
-          { status: 400 }
+          { status: 400 },
         );
       }
       updateData.allowSignup = allowSignup;
@@ -108,7 +113,7 @@ export async function PATCH(request: Request): Promise<Response> {
             ok: false,
             error: "dailyTokenLimit must be a number",
           } as ApiResponse<null>,
-          { status: 400 }
+          { status: 400 },
         );
       }
       if (dailyTokenLimit < 0) {
@@ -117,7 +122,7 @@ export async function PATCH(request: Request): Promise<Response> {
             ok: false,
             error: "dailyTokenLimit must be non-negative",
           } as ApiResponse<null>,
-          { status: 400 }
+          { status: 400 },
         );
       }
       updateData.dailyTokenLimit = dailyTokenLimit;
@@ -127,7 +132,7 @@ export async function PATCH(request: Request): Promise<Response> {
     if (Object.keys(updateData).length === 0) {
       return Response.json(
         { ok: false, error: "No fields to update" } as ApiResponse<null>,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -137,7 +142,7 @@ export async function PATCH(request: Request): Promise<Response> {
     if (!updated) {
       return Response.json(
         { ok: false, error: "Failed to update settings" } as ApiResponse<null>,
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -157,8 +162,7 @@ export async function PATCH(request: Request): Promise<Response> {
     console.error("[PATCH /api/admin/settings] Error:", error);
     return Response.json(
       { ok: false, error: "Internal server error" } as ApiResponse<null>,
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
