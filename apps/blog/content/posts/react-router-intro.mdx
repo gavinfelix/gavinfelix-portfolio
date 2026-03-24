@@ -1,0 +1,102 @@
+---
+title: 'React Router 入门：前端路由与页面跳转实践'
+date: '2026-03-24'
+description: '理解 React Router 的核心概念，快速上手路由配置、动态参数、嵌套路由与导航。'
+tags: ['React', 'React Router', '前端路由']
+---
+
+# React Router 入门：前端路由与页面跳转实践
+
+在单页应用（SPA）里，页面切换通常不是真正刷新整个网页，而是根据 URL 渲染不同组件。  
+**React Router** 就是 React 生态中最常用的前端路由方案之一。
+
+## React Router 解决什么问题
+
+- URL 和页面内容建立映射关系
+- 支持前进/后退历史记录
+- 支持动态路由参数（如 `/posts/:id`）
+- 支持嵌套路由（布局 + 子页面）
+
+## 基础示例
+
+下面是一个常见的路由配置（以 v6+ 写法为例）：
+
+```tsx
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+
+function Home() {
+  return <h1>Home</h1>;
+}
+
+function About() {
+  return <h1>About</h1>;
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <nav>
+        <Link to="/">Home</Link> | <Link to="/about">About</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+## 动态路由参数
+
+当你需要根据 URL 渲染详情页时，可以用参数路由：
+
+```tsx
+import { useParams } from 'react-router-dom';
+
+function PostDetail() {
+  const { id } = useParams();
+  return <div>Post ID: {id}</div>;
+}
+```
+
+对应路由：
+
+```tsx
+<Route path="/posts/:id" element={<PostDetail />} />
+```
+
+## 嵌套路由与 `Outlet`
+
+父路由通常放布局（导航、侧栏），子路由渲染到 `Outlet`：
+
+```tsx
+import { Outlet } from 'react-router-dom';
+
+function DashboardLayout() {
+  return (
+    <div>
+      <h2>Dashboard</h2>
+      <Outlet />
+    </div>
+  );
+}
+```
+
+```tsx
+<Route path="/dashboard" element={<DashboardLayout />}>
+  <Route path="profile" element={<ProfilePage />} />
+  <Route path="settings" element={<SettingsPage />} />
+</Route>
+```
+
+## 常见实践建议
+
+- **404 页面**：加一个 `path="*"` 的兜底路由。
+- **导航高亮**：优先用 `NavLink`，可根据激活状态切换样式。
+- **编程式跳转**：在事件或异步回调里用 `useNavigate`。
+- **路由拆分**：项目变大后按业务模块拆分路由配置，提升维护性。
+
+## 小结
+
+React Router 的核心是：**URL 驱动 UI**。当你掌握了路由配置、参数、嵌套和导航，绝大多数中小型 React 项目都能快速搭建出清晰的页面结构。
