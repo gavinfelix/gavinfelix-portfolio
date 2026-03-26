@@ -1,0 +1,116 @@
+---
+title: 'Redux Toolkit（RTK）快速上手：更少样板代码的状态管理'
+date: '2026-03-24'
+description: '从 createSlice、configureStore 到 createAsyncThunk，快速掌握 RTK 在 React 项目中的核心用法。'
+tags: ['React', 'Redux Toolkit', '状态管理']
+---
+
+# Redux Toolkit（RTK）快速上手：更少样板代码的状态管理
+
+如果你用过早期 Redux，大概率会对 `action type`、`action creator`、`switch case` 那一套样板代码印象深刻。  
+**Redux Toolkit（RTK）** 是官方推荐写法，目标很明确：**保留 Redux 的可预测性，同时把开发体验做得更现代**。
+
+## 为什么优先用 RTK
+
+- **官方推荐**：Redux 团队把 RTK 作为默认开发方式。
+- **更少模板代码**：`createSlice` 一步定义 state、reducer、action。
+- **内置最佳实践**：默认集成 thunk、中间件检查、DevTools。
+- **不可变更新更简单**：借助 Immer，可以“看起来像直接改 state”。
+
+## 核心 API 一览
+
+### 1) `configureStore`
+
+用于创建 store，默认帮你配置好常用中间件和 DevTools。
+
+```ts
+import { configureStore } from '@reduxjs/toolkit';
+import counterReducer from './counterSlice';
+
+export const store = configureStore({
+  reducer: {
+    counter: counterReducer,
+  },
+});
+```
+
+### 2) `createSlice`
+
+在一个地方同时定义初始状态、reducer、自动生成的 action。
+
+```ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+type CounterState = {
+  value: number;
+};
+
+const initialState: CounterState = { value: 0 };
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
+  reducers: {
+    increment: (state) => {
+      state.value += 1;
+    },
+    addByAmount: (state, action: PayloadAction<number>) => {
+      state.value += action.payload;
+    },
+  },
+});
+
+export const { increment, addByAmount } = counterSlice.actions;
+export default counterSlice.reducer;
+```
+
+### 3) `createAsyncThunk`
+
+处理异步流程（loading/success/error）很常用。
+
+```ts
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+
+export const fetchUser = createAsyncThunk('user/fetchUser', async (id: string) => {
+  const res = await fetch(`/api/users/${id}`);
+  return res.json();
+});
+
+const userSlice = createSlice({
+  name: 'user',
+  initialState: { data: null, loading: false, error: null as string | null },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message ?? 'Request failed';
+      });
+  },
+});
+```
+
+## 在 React 中如何使用
+
+1. 用 `Provider` 包裹应用并注入 store。  
+2. 用 `useSelector` 读状态。  
+3. 用 `useDispatch` 发送 action。
+
+如果是 TypeScript，建议封装 `useAppSelector` 和 `useAppDispatch`，减少类型重复声明。
+
+## 什么时候该用 RTK Query
+
+如果你项目里“服务端数据请求 + 缓存 + 失效”占比很高，**RTK Query** 会比手写 `createAsyncThunk` 更省心。它能自动处理请求状态、缓存、重新请求和标签失效，尤其适合中后台和数据驱动页面。
+
+## 小结
+
+RTK 不是“另一个状态库”，而是 Redux 的现代化官方方案。它最大的价值是：  
+**让你把精力放在业务状态建模，而不是重复样板代码。**
