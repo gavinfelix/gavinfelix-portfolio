@@ -1,0 +1,158 @@
+---
+title: '前端面试：浏览器高频问题速记（渲染、事件循环、存储、安全、性能）'
+date: '2026-03-24'
+description: '把浏览器常见面试题按模块整理：渲染与回流重绘、Event Loop、缓存与存储、跨域与安全、性能优化与网络。'
+tags: ['前端', '浏览器', '面试', 'JavaScript']
+---
+
+# 前端面试：浏览器高频问题速记（渲染、事件循环、存储、安全、性能）
+
+浏览器题目看似“八股”，本质考的是：你是否理解 **Web 应用运行时**，并能把它转化为**可落地的性能/稳定性决策**。
+
+这篇把常见问题按模块整理，每个点尽量给出「一句话结论 + 面试可用要点」。
+
+## 渲染流程：从输入 URL 到页面可见
+
+### 输入 URL 后发生了什么？
+
+常见回答结构：
+
+- **解析 URL**：补全协议、判断是否需要跳转（HSTS / 301 / 302）。
+- **查缓存**：Service Worker / HTTP 缓存 / Memory cache 等（命中就少走网络）。
+- **DNS**：递归解析到 IP（可能命中本地/系统/运营商缓存）。
+- **建立连接**：TCP 三次握手；HTTPS 还要 TLS 握手（HTTP/2 可复用连接）。
+- **请求响应**：服务端处理，返回 HTML/CSS/JS 等资源。
+- **解析与渲染**：
+  - HTML → DOM
+  - CSS → CSSOM
+  - DOM + CSSOM → Render Tree
+  - Layout（布局）→ Paint（绘制）→ Composite（合成）
+- **执行 JS**：可能阻塞解析/渲染（取决于脚本位置与 `defer/async`）。
+
+面试加分点：提一句 **关键渲染路径（CRP）**、以及 **JS 执行会阻塞渲染**（主线程竞争）。
+
+### 回流（reflow）和重绘（repaint）有什么区别？
+
+- **回流/布局**：元素几何信息变化（尺寸/位置）导致重新计算布局，代价更高。
+- **重绘**：外观变化（颜色、背景）但不影响布局，只需重新绘制。
+- **合成**：某些属性（如 `transform/opacity`）可走合成层，通常更省。
+
+常见触发：
+
+- 回流：改 `width/height/padding/margin/display/position/top/left`、读取布局信息（见下）。
+- 重绘：改 `color/background/border-color` 等。
+
+### 为什么“读写交错”会导致布局抖动（layout thrashing）？
+
+浏览器可能把 layout 延迟到必须时才算，但你一边写样式一边读布局信息，会迫使它频繁“立刻计算”。
+
+会触发强制同步 layout 的常见读取：
+
+- `offsetWidth/offsetHeight/offsetTop`
+- `clientWidth/clientHeight`
+- `getBoundingClientRect()`
+- `getComputedStyle()`
+
+应对策略：
+
+- 把读取集中在一起，把写入集中在一起（批处理）。
+- 动画优先用 `transform/opacity`。
+- 大列表用虚拟列表，减少节点数量。
+
+## 事件循环（Event Loop）：宏任务/微任务/渲染时机
+
+### 宏任务与微任务的区别？
+
+面试要点版：
+
+- **宏任务（task）**：如 `setTimeout`、`setInterval`、I/O、UI 事件回调等。
+- **微任务（microtask）**：`Promise.then/catch/finally`、`queueMicrotask`、`MutationObserver`。
+- **执行顺序**：当前调用栈清空后，先把**微任务队列清空**，再进入下一轮宏任务；渲染通常发生在合适的时机（浏览器实现细节，但一般在任务之间）。
+
+### 这段代码输出是什么？
+
+```js
+console.log(1);
+setTimeout(() => console.log(2), 0);
+Promise.resolve().then(() => console.log(3));
+console.log(4);
+```
+
+典型输出：`1 4 3 2`  
+解释抓要点：同步 → 微任务 → 宏任务。
+
+### `requestAnimationFrame` 和 `setTimeout` 区别？
+
+- **`requestAnimationFrame`**：在浏览器下一帧绘制前执行，适合做动画更新（与刷新率对齐，后台页会降频/暂停）。
+- **`setTimeout`**：按最小延时排队（并不精确），可能卡在主线程忙碌后很久才执行。
+
+## 存储与缓存：Cookie / localStorage / sessionStorage / IndexedDB
+
+### 这些存储怎么选？
+
+- **Cookie**
+  - 会随请求自动带上（受域、路径、SameSite 等影响）
+  - 适合会话标识（但容量小，约 4KB/条）
+  - 安全属性：`HttpOnly`、`Secure`、`SameSite`
+- **localStorage**
+  - 持久化；同源共享；容量一般 5-10MB
+  - 同步 API，频繁读写可能阻塞主线程
+- **sessionStorage**
+  - 仅当前标签页会话；关闭页签清空（同源）
+- **IndexedDB**
+  - 适合大量结构化数据；异步；容量更大
+  - 常用于离线缓存、复杂数据存储
+
+### HTTP 缓存：强缓存与协商缓存
+
+- **强缓存**：`Cache-Control: max-age` / `Expires`，未过期直接用本地缓存，不发请求。
+- **协商缓存**：过期后发请求带 `If-None-Match`（对应 `ETag`）或 `If-Modified-Since`（对应 `Last-Modified`），服务器返回 `304` 表示可复用缓存。
+
+加分点：`Cache-Control` 优先级通常高于 `Expires`，并可用 `no-store/no-cache/private/public` 控制策略。
+
+## 跨域与安全：CORS、XSS、CSRF
+
+### 什么是同源策略？为什么要有它？
+
+同源=协议+域名+端口都相同。浏览器限制不同源之间读取资源（尤其是 DOM、Cookie 等），防止恶意站点窃取数据。
+
+### CORS 的简单请求与预检请求？
+
+要点回答：
+
+- **简单请求**：满足特定方法/头/Content-Type 条件时，不会先发 OPTIONS。
+- **预检（preflight）**：不满足简单请求条件时，浏览器先发 `OPTIONS` 问服务端是否允许跨域（`Access-Control-Allow-*`）。
+- 关键头：`Access-Control-Allow-Origin`、`Access-Control-Allow-Credentials`、`Access-Control-Allow-Headers`、`Access-Control-Allow-Methods`。
+
+### XSS 与 CSRF 分别是什么？怎么防？
+
+- **XSS**：把恶意脚本注入页面，利用用户上下文执行。
+  - 防护：输出转义、CSP、避免 `innerHTML` 拼接、框架默认防护不要绕开。
+- **CSRF**：利用用户已登录的身份，在第三方站点发起跨站请求。
+  - 防护：`SameSite` Cookie、CSRF Token、验证 Referer/Origin、关键操作二次校验。
+
+## 性能与调试：你会怎么定位慢？
+
+### 常见性能指标（知道名词 + 解释其意义）
+
+- **TTFB**：首字节时间，偏后端/网络。
+- **FCP/LCP**：首次/最大内容绘制，偏首屏体验。
+- **CLS**：布局偏移，偏稳定性。
+- **INP**：交互延迟，偏主线程繁忙与事件处理。
+
+### 你会怎么做性能优化（按层次回答）
+
+- **网络层**：CDN、压缩（gzip/br）、HTTP/2、资源缓存、减少请求数。
+- **资源层**：图片（WebP/AVIF、响应式、懒加载）、代码分割、按需加载、tree-shaking。
+- **渲染层**：减少 DOM、避免频繁回流、使用虚拟列表、动画用 `transform/opacity`。
+- **JS 层**：减少主线程长任务、拆分计算、Web Worker、避免不必要的 re-render（React）。
+
+## 面试“背诵版”总结（30 秒）
+
+- 浏览器渲染主线：DOM/CSSOM → Render Tree → Layout → Paint → Composite；JS 与渲染抢主线程。
+- 回流更贵，`transform/opacity` 更友好；读写交错会触发布局抖动。
+- Event Loop：同步 → 微任务清空 → 宏任务；`rAF` 在下一帧绘制前跑。
+- 存储：Cookie 随请求、localStorage 同步、IndexedDB 异步大容量；缓存分强缓存/协商缓存。
+- 安全：同源策略；CORS 预检；XSS（转义+CSP）与 CSRF（SameSite/Token）。
+
+如果你愿意，我可以再补一篇「浏览器网络题：HTTP/1.1 vs HTTP/2 vs HTTP/3、TLS、QUIC」作为配套系列。
