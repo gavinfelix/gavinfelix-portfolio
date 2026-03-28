@@ -1,0 +1,80 @@
+---
+title: 'Next.js 框架速览：App Router、服务端与客户端、数据获取'
+date: '2026-03-28'
+description: '从路由与渲染模型出发，梳理 Next.js 的核心概念：App Router、Server/Client Components、数据获取与常见工程实践。'
+tags: ['Next.js', 'React', '全栈', '前端']
+---
+
+# Next.js 框架速览：App Router、服务端与客户端、数据获取
+
+**Next.js** 是基于 React 的全栈框架，把**路由、渲染策略、数据获取、构建与部署**打包成一套约定，让你少写胶水代码，多关注业务。下面按「面试常问 + 日常开发」两条线，做一个结构化速览。
+
+## Next.js 解决什么问题
+
+- **文件系统路由**：目录结构即 URL，减少手写路由表。
+- **多种渲染方式**：静态生成、服务端渲染、流式输出等，可按页面选择。
+- **全栈能力**：Route Handlers、`server actions` 等可在同仓库里写 API 与页面逻辑。
+- **工程化默认值**：代码分割、图片优化组件、字体与元数据等开箱即用。
+
+## App Router 与 Pages Router
+
+- **Pages Router**（`pages/`）：成熟、文档与社区案例多；每个文件默认是一个路由页面。
+- **App Router**（`app/`）：当前推荐方向，基于 **React Server Components（RSC）** 重新组织布局与数据流。
+
+新项目优先 **App Router**；老项目可逐步迁移，两者也可在一定阶段共存（需注意边界与配置）。
+
+## App Router 里最重要的三件事
+
+### 1) 路由与布局
+
+- `app/page.tsx` → 站点根路径 `/`
+- `app/blog/page.tsx` → `/blog`
+- `app/blog/[slug]/page.tsx` → 动态段，如 `/blog/hello`
+- `layout.tsx` 包裹子路由，适合导航、主题、全局 Provider（注意 Client 边界，见下）。
+
+### 2) Server Components 与 Client Components
+
+默认在 `app/` 下的组件多为 **Server Component**：可在服务端直接读数据库、读文件，且默认不把整棵子树 JS 都发到浏览器。
+
+需要交互（`useState`、`useEffect`、浏览器 API、事件监听）时，在文件顶部加 `'use client'`，该文件及其依赖树进入 **Client** 边界。
+
+面试要点：**默认服务端、按需客户端**；不要把整个应用都标成 client。
+
+### 3) 数据获取放在哪
+
+在 App Router 中，常见做法是：
+
+- 在 **Server Component** 里 `async` 组件内 `await` 数据（或抽成 `lib` 里的异步函数），渲染前在服务端完成拉取。
+- 需要客户端轮询、强交互表单等，再用 Client Component + `fetch` / SWR / React Query 等。
+
+原则是：**能在服务端做的 IO，尽量在服务端做**，减少首屏 JS 与瀑布请求。
+
+## 常用模式速记
+
+### 元数据与 SEO
+
+`layout.tsx` / `page.tsx` 中导出 `metadata` 或 `generateMetadata`，便于标题、描述、Open Graph 等统一管理。
+
+### 加载与错误边界
+
+- `loading.tsx`：Suspense 边界的默认占位，改善感知性能。
+- `error.tsx`：路由段错误 UI；可配合重置逻辑。
+
+### Route Handlers
+
+`app/api/.../route.ts` 导出 `GET` / `POST` 等，适合 BFF、Webhook、简单 JSON API。
+
+## 和「纯 CRA + React Router」对比
+
+| 维度 | 典型 SPA | Next.js（App Router） |
+|------|----------|------------------------|
+| 首屏 | 依赖客户端拉数据再渲染 | 可在服务端先拼好 HTML |
+| 路由 | 手写或集中配置 | 目录即路由 + 嵌套 layout |
+| SEO | 需额外 SSR 方案 | 框架内建多种渲染策略 |
+| 部署 | 静态托管为主 | Vercel 等边缘/Node 运行时配合良好 |
+
+## 小结
+
+Next.js 的核心不是「又一个 React 脚手架」，而是 **把 URL、渲染位置（服务端/客户端）和数据获取绑成清晰模型**。面试或技术选型时，能说清 **App Router、RSC 默认、Client 边界、以及为何要把数据请求放在服务端组件**，通常就够打开更深一层的讨论（缓存、`fetch` 语义、`revalidate`、流式 UI 等）。
+
+若你接下来想写系列文，可以单独拆一篇专门讲 **缓存与重新验证（`revalidatePath` / `revalidateTag`）** 或 **Server Actions 与表单**。
