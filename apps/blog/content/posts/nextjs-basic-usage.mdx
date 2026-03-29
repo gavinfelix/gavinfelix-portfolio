@@ -1,0 +1,161 @@
+---
+title: 'Next.js 基本用法：从零跑起一个 App Router 项目'
+date: '2026-03-28'
+description: '用最少步骤创建项目、理解 app 目录约定，并掌握页面、布局、导航、图片与简单数据请求的写法。'
+tags: ['Next.js', 'React', '教程', '前端']
+---
+
+# Next.js 基本用法：从零跑起一个 App Router 项目
+
+这篇偏重**动手**：创建工程、常见目录、`page` / `layout` 怎么写、`Link` 与 `Image` 怎么用，以及一个在服务端拉数据的极简例子。概念层可看同系列的框架速览文。
+
+## 创建项目
+
+官方脚手架会生成 App Router 结构（`app/`）：
+
+```bash
+pnpm create next-app@latest my-app
+cd my-app
+pnpm dev
+```
+
+创建时的常见选项：TypeScript、ESLint、Tailwind、`src/` 目录、`App Router` 等，按团队习惯勾选即可。浏览器打开 `http://localhost:3000` 应能看到欢迎页。
+
+## 默认会出什么目录（典型 App Router）
+
+```
+my-app/
+  app/
+    layout.tsx      # 根布局
+    page.tsx        # 路由 /
+    globals.css
+  public/           # 静态文件，如 /favicon.ico
+  next.config.ts
+  package.json
+```
+
+- **`app/page.tsx`**：对应路径 `/`，即首页。
+- **`app/layout.tsx`**：包裹本段及子路由的公共壳（导航、字体、`<html>/<body>` 等）。
+
+## 新增一个页面
+
+例如增加 `/about`：
+
+`app/about/page.tsx`：
+
+```tsx
+export default function AboutPage() {
+  return <h1>关于本站</h1>;
+}
+```
+
+无需注册路由：**文件路径 = URL**。
+
+## 根布局里放全局导航
+
+`app/layout.tsx` 里通常已有 `<html>`、`<body>`。可加入导航并用 **`next/link`** 做客户端跳转（不整页刷新）：
+
+```tsx
+import Link from 'next/link';
+import type { ReactNode } from 'react';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="zh-CN">
+      <body>
+        <nav>
+          <Link href="/">首页</Link>
+          {' · '}
+          <Link href="/about">关于</Link>
+        </nav>
+        <main>{children}</main>
+      </body>
+    </html>
+  );
+}
+```
+
+## 动态路由 `[param]`
+
+例如文章详情 `/posts/任意-slug`：
+
+`app/posts/[slug]/page.tsx`：
+
+```tsx
+type Props = { params: Promise<{ slug: string }> };
+
+export default async function PostPage({ params }: Props) {
+  const { slug } = await params;
+  return <h1>文章：{slug}</h1>;
+}
+```
+
+> Next.js 15 起，路由 `params` 常为 **Promise**，在 `async` 组件里 `await params` 即可。
+
+## 图片：`next/image`
+
+把图放在 `public/`，例如 `public/hero.png`，在页面里：
+
+```tsx
+import Image from 'next/image';
+
+export default function Home() {
+  return <Image src="/hero.png" alt="头图" width={800} height={400} priority />;
+}
+```
+
+按需填 `width` / `height`（或配合 `fill` + 父容器定位），避免布局抖动。
+
+## 服务端请求数据（默认 Server Component）
+
+在 **`page.tsx` 不写 `'use client'`** 时，组件可在服务端 `async`，直接 `fetch`：
+
+```tsx
+export default async function Page() {
+  const res = await fetch('https://api.example.com/items', { next: { revalidate: 60 } });
+  const data = (await res.json()) as { title: string }[];
+
+  return (
+    <ul>
+      {data.map((item) => (
+        <li key={item.title}>{item.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+`next: { revalidate: 60 }` 表示可按时间做**增量再验证**（行为随 Next 版本与缓存策略略有差异，入门知道「可配置重新拉取」即可）。
+
+## 需要按钮、表单、状态时：客户端组件
+
+新建 `app/ui/counter.tsx`：
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+
+export function Counter() {
+  const [n, setN] = useState(0);
+  return <button type="button" onClick={() => setN((x) => x + 1)}>点了 {n} 次</button>;
+}
+```
+
+在服务端页面里照常引入：会形成 **Client 边界**，仅保证该子树打包到浏览器。
+
+## 常用命令
+
+| 命令 | 作用 |
+|------|------|
+| `pnpm dev` | 本地开发，热更新 |
+| `pnpm build` | 生产构建 |
+| `pnpm start` | 跑构建产物（先 `build`） |
+
+## 小结
+
+- 路由：**`app/.../page.tsx`** 对应 URL；**`layout.tsx`** 包一层壳。
+- 导航用 **`Link`**，图片用 **`Image`**。
+- 默认在服务端组件里 **`async` + `fetch`**；交互再加 **`'use client'`**。
+
+更细的渲染策略、缓存与 Server Actions，可以按需再拆专题。
