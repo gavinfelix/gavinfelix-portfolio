@@ -1,0 +1,89 @@
+---
+title: '简单算法：二分查找（Binary Search）'
+date: '2026-03-30'
+description: '用清晰的边界条件解释二分查找，并给出可直接套用的实现模板。'
+tags: ['算法', '二分查找', 'JavaScript']
+---
+
+# 简单算法：二分查找（Binary Search）
+
+二分查找适用于：**有序数组**中寻找目标值（或寻找“第一个满足条件”的位置）。它的核心是：每一步把搜索区间减半，直到区间长度变为 0。
+
+## 适用条件
+
+- 数据结构是**有序**的（升序或降序，写法略有差异）
+- 目标是：查找命中值，或查找边界位置（如 lower bound）
+
+## 经典模板：查找目标是否存在
+
+假设数组为升序：`nums`，目标为 `target`。
+
+思路：
+
+- 用两个指针 `left`、`right` 表示当前搜索区间（包含边界）
+- 取 `mid = Math.floor((left + right) / 2)`
+- 比较 `nums[mid]` 与 `target`：
+  - 小于：目标只能在右半区间 → `left = mid + 1`
+  - 大于：目标只能在左半区间 → `right = mid - 1`
+  - 等于：直接返回
+
+```js
+function binarySearch(nums, target) {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const value = nums[mid];
+
+    if (value === target) return mid;
+    if (value < target) left = mid + 1;
+    else right = mid - 1;
+  }
+
+  return -1; // 没找到
+}
+```
+
+## 边界条件：为什么是 `left <= right`
+
+`left` 和 `right` 都参与搜索时，循环条件应当是 `left <= right`。  
+否则会出现：
+
+- 目标在最后一个可能位置时，循环提前结束
+- 或区间收缩导致跳过答案
+
+## 进阶：找“第一个 >= target”（Lower Bound）
+
+很多面试题需要找边界，比如“返回插入位置”。此时常用 **lower bound** 模板：
+
+- 维护区间为半开：`[left, right)`（`right` 不参与）
+- 当 `nums[mid] < target`，说明 mid 及其左侧都不够大 → `left = mid + 1`
+- 否则，让 `right = mid`，继续在左侧找更小的满足位置
+
+```js
+function lowerBound(nums, target) {
+  let left = 0;
+  let right = nums.length; // 注意：是半开区间，所以 right 初始是 length
+
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2);
+    if (nums[mid] < target) left = mid + 1;
+    else right = mid;
+  }
+
+  return left; // left 是第一个 >= target 的位置（可能等于 nums.length）
+}
+```
+
+## 复杂度
+
+- 时间复杂度：`O(log n)`（每轮区间减半）
+- 空间复杂度：`O(1)`
+
+## 小结（面试可背）
+
+- 二分查找依赖“有序”
+- 两种常见写法：`left <= right`（闭区间） vs `left < right`（半开区间）
+- 小心边界条件，写对更新规则（`mid + 1` 或 `mid`）
+
