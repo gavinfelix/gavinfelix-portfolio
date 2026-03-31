@@ -1,0 +1,43 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 345
+title: 'LeetCode 345 - Reverse Vowels of a String'
+difficulty: 'easy'
+tags: ['set', 'two pointers']
+date: '2026-03-31'
+description: 'use set and two pointers to solve this problem'
+---
+
+### 代码实现（TypeScript）
+
+```ts
+function reverseVowels(s: string): string {
+  const vowels = new Set(['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']);
+  const res = s.split('');
+  let left = 0;
+  let right = s.length - 1;
+
+  while (left < right) {
+    if (!vowels.has(res[left])) {
+      left++;
+      continue;
+    }
+
+    if (!vowels.has(res[right])) {
+      right--;
+      continue;
+    }
+
+    if (vowels.has(res[left]) && vowels.has(res[right])) {
+      [res[left], res[right]] = [res[right], res[left]];
+      left++;
+      right--;
+    }
+  }
+
+  return res.join('');
+}
+```
+
+<ComplexityCard time="O(N)" space="O(N)" note="" />
