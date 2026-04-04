@@ -1,0 +1,30 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0392
+title: 'LeetCode 0392 - Is Subsequence'
+difficulty: 'easy'
+tags: ['string']
+date: '2026-04-04'
+description: ''
+---
+
+### 代码实现（TypeScript）
+
+```ts
+function isSubsequence(s: string, t: string): string {
+  let pointer = 0;
+
+  for (let i = 0; i < t.length; i++) {
+    if (pointer > s.length) return true;
+
+    if (s[pointer] === t[i]) {
+      pointer++;
+    }
+  }
+
+  return pointer === s.length;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="" />
