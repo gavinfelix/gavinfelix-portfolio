@@ -1,0 +1,38 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0011
+title: 'LeetCode 0011 - Container With Most Water'
+difficulty: 'medium'
+tags: ['array', 'two-pointers']
+date: '2026-04-05'
+description: ''
+---
+
+### 代码实现（TypeScript）
+
+```ts
+function gcdOfStrings(height: number[]): number {
+  let left = 0;
+  let right = height.length - 1;
+  let max = 0;
+
+  while (left < right) {
+    const h = Math.min(height[left], height[right]);
+    const w = right - left;
+    const area = h * w;
+
+    max = Math.max(max, area);
+
+    if (height[left] < height[right]) {
+      left++;
+    } else {
+      right--;
+    }
+  }
+
+  return max;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="" />
