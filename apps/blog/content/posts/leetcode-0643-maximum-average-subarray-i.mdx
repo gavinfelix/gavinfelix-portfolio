@@ -1,0 +1,32 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0643
+title: 'LeetCode 0643 - Maximum Average Subarray I'
+difficulty: 'medium'
+tags: ['array', 'sliding-window']
+date: '2026-04-06'
+description: ''
+---
+
+### 代码实现（TypeScript）
+
+```ts
+function gcdOfStrings(nums: number[], k: number): number {
+  let sum = 0;
+  for (let i = 0; i < k; i++) {
+    sum += nums[i];
+  }
+
+  let max = sum;
+  for (let i = k; i < nums.length; i++) {
+    sum += nums[i];
+    sum -= nums[i - k];
+    max = Math.max(max, sum);
+  }
+
+  return max / k;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="" />
