@@ -1,0 +1,47 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 2215
+title: 'LeetCode 2215 - Find the Difference of Two Arrays (Hash Set Solution)'
+difficulty: 'easy'
+tags: ['array', 'hash-table', 'set']
+date: '2026-04-08'
+description: ''
+---
+
+### 思路
+
+先用 `Set` 给两个数组去重，然后分别遍历两个集合：
+
+- 在 `set1` 中找不在 `set2` 里的数，放进 `uniqueToNums1`
+- 在 `set2` 中找不在 `set1` 里的数，放进 `uniqueToNums2`
+
+最后返回 `[uniqueToNums1, uniqueToNums2]`。
+
+### 代码实现（TypeScript）
+
+```ts
+function findDifference(nums1: number[], nums2: number[]): number[][] {
+  const set1 = new Set(nums1);
+  const set2 = new Set(nums2);
+
+  const uniqueToNums1: number[] = [];
+  const uniqueToNums2: number[] = [];
+
+  for (const num of set1) {
+    if (!set2.has(num)) {
+      uniqueToNums1.push(num);
+    }
+  }
+
+  for (const num of set2) {
+    if (!set1.has(num)) {
+      uniqueToNums2.push(num);
+    }
+  }
+
+  return [uniqueToNums1, uniqueToNums2];
+}
+```
+
+<ComplexityCard time="O(n + m)" space="O(n + m)" note="" />
