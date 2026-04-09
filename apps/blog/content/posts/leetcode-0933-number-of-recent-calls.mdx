@@ -1,0 +1,44 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0933
+title: 'LeetCode 0933 - Number of Recent Calls'
+difficulty: 'easy'
+tags: ['queue', 'design', 'data-structure']
+date: '2026-04-09'
+description: ''
+---
+
+### 思路
+
+维护一个队列保存所有请求时间 `t`：
+
+- 每次调用 `ping(t)`，先把当前时间入队
+- 然后把所有小于 `t - 3000` 的旧请求从队头移除
+- 最后队列长度就是区间 `[t - 3000, t]` 内的请求数
+
+这是一个典型的**滑动时间窗口**思路。
+
+### 代码实现（TypeScript）
+
+```ts
+class RecentCounter {
+  private queue: number[];
+
+  constructor() {
+    this.queue = [];
+  }
+
+  ping(t: number): number {
+    this.queue.push(t);
+
+    while (this.queue[0] < t - 3000) {
+      this.queue.shift();
+    }
+
+    return this.queue.length;
+  }
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="单次均摊 O(1)，每个元素最多入队和出队一次" />
