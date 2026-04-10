@@ -1,0 +1,52 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0328
+title: 'LeetCode 0328 - Odd Even Linked List'
+difficulty: 'medium'
+tags: ['linked-list', 'two-pointers']
+date: '2026-04-10'
+description: ''
+---
+
+### 思路
+
+这题不是按节点值奇偶，而是按**节点位置**奇偶分组：
+
+- 第 1、3、5... 个节点接到奇数链表
+- 第 2、4、6... 个节点接到偶数链表
+- 最后把奇数链表尾部连接到偶数链表头
+
+实现上用三个指针：
+
+- `odd` 指向当前奇数链表尾
+- `even` 指向当前偶数链表尾
+- `evenHead` 保存偶数链表头，最后用于拼接
+
+### 代码实现（TypeScript）
+
+```ts
+function oddEvenList(head: ListNode | null): ListNode | null {
+  if (!head || !head.next) {
+    return head;
+  }
+
+  let odd: ListNode | null = head;
+  let even: ListNode | null = head.next;
+  const evenHead: ListNode | null = head.next;
+
+  while (even && even.next) {
+    odd.next = even.next;
+    odd = odd.next;
+
+    even.next = odd.next;
+    even = even.next;
+  }
+
+  odd.next = evenHead;
+
+  return head;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="" />
