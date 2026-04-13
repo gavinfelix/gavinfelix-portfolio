@@ -1,0 +1,34 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0104
+title: 'LeetCode 0104 - Maximum Depth of Binary Tree'
+difficulty: 'easy'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'recursion']
+date: '2026-04-13'
+description: ''
+---
+
+### 思路
+
+二叉树最大深度可以用递归直接定义：
+
+- 空节点深度为 `0`
+- 当前节点深度 = `max(左子树深度, 右子树深度) + 1`
+
+后序地计算左右子树深度，再合并结果即可。
+
+### 代码实现（TypeScript）
+
+```ts
+function maxDepth(root: TreeNode | null): number {
+  if (!root) return 0;
+
+  const leftDepth = maxDepth(root.left);
+  const rightDepth = maxDepth(root.right);
+
+  return Math.max(leftDepth, rightDepth) + 1;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(h)" note="h 为树高；最坏链状树为 O(n)" />
