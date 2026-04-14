@@ -1,0 +1,51 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1137
+title: 'LeetCode 1137 - N-th Tribonacci Number'
+difficulty: 'easy'
+tags: ['dynamic-programming', 'math']
+date: '2026-04-14'
+description: ''
+---
+
+### 思路
+
+Tribonacci 定义为：
+
+- `T0 = 0`
+- `T1 = 1`
+- `T2 = 1`
+- `Tn = Tn-1 + Tn-2 + Tn-3`（`n >= 3`）
+
+用 3 个变量滚动保存最近三项：
+
+- `a` 表示 `Tn-3`
+- `b` 表示 `Tn-2`
+- `c` 表示 `Tn-1`
+
+每轮计算 `next = a + b + c` 后整体右移，最终返回 `c`。
+
+### 代码实现（TypeScript）
+
+```ts
+function tribonacci(n: number): number {
+  if (n === 0) return 0;
+  if (n === 1 || n === 2) return 1;
+
+  let a = 0;
+  let b = 1;
+  let c = 1;
+
+  for (let i = 3; i <= n; i++) {
+    const next = a + b + c;
+    a = b;
+    b = c;
+    c = next;
+  }
+
+  return c;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="" />
