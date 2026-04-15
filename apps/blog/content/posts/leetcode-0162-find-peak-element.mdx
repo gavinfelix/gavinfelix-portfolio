@@ -1,0 +1,43 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0162
+title: 'LeetCode 0162 - Find Peak Element'
+difficulty: 'medium'
+tags: ['array', 'binary-search']
+date: '2026-04-15'
+description: ''
+---
+
+### 思路
+
+利用二分判断“峰值在左边还是右边”：
+
+- 取中点 `mid`
+- 若 `nums[mid] > nums[mid + 1]`，说明在下降坡，峰值一定在左侧（含 `mid`）→ `right = mid`
+- 否则在上升坡，峰值一定在右侧 → `left = mid + 1`
+
+当 `left === right` 时区间收敛，该位置就是一个峰值下标。
+
+### 代码实现（TypeScript）
+
+```ts
+function findPeakElement(nums: number[]): number {
+  let left: number = 0;
+  let right: number = nums.length - 1;
+
+  while (left < right) {
+    const mid = Math.floor((left + right) / 2);
+
+    if (nums[mid] > nums[mid + 1]) {
+      right = mid;
+    } else {
+      left = mid + 1;
+    }
+  }
+
+  return left;
+}
+```
+
+<ComplexityCard time="O(log n)" space="O(1)" note="" />
