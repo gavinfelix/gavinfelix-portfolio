@@ -1,0 +1,49 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0216
+title: 'LeetCode 0216 - Combination Sum III (comb + backtrack)'
+difficulty: 'medium'
+tags: ['backtracking', 'array']
+date: '2026-04-18'
+description: ''
+---
+
+### 思路
+
+与另一篇 216 题解相同：从 `1..9` 中选 `k` 个数，和为 `n`，且数字不重复、组合内递增。
+
+用 `path` 记录当前组合，`sum` 记录当前和，`start` 控制下一层从哪个数字开始尝试。
+
+剪枝：若 `sum + i > n`，由于 `i` 递增，后续更不可能满足，直接 `break`。
+
+### 代码实现（TypeScript）
+
+```ts
+function combinationSum3(k: number, n: number): number[][] {
+  const res: number[][] = [];
+  const path: number[] = [];
+
+  function backtrack(start: number, sum: number): void {
+    if (path.length === k) {
+      if (sum === n) res.push([...path]);
+      return;
+    }
+
+    for (let i = start; i <= 9; i++) {
+      if (sum + i > n) break;
+
+      path.push(i);
+      backtrack(i + 1, sum + i);
+      path.pop();
+    }
+  }
+
+  backtrack(1, 0);
+  return res;
+}
+```
+
+> 说明：LeetCode 上入口函数需为 `combinationSum3`；若你本地习惯写成 `comb`，把外层函数名改成 `combinationSum3` 即可。剪枝应为 `sum + i > n`（不是 `sum + 1`）。
+
+<ComplexityCard time="O(C(9, k))" space="O(k)" note="不计结果数组；递归深度最多 k" />
