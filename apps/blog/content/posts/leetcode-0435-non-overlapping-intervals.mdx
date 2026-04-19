@@ -1,0 +1,46 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0435
+title: 'LeetCode 0435 - Non-overlapping Intervals'
+difficulty: 'medium'
+tags: ['greedy', 'array', 'sorting', 'intervals']
+date: '2026-04-19'
+description: ''
+---
+
+### 思路
+
+求最少删除多少个区间使剩余区间互不重叠，等价于：**保留尽可能多的互不重叠区间**。
+
+经典贪心：按**右端点**升序排序，尽量选结束早的区间，给后面留更多空间。
+
+- `count` 表示能保留的区间个数（至少为 1）
+- `prevEnd` 表示上一个被选区间的右端点
+- 遍历排序后的区间，若当前 `start >= prevEnd`，则与上一个不冲突，可以保留，`count++` 并更新 `prevEnd = end`
+
+最终需要删除的数量为：`intervals.length - count`。
+
+### 代码实现（TypeScript）
+
+```ts
+function eraseOverlapIntervals(intervals: number[][]): number {
+  intervals.sort((a, b) => a[1] - b[1]);
+
+  let count = 1;
+  let prevEnd = intervals[0][1];
+
+  for (let i = 1; i < intervals.length; i++) {
+    const [start, end] = intervals[i];
+
+    if (start >= prevEnd) {
+      count++;
+      prevEnd = end;
+    }
+  }
+
+  return intervals.length - count;
+}
+```
+
+<ComplexityCard time="O(n log n)" space="O(1)" note="排序为原地；不计入参修改带来的额外结构" />
