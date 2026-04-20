@@ -1,0 +1,48 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1448
+title: 'LeetCode 1448 - Count Good Nodes in Binary Tree (DFS + maxVal)'
+difficulty: 'medium'
+tags: ['tree', 'depth-first-search', 'binary-tree']
+date: '2026-04-20'
+description: ''
+---
+
+### 思路
+
+沿着根到当前节点的路径维护一个最大值 `maxVal`：
+
+- 如果当前节点 `node.val >= maxVal`，它就是好节点，计数 +1
+- 同时更新路径最大值为当前节点值
+- 继续递归左右子树，把结果相加
+
+初始从根开始，`maxVal` 设为 `-Infinity`，保证根节点会被正确判断。
+
+### 代码实现（TypeScript）
+
+```ts
+function goodNodes(root: TreeNode | null): number {
+  if (!root) return 0;
+
+  function dfs(node: TreeNode | null, maxVal: number): number {
+    if (!node) return 0;
+
+    let count = 0;
+
+    if (node.val >= maxVal) {
+      count = 1;
+      maxVal = node.val;
+    }
+
+    count += dfs(node.left, maxVal);
+    count += dfs(node.right, maxVal);
+
+    return count;
+  }
+
+  return dfs(root, -Infinity);
+}
+```
+
+<ComplexityCard time="O(n)" space="O(h)" note="h 为树高，最坏链状树为 O(n)" />
