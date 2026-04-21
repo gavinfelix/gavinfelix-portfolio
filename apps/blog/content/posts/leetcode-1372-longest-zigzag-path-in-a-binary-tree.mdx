@@ -1,0 +1,53 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1372
+title: 'LeetCode 1372 - Longest ZigZag Path in a Binary Tree'
+difficulty: 'medium'
+tags: ['tree', 'depth-first-search', 'binary-tree']
+date: '2026-04-21'
+description: ''
+---
+
+### 思路
+
+用 DFS 记录当前方向和当前 ZigZag 长度：
+
+- `dir = 0` 表示上一步是往左走
+- `dir = 1` 表示上一步是往右走
+- `length` 表示当前 ZigZag 路径长度（边数）
+
+遍历每个节点时更新全局最大值 `res`。  
+如果继续走相反方向，长度 `+1`；如果同方向继续，则需要从 `1` 重新开始计数。
+
+从根的左右孩子分别作为起点开始 DFS。
+
+### 代码实现（TypeScript）
+
+```ts
+export function ZigZag(root: TreeNode | null): number {
+  if (!root) return 0;
+
+  let res = 0;
+
+  function dfs(node: TreeNode | null, dir: number, length: number) {
+    if (!node) return;
+
+    res = Math.max(res, length);
+
+    if (dir === 0) {
+      dfs(node.left, 0, 1);
+      dfs(node.right, 1, length + 1);
+    } else {
+      dfs(node.left, 0, length + 1);
+      dfs(node.right, 1, 1);
+    }
+  }
+
+  dfs(root.left, 0, 1);
+  dfs(root.right, 1, 1);
+  return res;
+}
+```
+
+## <ComplexityCard time="O(n)" space="O(h)" note="h 为树高；最坏链状树为 O(n)" />
