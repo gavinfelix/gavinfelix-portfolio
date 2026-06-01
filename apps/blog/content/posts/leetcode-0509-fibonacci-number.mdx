@@ -1,0 +1,52 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 509
+title: 'LeetCode 509 - Fibonacci Number'
+difficulty: 'easy'
+tags: ['dynamic-programming', 'math']
+date: '2026-06-01'
+description: '用滚动变量求斐波那契数列，把空间复杂度优化到 O(1)'
+---
+
+## 题目理解
+
+斐波那契数列定义为：
+
+- `F0 = 0`
+- `F1 = 1`
+- `Fn = Fn-1 + Fn-2`（`n >= 2`）
+
+给定整数 `n`，返回第 `n` 个斐波那契数。
+
+## 思路：滚动变量
+
+每一项只依赖前两项，所以不需要保存整个数组。
+
+用两个变量维护最近的两个值：
+
+- `prev` 表示 `Fi-2`
+- `curr` 表示 `Fi-1`
+
+从 `i = 2` 开始计算 `next = prev + curr`，然后把窗口向右移动一格。循环结束后，`curr` 就是 `Fn`。
+
+### 代码实现（TypeScript）
+
+```ts
+function fib(n: number): number {
+  if (n <= 1) return n;
+
+  let prev = 0;
+  let curr = 1;
+
+  for (let i = 2; i <= n; i++) {
+    const next = prev + curr;
+    prev = curr;
+    curr = next;
+  }
+
+  return curr;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="只使用 prev、curr、next 三个变量" />
