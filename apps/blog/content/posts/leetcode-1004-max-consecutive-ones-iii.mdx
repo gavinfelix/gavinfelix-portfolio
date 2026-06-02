@@ -1,0 +1,56 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1004
+title: 'LeetCode 1004 - Max Consecutive Ones III'
+difficulty: 'medium'
+tags: ['array', 'sliding-window']
+date: '2026-06-02'
+description: '用滑动窗口求最多翻转 k 个 0 后的最长连续 1'
+---
+
+## 题目理解
+
+给定一个只包含 `0` 和 `1` 的数组 `nums`，以及整数 `k`。
+
+我们最多可以把 `k` 个 `0` 翻转成 `1`，返回可以得到的最长连续 `1` 的长度。
+
+## 思路：滑动窗口
+
+窗口 `[left, right]` 表示当前考虑的一段连续子数组。
+
+核心条件是：窗口里的 `0` 的数量不能超过 `k`。
+
+- `right` 不断向右扩展窗口
+- 遇到 `0` 时，记录窗口内 `0` 的数量
+- 如果 `0` 的数量超过 `k`，移动 `left` 缩小窗口
+- 每次窗口合法后，用窗口长度更新答案
+
+### 代码实现（TypeScript）
+
+```ts
+function longestOnes(nums: number[], k: number): number {
+  let left = 0;
+  let zeroCount = 0;
+  let maxLength = 0;
+
+  for (let right = 0; right < nums.length; right++) {
+    if (nums[right] === 0) {
+      zeroCount++;
+    }
+
+    while (zeroCount > k) {
+      if (nums[left] === 0) {
+        zeroCount--;
+      }
+      left++;
+    }
+
+    maxLength = Math.max(maxLength, right - left + 1);
+  }
+
+  return maxLength;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="left 和 right 都最多移动 n 次" />
