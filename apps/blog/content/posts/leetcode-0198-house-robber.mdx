@@ -1,0 +1,57 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 198
+title: 'LeetCode 198 - House Robber'
+difficulty: 'medium'
+tags: ['array', 'dynamic-programming']
+date: '2026-06-03'
+description: '用动态规划求打家劫舍问题，比较偷当前房屋和不偷当前房屋的最大收益'
+---
+
+## 题目理解
+
+给定一个非负整数数组 `nums`，每个元素表示一间房屋中的金额。
+
+相邻的房屋不能在同一晚被偷，返回在不触发警报的前提下，可以偷到的最大金额。
+
+## 思路：动态规划
+
+定义 `dp[i]` 表示从第 `0` 间房到第 `i` 间房，最多可以偷到的金额。
+
+对于第 `i` 间房，有两个选择：
+
+- 不偷第 `i` 间房：最大金额是 `dp[i - 1]`
+- 偷第 `i` 间房：因为不能偷相邻房屋，所以最大金额是 `dp[i - 2] + nums[i]`
+
+所以状态转移方程是：
+
+```ts
+dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
+```
+
+初始化：
+
+- `dp[0] = nums[0]`
+- `dp[1] = Math.max(nums[0], nums[1])`
+
+### 代码实现（TypeScript）
+
+```ts
+function rob(nums: number[]): number {
+  if (nums.length === 1) return nums[0];
+  if (nums.length === 2) return Math.max(nums[0], nums[1]);
+
+  const dp = Array.from({ length: nums.length }).fill(0) as number[];
+  dp[0] = nums[0];
+  dp[1] = Math.max(nums[0], nums[1]);
+
+  for (let i = 2; i < nums.length; i++) {
+    dp[i] = Math.max(dp[i - 1], dp[i - 2] + nums[i]);
+  }
+
+  return dp[dp.length - 1];
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="dp 数组保存每个位置的最优结果" />
