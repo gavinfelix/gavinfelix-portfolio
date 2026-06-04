@@ -1,0 +1,58 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 605
+title: 'LeetCode 605 - Can Place Flowers'
+difficulty: 'easy'
+tags: ['array', 'greedy']
+date: '2026-06-04'
+description: '用贪心判断花坛中是否还能种下 n 朵花'
+---
+
+## 题目理解
+
+给定一个数组 `flowerbed`，其中：
+
+- `0` 表示这个位置是空的
+- `1` 表示这个位置已经种了花
+
+花不能种在相邻的位置。给定整数 `n`，判断是否可以在不违反规则的情况下，再种下 `n` 朵花。
+
+## 思路：贪心
+
+从左到右遍历花坛，只要当前位置满足条件，就立刻种花。
+
+当前位置 `i` 可以种花，需要同时满足：
+
+- `flowerbed[i] === 0`
+- 左边没有花：`i === 0 || flowerbed[i - 1] === 0`
+- 右边没有花：`i === flowerbed.length - 1 || flowerbed[i + 1] === 0`
+
+一旦当前位置可以种，就把 `flowerbed[i]` 改成 `1`，并让 `n--`。
+
+如果过程中 `n <= 0`，说明已经种够了，可以直接返回 `true`。
+
+### 代码实现（TypeScript）
+
+```ts
+function canPlaceFlowers(flowerbed: number[], n: number): boolean {
+  for (let i = 0; i < flowerbed.length; i++) {
+    const isEmpty = flowerbed[i] === 0;
+    const leftEmpty = i === 0 || flowerbed[i - 1] === 0;
+    const rightEmpty = i === flowerbed.length - 1 || flowerbed[i + 1] === 0;
+
+    if (isEmpty && leftEmpty && rightEmpty) {
+      flowerbed[i] = 1;
+      n--;
+    }
+
+    if (n <= 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="只遍历一次花坛，直接在原数组上标记新种的花" />
