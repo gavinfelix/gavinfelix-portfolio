@@ -1,0 +1,53 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 238
+title: 'LeetCode 238 - Product of Array Except Self'
+difficulty: 'medium'
+tags: ['array', 'prefix-sum']
+date: '2026-06-05'
+description: '用前缀积和后缀积计算除自身以外数组的乘积'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums`，返回一个数组 `answer`，其中 `answer[i]` 等于 `nums` 中除 `nums[i]` 以外所有元素的乘积。
+
+要求不能使用除法，并且需要在 `O(n)` 时间内完成。
+
+## 思路：前缀积 + 后缀积
+
+对于位置 `i`，除自身以外的乘积可以拆成两部分：
+
+- `i` 左边所有数的乘积
+- `i` 右边所有数的乘积
+
+先从左到右遍历，用 `answer[i]` 保存 `i` 左边的乘积。
+
+再从右到左遍历，用变量 `rightProduct` 维护 `i` 右边的乘积，并乘到 `answer[i]` 上。
+
+这样不需要额外的前缀数组和后缀数组，返回数组本身不计入额外空间。
+
+### 代码实现（TypeScript）
+
+```ts
+function productExceptSelf(nums: number[]): number[] {
+  const answer = Array.from({ length: nums.length }).fill(1) as number[];
+
+  let leftProduct = 1;
+  for (let i = 0; i < nums.length; i++) {
+    answer[i] = leftProduct;
+    leftProduct *= nums[i];
+  }
+
+  let rightProduct = 1;
+  for (let i = nums.length - 1; i >= 0; i--) {
+    answer[i] *= rightProduct;
+    rightProduct *= nums[i];
+  }
+
+  return answer;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="返回数组不计入额外空间，只额外使用 leftProduct 和 rightProduct" />
