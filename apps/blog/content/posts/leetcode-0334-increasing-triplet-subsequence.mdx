@@ -1,0 +1,60 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 334
+title: 'LeetCode 334 - Increasing Triplet Subsequence'
+difficulty: 'medium'
+tags: ['array', 'greedy']
+date: '2026-06-05'
+description: '用两个最小候选值判断数组中是否存在递增三元子序列'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums`，判断是否存在三个下标 `i < j < k`，使得：
+
+```ts
+nums[i] < nums[j] && nums[j] < nums[k]
+```
+
+如果存在这样的递增三元子序列，返回 `true`，否则返回 `false`。
+
+## 思路：贪心维护两个候选值
+
+我们不需要真的找出这三个数，只需要判断它们是否存在。
+
+用两个变量维护目前见过的最优候选：
+
+- `first`：递增三元组中的第一个数，越小越好
+- `second`：递增三元组中的第二个数，也尽量小，但必须大于 `first`
+
+遍历数组时：
+
+- 如果当前数字 `num <= first`，更新 `first`
+- 否则如果 `num <= second`，说明 `num > first`，可以更新 `second`
+- 否则说明 `num > second`，已经找到 `first < second < num`
+
+一旦出现第三种情况，就可以直接返回 `true`。
+
+### 代码实现（TypeScript）
+
+```ts
+function increasingTriplet(nums: number[]): boolean {
+  let first = Infinity;
+  let second = Infinity;
+
+  for (const num of nums) {
+    if (num <= first) {
+      first = num;
+    } else if (num <= second) {
+      second = num;
+    } else {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护 first 和 second 两个候选值" />
