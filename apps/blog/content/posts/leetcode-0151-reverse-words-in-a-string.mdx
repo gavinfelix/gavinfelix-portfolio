@@ -1,0 +1,47 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 151
+title: 'LeetCode 151 - Reverse Words in a String'
+difficulty: 'medium'
+tags: ['string', 'two-pointers']
+date: '2026-06-07'
+description: '反转字符串中的单词顺序，并处理首尾空格和多个连续空格'
+---
+
+## 题目理解
+
+给定一个字符串 `s`，将字符串中的单词顺序反转。
+
+需要注意：
+
+- 单词之间可能有多个空格
+- 字符串开头和结尾也可能有空格
+- 返回结果中，单词之间只保留一个空格
+
+## 思路：清理空格后反转单词
+
+这题的核心不是反转字符，而是反转单词的顺序。
+
+可以分成几步：
+
+1. 用 `trim()` 去掉首尾空格
+2. 用 `split(" ")` 按空格切分
+3. 用 `filter(Boolean)` 去掉多个连续空格产生的空字符串
+4. 用 `reverse()` 反转单词数组
+5. 用 `join(" ")` 拼回字符串
+
+### 代码实现（TypeScript）
+
+```ts
+function reverseWords(s: string): string {
+  return s
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .reverse()
+    .join(" ");
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="需要额外数组保存切分后的单词" />
