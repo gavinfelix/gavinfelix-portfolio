@@ -1,0 +1,81 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 443
+title: 'LeetCode 443 - String Compression'
+difficulty: 'medium'
+tags: ['string', 'two-pointers']
+date: '2026-06-08'
+description: '用双指针原地压缩字符数组，并返回压缩后的长度'
+---
+
+## 题目理解
+
+给定一个字符数组 `chars`，需要把连续重复的字符压缩成：
+
+- 字符本身
+- 如果重复次数大于 `1`，再追加重复次数
+
+例如：
+
+```ts
+["a", "a", "b", "b", "c", "c", "c"]
+```
+
+压缩后前几个位置应变成：
+
+```ts
+["a", "2", "b", "2", "c", "3"]
+```
+
+题目要求原地修改数组，并返回压缩后的长度。
+
+## 思路：读写双指针
+
+用两个指针：
+
+- `read`：负责向后扫描原数组
+- `write`：负责写入压缩后的结果
+
+每次从 `read` 开始统计一段连续相同字符的数量 `count`。
+
+处理完一段后：
+
+1. 先把当前字符写到 `chars[write]`
+2. 如果 `count > 1`，把数字转成字符串，再逐位写入数组
+3. 继续处理下一段字符
+
+最终 `write` 的位置就是压缩后的长度。
+
+### 代码实现（TypeScript）
+
+```ts
+function compress(chars: string[]): number {
+  let read = 0;
+  let write = 0;
+
+  while (read < chars.length) {
+    const current = chars[read];
+    let count = 0;
+
+    while (read < chars.length && chars[read] === current) {
+      read++;
+      count++;
+    }
+
+    chars[write] = current;
+    write++;
+
+    if (count > 1) {
+      for (const digit of String(count)) {
+        chars[write] = digit;
+        write++;
+      }
+    }
+  }
+
+  return write;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="除计数字符串外，只使用 read、write、count 等常量变量" />
