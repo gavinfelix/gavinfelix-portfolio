@@ -1,0 +1,63 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 283
+title: 'LeetCode 283 - Move Zeroes'
+difficulty: 'easy'
+tags: ['array', 'two-pointers']
+date: '2026-06-09'
+description: '用双指针原地移动 0，并保持非零元素的相对顺序'
+---
+
+## 题目理解
+
+给定一个数组 `nums`，需要把所有 `0` 移动到数组末尾，同时保持非零元素的相对顺序。
+
+要求：
+
+- 必须原地修改数组
+- 尽量减少操作次数
+
+例如：
+
+```ts
+nums = [0, 1, 0, 3, 12]
+```
+
+处理后变成：
+
+```ts
+[1, 3, 12, 0, 0]
+```
+
+## 思路：双指针
+
+用 `write` 表示下一个非零元素应该写入的位置。
+
+先遍历数组，把所有非零元素按原来的顺序写到数组前面：
+
+- 遇到非零元素，就写到 `nums[write]`
+- 然后 `write++`
+
+遍历结束后，`write` 后面的所有位置都应该是 `0`，再统一补零。
+
+### 代码实现（TypeScript）
+
+```ts
+function moveZeroes(nums: number[]): void {
+  let write = 0;
+
+  for (let read = 0; read < nums.length; read++) {
+    if (nums[read] !== 0) {
+      nums[write] = nums[read];
+      write++;
+    }
+  }
+
+  for (let i = write; i < nums.length; i++) {
+    nums[i] = 0;
+  }
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="原地修改数组，只额外使用 write 指针" />
