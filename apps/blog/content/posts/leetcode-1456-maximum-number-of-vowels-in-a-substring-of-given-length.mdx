@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1456
+title: 'LeetCode 1456 - Maximum Number of Vowels in a Substring of Given Length'
+difficulty: 'medium'
+tags: ['string', 'sliding-window']
+date: '2026-06-11'
+description: '用固定长度滑动窗口统计长度为 k 的子字符串中最多元音数量'
+---
+
+## 题目理解
+
+给定一个字符串 `s` 和整数 `k`，返回所有长度为 `k` 的子字符串中，元音字母数量的最大值。
+
+元音字母包括：
+
+```ts
+"a", "e", "i", "o", "u"
+```
+
+## 思路：固定长度滑动窗口
+
+因为子字符串长度固定为 `k`，所以可以维护一个长度为 `k` 的窗口。
+
+先统计前 `k` 个字符里的元音数量，作为初始窗口。
+
+然后从第 `k` 个位置开始向右滑动：
+
+- 新进入窗口的字符如果是元音，计数加一
+- 离开窗口的字符如果是元音，计数减一
+- 每次滑动后更新最大值
+
+如果最大值已经等于 `k`，说明整个窗口都是元音，可以提前返回。
+
+### 代码实现（TypeScript）
+
+```ts
+function maxVowels(s: string, k: number): number {
+  const vowels = new Set(["a", "e", "i", "o", "u"]);
+  let count = 0;
+
+  for (let i = 0; i < k; i++) {
+    if (vowels.has(s[i])) {
+      count++;
+    }
+  }
+
+  let maxCount = count;
+
+  for (let right = k; right < s.length; right++) {
+    const left = right - k;
+
+    if (vowels.has(s[right])) {
+      count++;
+    }
+
+    if (vowels.has(s[left])) {
+      count--;
+    }
+
+    maxCount = Math.max(maxCount, count);
+
+    if (maxCount === k) {
+      return k;
+    }
+  }
+
+  return maxCount;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="元音集合大小固定，窗口计数只使用常量空间" />
