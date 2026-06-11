@@ -1,0 +1,65 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1679
+title: 'LeetCode 1679 - Max Number of K-Sum Pairs'
+difficulty: 'medium'
+tags: ['array', 'two-pointers', 'sorting']
+date: '2026-06-10'
+description: '排序后用双指针统计和为 k 的最多数对数量'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums` 和整数 `k`。
+
+每次操作可以从数组中选出两个数字，如果它们的和等于 `k`，就把这两个数字移除。
+
+返回最多可以执行多少次这样的操作。
+
+## 思路：排序 + 双指针
+
+先把数组从小到大排序。
+
+然后用两个指针：
+
+- `left` 指向当前最小的数字
+- `right` 指向当前最大的数字
+
+每次计算 `nums[left] + nums[right]`：
+
+- 如果等于 `k`，说明找到一组数对，答案加一，同时移动两个指针
+- 如果小于 `k`，说明当前和太小，需要让 `left` 右移
+- 如果大于 `k`，说明当前和太大，需要让 `right` 左移
+
+这样每个元素最多被访问一次。
+
+### 代码实现（TypeScript）
+
+```ts
+function maxOperations(nums: number[], k: number): number {
+  nums.sort((a, b) => a - b);
+
+  let left = 0;
+  let right = nums.length - 1;
+  let count = 0;
+
+  while (left < right) {
+    const sum = nums[left] + nums[right];
+
+    if (sum === k) {
+      count++;
+      left++;
+      right--;
+    } else if (sum < k) {
+      left++;
+    } else {
+      right--;
+    }
+  }
+
+  return count;
+}
+```
+
+<ComplexityCard time="O(n log n)" space="O(1)" note="主要成本来自排序；双指针扫描是 O(n)" />
