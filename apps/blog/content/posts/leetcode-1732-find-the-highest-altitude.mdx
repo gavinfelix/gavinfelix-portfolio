@@ -1,0 +1,61 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1732
+title: 'LeetCode 1732 - Find the Highest Altitude'
+difficulty: 'easy'
+tags: ['array', 'prefix-sum']
+date: '2026-06-13'
+description: '用前缀和计算骑行过程中的最高海拔'
+---
+
+## 题目理解
+
+给定一个数组 `gain`，其中 `gain[i]` 表示从第 `i` 个点到第 `i + 1` 个点的海拔变化。
+
+初始海拔是 `0`，需要返回整个过程中到达过的最高海拔。
+
+例如：
+
+```ts
+gain = [-5, 1, 5, 0, -7]
+```
+
+对应海拔变化为：
+
+```ts
+0 -> -5 -> -4 -> 1 -> 1 -> -6
+```
+
+最高海拔是 `1`。
+
+## 思路：前缀和
+
+当前位置的海拔等于之前所有 `gain` 的累加和。
+
+用一个变量 `current` 表示当前海拔，用 `highest` 记录历史最高海拔。
+
+遍历 `gain`：
+
+- 把当前变化值加到 `current`
+- 用 `current` 更新 `highest`
+
+因为初始海拔也是一个有效位置，所以 `highest` 初始值应该是 `0`。
+
+### 代码实现（TypeScript）
+
+```ts
+function largestAltitude(gain: number[]): number {
+  let current = 0;
+  let highest = 0;
+
+  for (const change of gain) {
+    current += change;
+    highest = Math.max(highest, current);
+  }
+
+  return highest;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护当前海拔和历史最高海拔" />
