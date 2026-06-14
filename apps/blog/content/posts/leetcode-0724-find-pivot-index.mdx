@@ -1,0 +1,59 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 724
+title: 'LeetCode 724 - Find Pivot Index'
+difficulty: 'easy'
+tags: ['array', 'prefix-sum']
+date: '2026-06-14'
+description: '用总和与左侧前缀和查找数组的中心下标'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums`，返回数组的中心下标。
+
+中心下标 `i` 需要满足：
+
+- `i` 左侧所有元素之和
+- 等于 `i` 右侧所有元素之和
+
+如果存在多个中心下标，返回最左边的那个；如果不存在，返回 `-1`。
+
+## 思路：总和 + 左侧前缀和
+
+先计算数组总和 `total`。
+
+遍历数组时，用 `leftSum` 表示当前下标左侧的元素和。
+
+对于当前下标 `i`：
+
+- 左侧和是 `leftSum`
+- 右侧和是 `total - leftSum - nums[i]`
+
+如果两者相等，当前下标就是中心下标，直接返回。
+
+检查完当前位置后，再把 `nums[i]` 加到 `leftSum` 中，继续看下一个位置。
+
+### 代码实现（TypeScript）
+
+```ts
+function pivotIndex(nums: number[]): number {
+  const total = nums.reduce((sum, num) => sum + num, 0);
+  let leftSum = 0;
+
+  for (let i = 0; i < nums.length; i++) {
+    const rightSum = total - leftSum - nums[i];
+
+    if (leftSum === rightSum) {
+      return i;
+    }
+
+    leftSum += nums[i];
+  }
+
+  return -1;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="只额外维护 total 和 leftSum" />
