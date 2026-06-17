@@ -1,0 +1,77 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 1657
+title: 'LeetCode 1657 - Determine if Two Strings Are Close'
+difficulty: 'medium'
+tags: ['string', 'hash-table', 'sorting']
+date: '2026-06-16'
+description: '用字符集合和频次分布判断两个字符串是否可以通过操作变成彼此'
+---
+
+## 题目理解
+
+给定两个字符串 `word1` 和 `word2`，判断它们是否是 close strings。
+
+允许两种操作：
+
+- 交换任意两个已有字符的位置
+- 把一种已有字符整体替换成另一种已有字符，同时另一种字符也替换回来
+
+因为可以任意交换位置，所以字符的位置不重要，重要的是字符种类和每种字符的出现次数。
+
+## 思路：字符集合 + 频次分布
+
+两个字符串能互相转换，需要同时满足两个条件：
+
+1. 它们包含的字符种类完全相同
+2. 它们的字符出现次数集合完全相同
+
+例如：
+
+```ts
+word1 = "abbccc"
+word2 = "aaabcc"
+```
+
+两个字符串都只包含 `a`、`b`、`c`，并且频次都是 `1`、`2`、`3`，所以可以转换。
+
+实现时可以分别统计两个字符串中每个字符出现的次数：
+
+- 如果某个字符只在其中一个字符串出现，直接返回 `false`
+- 把两个频次数组排序后比较
+
+### 代码实现（TypeScript）
+
+```ts
+function closeStrings(word1: string, word2: string): boolean {
+  if (word1.length !== word2.length) return false;
+
+  const count1 = new Array(26).fill(0);
+  const count2 = new Array(26).fill(0);
+
+  for (let i = 0; i < word1.length; i++) {
+    count1[word1.charCodeAt(i) - 97]++;
+    count2[word2.charCodeAt(i) - 97]++;
+  }
+
+  for (let i = 0; i < 26; i++) {
+    if ((count1[i] === 0) !== (count2[i] === 0)) {
+      return false;
+    }
+  }
+
+  count1.sort((a, b) => a - b);
+  count2.sort((a, b) => a - b);
+
+  for (let i = 0; i < 26; i++) {
+    if (count1[i] !== count2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(1)" note="字符集固定为 26 个小写字母，排序成本可视为常量" />
