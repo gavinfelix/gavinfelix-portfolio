@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 2352
+title: 'LeetCode 2352 - Equal Row and Column Pairs'
+difficulty: 'medium'
+tags: ['array', 'hash-table', 'matrix']
+date: '2026-06-18'
+description: '用哈希表统计矩阵中的行，再逐列匹配相同序列的数量'
+---
+
+## 题目理解
+
+给定一个 `n x n` 的整数矩阵 `grid`。
+
+如果某一行和某一列包含的数字顺序完全相同，就算作一对 equal row and column pair。
+
+返回这样的行列对数量。
+
+例如：
+
+```ts
+grid = [
+  [3, 2, 1],
+  [1, 7, 6],
+  [2, 7, 7],
+]
+```
+
+第 `1` 行 `[3, 2, 1]` 和第 `1` 列 `[3, 1, 2]` 不相同；只有顺序和值都完全一致时才算匹配。
+
+## 思路：哈希表统计行
+
+可以把每一行转成一个字符串 key，统计每种行序列出现了多少次。
+
+然后再枚举每一列：
+
+1. 取出这一列的所有数字
+2. 转成同样格式的 key
+3. 去哈希表里查有多少行和它相同
+
+如果某一列的 key 在哈希表中出现了 `count` 次，就说明这一列可以和 `count` 行组成匹配对。
+
+### 代码实现（TypeScript）
+
+```ts
+function equalPairs(grid: number[][]): number {
+  const rowCount = new Map<string, number>();
+
+  for (const row of grid) {
+    const key = row.join(",");
+    rowCount.set(key, (rowCount.get(key) ?? 0) + 1);
+  }
+
+  let pairs = 0;
+  const n = grid.length;
+
+  for (let col = 0; col < n; col++) {
+    const values: number[] = [];
+
+    for (let row = 0; row < n; row++) {
+      values.push(grid[row][col]);
+    }
+
+    const key = values.join(",");
+    pairs += rowCount.get(key) ?? 0;
+  }
+
+  return pairs;
+}
+```
+
+<ComplexityCard time="O(n^2)" space="O(n^2)" note="哈希表保存所有行序列，逐列构造 key 进行匹配" />
