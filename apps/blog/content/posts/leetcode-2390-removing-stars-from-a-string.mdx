@@ -1,0 +1,67 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 2390
+title: 'LeetCode 2390 - Removing Stars From a String'
+difficulty: 'medium'
+tags: ['string', 'stack']
+date: '2026-06-19'
+description: '用栈模拟删除星号及其左侧最近字符的过程'
+---
+
+## 题目理解
+
+给定一个字符串 `s`，其中可能包含普通字符和 `*`。
+
+每遇到一个 `*`，需要删除这个 `*`，以及它左侧最近的一个还没有被删除的字符。
+
+返回所有操作完成后的字符串。
+
+例如：
+
+```ts
+s = "leet**cod*e"
+```
+
+处理过程相当于：
+
+- 第一个 `*` 删除前面的 `t`
+- 第二个 `*` 删除前面的 `e`
+- 第三个 `*` 删除前面的 `d`
+
+最终返回：
+
+```ts
+"lecoe"
+```
+
+## 思路：栈
+
+因为 `*` 总是删除左侧最近的一个有效字符，所以非常适合用栈。
+
+从左到右遍历字符串：
+
+- 如果当前字符不是 `*`，就压入栈
+- 如果当前字符是 `*`，就弹出栈顶字符
+
+遍历结束后，栈里剩下的字符就是最终答案。
+
+### 代码实现（TypeScript）
+
+```ts
+function removeStars(s: string): string {
+  const stack: string[] = [];
+
+  for (const char of s) {
+    if (char === "*") {
+      stack.pop();
+    } else {
+      stack.push(char);
+    }
+  }
+
+  return stack.join("");
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="栈最多保存 n 个字符" />
