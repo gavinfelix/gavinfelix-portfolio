@@ -1,0 +1,81 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 735
+title: 'LeetCode 735 - Asteroid Collision'
+difficulty: 'medium'
+tags: ['array', 'stack']
+date: '2026-06-20'
+description: '用栈模拟小行星碰撞，处理相向而行时的消除逻辑'
+---
+
+## 题目理解
+
+给定一个整数数组 `asteroids`，每个数字表示一颗小行星：
+
+- 正数表示向右移动
+- 负数表示向左移动
+- 绝对值表示小行星大小
+
+当一颗向右的小行星和一颗向左的小行星相遇时，会发生碰撞：
+
+- 小的被摧毁
+- 如果大小相同，两颗都被摧毁
+- 同方向移动的小行星不会碰撞
+
+返回所有碰撞结束后剩下的小行星。
+
+## 思路：栈
+
+用栈保存已经确认暂时存活的小行星。
+
+新的小行星 `asteroid` 只有在下面这种情况才可能和栈顶碰撞：
+
+- 栈顶小行星向右：`stack[stack.length - 1] > 0`
+- 当前小行星向左：`asteroid < 0`
+
+碰撞时比较大小：
+
+- 如果栈顶更小，栈顶被弹出，当前小行星继续和新的栈顶比较
+- 如果大小相同，栈顶弹出，当前小行星也被摧毁
+- 如果栈顶更大，当前小行星被摧毁
+
+如果当前小行星没有被摧毁，就压入栈中。
+
+### 代码实现（TypeScript）
+
+```ts
+function asteroidCollision(asteroids: number[]): number[] {
+  const stack: number[] = [];
+
+  for (const asteroid of asteroids) {
+    let alive = true;
+
+    while (
+      alive &&
+      asteroid < 0 &&
+      stack.length > 0 &&
+      stack[stack.length - 1] > 0
+    ) {
+      const top = stack[stack.length - 1];
+
+      if (top < -asteroid) {
+        stack.pop();
+      } else if (top === -asteroid) {
+        stack.pop();
+        alive = false;
+      } else {
+        alive = false;
+      }
+    }
+
+    if (alive) {
+      stack.push(asteroid);
+    }
+  }
+
+  return stack;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="每颗小行星最多入栈和出栈一次" />
