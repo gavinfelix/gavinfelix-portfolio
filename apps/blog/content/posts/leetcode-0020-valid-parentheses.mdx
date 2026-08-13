@@ -1,0 +1,71 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 20
+title: 'LeetCode 20 - Valid Parentheses'
+difficulty: 'easy'
+tags: ['string', 'stack']
+date: '2026-08-13'
+description: '用栈匹配括号，遇到右括号时检查栈顶是否是对应的左括号'
+---
+
+## 题目理解
+
+给定一个只包含 `(`、`)`、`{`、`}`、`[`、`]` 的字符串 `s`，判断它是否有效。
+
+有效字符串需要满足：
+
+- 左括号必须用相同类型的右括号闭合
+- 左括号必须以正确的顺序闭合
+- 每个右括号都有一个对应的同类型左括号
+
+例如：
+
+```ts
+"()[]{}" // true
+"(]"     // false
+"([)]"   // false
+"{[]}"   // true
+```
+
+## 思路：栈
+
+括号匹配是典型的「最近匹配」问题：每个右括号必须和**最近的**一个未闭合左括号配对，这正是栈的后进先出特性。
+
+从左到右遍历字符串：
+
+- 遇到左括号，压入栈
+- 遇到右括号，检查栈顶是否是对应的左括号：
+  - 是，弹出栈顶，继续
+  - 不是（或栈为空），直接返回 `false`
+
+遍历结束后，如果栈为空说明所有括号都成功配对，返回 `true`；否则说明还有左括号没被闭合，返回 `false`。
+
+### 代码实现（TypeScript）
+
+```ts
+function isValid(s: string): boolean {
+  const stack: string[] = [];
+  const pairs: Record<string, string> = {
+    ")": "(",
+    "]": "[",
+    "}": "{",
+  };
+
+  for (const char of s) {
+    if (char in pairs) {
+      if (stack.pop() !== pairs[char]) {
+        return false;
+      }
+    } else {
+      stack.push(char);
+    }
+  }
+
+  return stack.length === 0;
+}
+```
+
+小细节：`stack.pop()` 在栈为空时返回 `undefined`，天然不等于任何左括号，所以不需要单独判空。
+
+<ComplexityCard time="O(n)" space="O(n)" note="最坏情况下（全是左括号）栈保存 n 个字符" />
