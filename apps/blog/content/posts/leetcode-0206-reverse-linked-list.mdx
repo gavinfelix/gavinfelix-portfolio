@@ -1,0 +1,82 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 206
+title: 'LeetCode 206 - Reverse Linked List'
+difficulty: 'easy'
+tags: ['linked-list', 'two-pointers']
+date: '2026-08-14'
+description: '用双指针迭代反转链表，逐个把节点的 next 指向前驱'
+---
+
+## 题目理解
+
+给定单链表的头节点 `head`，反转整个链表，并返回反转后的头节点。
+
+例如：
+
+```ts
+1 -> 2 -> 3 -> 4 -> 5
+```
+
+反转后：
+
+```ts
+5 -> 4 -> 3 -> 2 -> 1
+```
+
+## 思路：双指针迭代
+
+反转链表的本质是：把每个节点的 `next` 从「指向后继」改成「指向前驱」。
+
+用两个指针从头往后走：
+
+- `prev`：当前节点的前驱，初始为 `null`（反转后原头节点就是尾节点，`next` 应该是 `null`）
+- `curr`：当前正在处理的节点，初始为 `head`
+
+每一步做四件事：
+
+1. 先用临时变量保存 `curr.next`，否则改完指针就找不到后面的节点了
+2. 把 `curr.next` 指向 `prev`，完成当前节点的反转
+3. `prev` 向前移动到 `curr`
+4. `curr` 向前移动到刚才保存的后继节点
+
+当 `curr` 走到 `null` 时，`prev` 正好停在原链表的最后一个节点上，也就是新链表的头。
+
+### 代码实现（TypeScript）
+
+```ts
+function reverseList(head: ListNode | null): ListNode | null {
+  let prev: ListNode | null = null;
+  let curr: ListNode | null = head;
+
+  while (curr !== null) {
+    const next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+  }
+
+  return prev;
+}
+```
+
+## 递归写法
+
+也可以递归：先反转 `head` 之后的部分，再把后继节点的 `next` 指回自己。
+
+```ts
+function reverseList(head: ListNode | null): ListNode | null {
+  if (head === null || head.next === null) return head;
+
+  const newHead = reverseList(head.next);
+  head.next.next = head;
+  head.next = null;
+
+  return newHead;
+}
+```
+
+递归写法更简洁，但调用栈深度是 O(n)，链表很长时有栈溢出风险，面试中一般优先写迭代版本。
+
+<ComplexityCard time="O(n)" space="O(1)" note="迭代版本只用常数个指针；递归版本空间为 O(n)" />
