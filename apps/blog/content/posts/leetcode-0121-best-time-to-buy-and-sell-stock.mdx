@@ -1,0 +1,64 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 121
+title: 'LeetCode 121 - Best Time to Buy and Sell Stock'
+difficulty: 'easy'
+tags: ['array', 'greedy', 'dynamic-programming']
+date: '2026-08-15'
+description: '一次遍历，维护历史最低价，随时计算今天卖出的最大利润'
+---
+
+## 题目理解
+
+给定数组 `prices`，`prices[i]` 表示第 `i` 天的股票价格。
+
+你只能选择**某一天买入**，并在**之后的某一天卖出**，求能获得的最大利润。如果无法获利，返回 `0`。
+
+例如：
+
+```ts
+prices = [7, 1, 5, 3, 6, 4]
+```
+
+第 2 天以 `1` 买入，第 5 天以 `6` 卖出，利润为 `6 - 1 = 5`。
+
+注意不能先卖后买，所以 `[7, 6, 4, 3, 1]` 这种一路下跌的行情最大利润是 `0`。
+
+## 思路：一次遍历 + 历史最低价
+
+暴力做法是枚举所有买卖组合，O(n²) 会超时。
+
+换个角度想：**如果今天卖出，最好的买入时机一定是今天之前的最低价。**
+
+所以只需要从左到右扫一遍，同时维护两个变量：
+
+- `minPrice`：到目前为止出现过的最低价格
+- `maxProfit`：到目前为止能获得的最大利润
+
+每到一天：
+
+1. 用 `prices[i] - minPrice` 算出「今天卖出」的利润，尝试更新 `maxProfit`
+2. 用 `prices[i]` 尝试更新 `minPrice`，供后面的日子使用
+
+因为 `minPrice` 永远来自当前位置左侧，天然满足「先买后卖」的约束。
+
+### 代码实现（TypeScript）
+
+```ts
+function maxProfit(prices: number[]): number {
+  let minPrice = Infinity;
+  let maxProfit = 0;
+
+  for (const price of prices) {
+    maxProfit = Math.max(maxProfit, price - minPrice);
+    minPrice = Math.min(minPrice, price);
+  }
+
+  return maxProfit;
+}
+```
+
+一路下跌时 `price - minPrice` 始终不会超过 `0`，`maxProfit` 保持初始值 `0`，正好符合题意。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护 minPrice 和 maxProfit 两个变量" />
