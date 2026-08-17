@@ -1,0 +1,68 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 53
+title: 'LeetCode 53 - Maximum Subarray'
+difficulty: 'medium'
+tags: ['array', 'dynamic-programming']
+date: '2026-08-17'
+description: 'Kadane 算法：负的前缀和只会拖后腿，果断丢弃重新开始'
+---
+
+## 题目理解
+
+给定整数数组 `nums`，找出和最大的**连续子数组**（至少包含一个元素），返回其和。
+
+例如：
+
+```ts
+nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+```
+
+和最大的子数组是 `[4, -1, 2, 1]`，和为 `6`。
+
+注意数组可能全是负数，这时答案是其中最大的那个负数，而不是 `0`。
+
+## 思路：Kadane 算法
+
+核心问题：遍历到位置 `i` 时，**以 `nums[i]` 结尾**的最大子数组和是多少？
+
+记它为 `currSum`，只有两种选择：
+
+- 接在前面的子数组后面：`currSum + nums[i]`
+- 抛弃前面，从自己重新开始：`nums[i]`
+
+什么时候该抛弃？当前面的 `currSum` 是负数时——负的前缀只会把总和拉低，不如不要。所以：
+
+```ts
+currSum = Math.max(nums[i], currSum + nums[i]);
+```
+
+全局答案 `maxSum` 就是所有位置上 `currSum` 的最大值。
+
+用开头的例子走一遍：
+
+| nums   | -2 | 1 | -3 | 4 | -1 | 2 | 1 | -5 | 4 |
+| ------ | -- | - | -- | - | -- | - | - | -- | - |
+| currSum | -2 | 1 | -2 | 4 | 3  | 5 | 6 | 1  | 5 |
+| maxSum  | -2 | 1 | 1  | 4 | 4  | 5 | 6 | 6  | 6 |
+
+### 代码实现（TypeScript）
+
+```ts
+function maxSubArray(nums: number[]): number {
+  let currSum = nums[0];
+  let maxSum = nums[0];
+
+  for (let i = 1; i < nums.length; i++) {
+    currSum = Math.max(nums[i], currSum + nums[i]);
+    maxSum = Math.max(maxSum, currSum);
+  }
+
+  return maxSum;
+}
+```
+
+初始值取 `nums[0]` 而不是 `0`，这样全负数数组也能返回正确结果。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护 currSum 和 maxSum 两个变量" />
