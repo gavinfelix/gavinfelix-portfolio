@@ -1,0 +1,64 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 141
+title: 'LeetCode 141 - Linked List Cycle'
+difficulty: 'easy'
+tags: ['linked-list', 'two-pointers']
+date: '2026-08-19'
+description: '快慢指针（Floyd 判圈）：有环则快指针一定会追上慢指针'
+---
+
+## 题目理解
+
+给定链表的头节点 `head`，判断链表中是否存在环。
+
+如果链表中某个节点的 `next` 指向了链表中前面出现过的节点，就构成了环。
+
+## 直观做法：哈希表
+
+遍历链表，用 `Set` 记录访问过的节点。如果某个节点第二次出现，说明有环。
+
+这个做法能过，但需要 O(n) 的额外空间。
+
+## 更优思路：快慢指针（Floyd 判圈）
+
+设两个指针从头出发：
+
+- `slow` 每次走 1 步
+- `fast` 每次走 2 步
+
+分两种情况：
+
+- **无环**：`fast` 会先走到链表末尾的 `null`，结束
+- **有环**：两个指针最终都会进入环里。在环内，`fast` 每轮比 `slow` 多走 1 步，相当于以每轮 1 步的速度追赶 `slow`，两者的距离每轮缩小 1，一定会相遇
+
+可以类比操场跑圈：跑得快的人总会套圈追上跑得慢的人。
+
+### 代码实现（TypeScript）
+
+```ts
+function hasCycle(head: ListNode | null): boolean {
+  let slow = head;
+  let fast = head;
+
+  while (fast !== null && fast.next !== null) {
+    slow = slow!.next;
+    fast = fast.next.next;
+
+    if (slow === fast) {
+      return true;
+    }
+  }
+
+  return false;
+}
+```
+
+循环条件只需要检查 `fast` 和 `fast.next`：`fast` 走得比 `slow` 快，`fast` 能安全前进则 `slow` 一定也能。
+
+## 延伸
+
+这道题的进阶版是 [LeetCode 142 - Linked List Cycle II](https://leetcode.com/problems/linked-list-cycle-ii/)：不仅要判断有没有环，还要找出入环的第一个节点。做法是在快慢指针相遇后，把一个指针放回表头，两者同速前进，再次相遇处就是环的入口。
+
+<ComplexityCard time="O(n)" space="O(1)" note="快慢指针各一个，无需额外存储" />
