@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 70
+title: 'LeetCode 70 - Climbing Stairs'
+difficulty: 'easy'
+tags: ['dynamic-programming', 'math']
+date: '2026-08-21'
+description: '爬楼梯等价于斐波那契：到达第 n 阶只能从 n-1 或 n-2 走来'
+---
+
+## 题目理解
+
+假设你正在爬楼梯，需要 `n` 阶才能到达楼顶。
+
+每次你可以爬 `1` 或 `2` 个台阶。问有多少种不同的方法可以爬到楼顶？
+
+例如：
+
+```ts
+n = 3
+```
+
+有三种方法：
+
+- `1 + 1 + 1`
+- `1 + 2`
+- `2 + 1`
+
+## 思路：动态规划
+
+要到达第 `n` 阶，最后一步只有两种可能：
+
+- 从第 `n - 1` 阶爬 1 阶上来
+- 从第 `n - 2` 阶爬 2 阶上来
+
+所以状态转移方程是：
+
+```ts
+f(n) = f(n - 1) + f(n - 2)
+```
+
+边界条件：
+
+- `f(1) = 1`（只有一种：爬 1 阶）
+- `f(2) = 2`（`1+1` 或 `2`）
+
+这和斐波那契数列几乎一样，只是起始值不同。
+
+既然每一项只依赖前两项，用滚动变量即可，不必开整个数组。
+
+### 代码实现（TypeScript）
+
+```ts
+function climbStairs(n: number): number {
+  if (n <= 2) return n;
+
+  let prev = 1;
+  let curr = 2;
+
+  for (let i = 3; i <= n; i++) {
+    const next = prev + curr;
+    prev = curr;
+    curr = next;
+  }
+
+  return curr;
+}
+```
+
+和 [LeetCode 509 Fibonacci Number](/posts/leetcode-0509-fibonacci-number) 是同一套路：滚动维护最近两项，把空间压到 O(1)。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只使用 prev、curr、next 三个变量" />
