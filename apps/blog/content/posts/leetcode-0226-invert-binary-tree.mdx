@@ -1,0 +1,101 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 226
+title: 'LeetCode 226 - Invert Binary Tree'
+difficulty: 'easy'
+tags: ['tree', 'depth-first-search', 'breadth-first-search']
+date: '2026-08-22'
+description: '翻转二叉树：交换每个节点的左右子树，递归或层序遍历均可'
+---
+
+## 题目理解
+
+给定二叉树的根节点 `root`，翻转这棵树，并返回翻转后的根节点。
+
+翻转的含义是：每个节点的左右子树互换位置。
+
+例如：
+
+```ts
+     4
+   /   \
+  2     7
+ / \   / \
+1   3 6   9
+```
+
+翻转后：
+
+```ts
+     4
+   /   \
+  7     2
+ / \   / \
+9   6 3   1
+```
+
+## 思路：递归交换
+
+对任意节点，翻转整棵树等价于：
+
+1. 先翻转它的左子树
+2. 再翻转它的右子树
+3. 最后交换左右孩子指针
+
+也可以先交换，再分别递归翻转左右子树，顺序不影响最终结果。
+
+空节点直接返回，作为递归出口。
+
+### 代码实现（TypeScript）
+
+```ts
+function invertTree(root: TreeNode | null): TreeNode | null {
+  if (root === null) return null;
+
+  const left = invertTree(root.left);
+  const right = invertTree(root.right);
+
+  root.left = right;
+  root.right = left;
+
+  return root;
+}
+```
+
+也可以写成更短的交换形式：
+
+```ts
+function invertTree(root: TreeNode | null): TreeNode | null {
+  if (root === null) return null;
+
+  [root.left, root.right] = [invertTree(root.right), invertTree(root.left)];
+  return root;
+}
+```
+
+## BFS 写法
+
+如果不想用递归，可以用队列层序遍历，逐个节点交换左右孩子：
+
+```ts
+function invertTree(root: TreeNode | null): TreeNode | null {
+  if (root === null) return null;
+
+  const queue: TreeNode[] = [root];
+
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    [node.left, node.right] = [node.right, node.left];
+
+    if (node.left) queue.push(node.left);
+    if (node.right) queue.push(node.right);
+  }
+
+  return root;
+}
+```
+
+面试里递归版更常见，也更好写。
+
+<ComplexityCard time="O(n)" space="O(h)" note="n 为节点数；递归栈深度等于树高 h，最坏 O(n)" />
