@@ -1,0 +1,61 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 876
+title: 'LeetCode 876 - Middle of the Linked List'
+difficulty: 'easy'
+tags: ['linked-list', 'two-pointers']
+date: '2026-08-25'
+description: '快慢指针找中点：快指针走两步、慢指针走一步，快到末尾时慢正好在中间'
+---
+
+## 题目理解
+
+给定单链表的头节点 `head`，返回链表的中间节点。
+
+如果有两个中间节点（偶数个节点），返回**第二个**中间节点。
+
+例如：
+
+```ts
+1 -> 2 -> 3 -> 4 -> 5        // 返回 3
+1 -> 2 -> 3 -> 4 -> 5 -> 6   // 返回 4（第二个中间节点）
+```
+
+## 思路：快慢指针
+
+先数长度再走一半也能做，但需要两遍遍历。
+
+用快慢指针一遍搞定：
+
+- `slow` 每次走 1 步
+- `fast` 每次走 2 步
+
+当 `fast` 走到末尾时，`slow` 正好停在中间。
+
+为什么？因为 `fast` 的速度是 `slow` 的两倍，走过的路程也是两倍，所以当 `fast` 走完全长时，`slow` 刚好走了一半。
+
+循环条件写成 `fast && fast.next`：
+
+- 奇数长度：`fast` 最终停在最后一个节点，`slow` 在正中间
+- 偶数长度：`fast` 最终变成 `null`，`slow` 停在第二个中间节点，正好符合题意
+
+### 代码实现（TypeScript）
+
+```ts
+function middleNode(head: ListNode | null): ListNode | null {
+  let slow = head;
+  let fast = head;
+
+  while (fast !== null && fast.next !== null) {
+    slow = slow!.next;
+    fast = fast.next.next;
+  }
+
+  return slow;
+}
+```
+
+和 [LeetCode 141 Linked List Cycle](/posts/leetcode-0141-linked-list-cycle) 用的是同一套快慢指针模板，只是相遇条件不同：判环看是否相遇，找中点看快指针是否到头。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只使用两个指针，一遍遍历" />
