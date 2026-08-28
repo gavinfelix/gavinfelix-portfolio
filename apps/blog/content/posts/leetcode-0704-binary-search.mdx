@@ -1,0 +1,74 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 704
+title: 'LeetCode 704 - Binary Search'
+difficulty: 'easy'
+tags: ['array', 'binary-search']
+date: '2026-08-28'
+description: '标准二分查找：在有序数组中维护搜索区间，每次排除一半'
+---
+
+## 题目理解
+
+给定一个升序排列的整数数组 `nums` 和一个目标值 `target`，在数组中查找 `target`。
+
+如果存在，返回其下标；否则返回 `-1`。
+
+要求：时间复杂度 O(log n)。
+
+例如：
+
+```ts
+nums = [-1, 0, 3, 5, 9, 12], target = 9 // 返回 4
+nums = [-1, 0, 3, 5, 9, 12], target = 2 // 返回 -1
+```
+
+## 思路：维护搜索区间
+
+线性扫描是 O(n)，不满足要求。数组有序，可以用二分查找。
+
+维护一个左闭右闭区间 `[left, right]`：
+
+- 取中点 `mid = left + Math.floor((right - left) / 2)`
+- 如果 `nums[mid] === target`，直接返回
+- 如果 `nums[mid] < target`，目标在右半段，令 `left = mid + 1`
+- 如果 `nums[mid] > target`，目标在左半段，令 `right = mid - 1`
+
+当 `left > right` 时，区间为空，说明没找到，返回 `-1`。
+
+`left + (right - left) / 2` 比 `(left + right) / 2` 更安全，避免极端情况下整数溢出（虽然 JS 里通常不是问题，但这是二分模板里的好习惯）。
+
+### 代码实现（TypeScript）
+
+```ts
+function search(nums: number[], target: number): number {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left <= right) {
+    const mid = left + Math.floor((right - left) / 2);
+
+    if (nums[mid] === target) {
+      return mid;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return -1;
+}
+```
+
+## 二分查找模板
+
+这道题是「找等于 target 的位置」。二分查找还有两类常见变体：
+
+- **找左边界**：第一个 `>= target` 的位置
+- **找右边界**：最后一个 `<= target` 的位置
+
+变体的关键是循环条件和边界更新方式会略有不同，但核心都是「每次排除一半搜索空间」。
+
+<ComplexityCard time="O(log n)" space="O(1)" note="只维护 left、right、mid 三个变量" />
