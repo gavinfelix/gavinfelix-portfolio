@@ -1,0 +1,70 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 242
+title: 'LeetCode 242 - Valid Anagram'
+difficulty: 'easy'
+tags: ['string', 'hash-table', 'sorting']
+date: '2026-08-29'
+description: '用字符频次判断异位词：两个字符串字母种类和数量必须完全一致'
+---
+
+## 题目理解
+
+给定两个字符串 `s` 和 `t`，判断 `t` 是否是 `s` 的字母异位词。
+
+异位词是指：两个字符串包含相同的字母，且每个字母出现的次数相同，只是排列顺序不同。
+
+例如：
+
+```ts
+s = "anagram", t = "nagaram" // true
+s = "rat",     t = "car"     // false
+```
+
+## 思路一：排序
+
+异位词排序后应该完全相同。
+
+```ts
+function isAnagram(s: string, t: string): boolean {
+  if (s.length !== t.length) return false;
+
+  return [...s].sort().join("") === [...t].sort().join("");
+}
+```
+
+写法简单，但排序是 O(n log n)，不是最优。
+
+## 思路二：字符频次计数
+
+异位词的本质是：每个字符的出现次数完全一致。
+
+用长度为 26 的数组 `count` 统计频次（只含小写字母时）：
+
+- 遍历 `s`，对应字符计数 +1
+- 遍历 `t`，对应字符计数 -1
+- 如果最终所有计数都是 0，就是异位词
+
+也可以只遍历一遍：s 里 +1，t 里 -1，中途出现负数就提前返回 `false`。
+
+### 代码实现（TypeScript）
+
+```ts
+function isAnagram(s: string, t: string): boolean {
+  if (s.length !== t.length) return false;
+
+  const count = new Array(26).fill(0);
+
+  for (let i = 0; i < s.length; i++) {
+    count[s.charCodeAt(i) - 97]++;
+    count[t.charCodeAt(i) - 97]--;
+  }
+
+  return count.every((c) => c === 0);
+}
+```
+
+如果字符集不限于 26 个小写字母，可以改用 `Map<string, number>` 做通用版本。
+
+<ComplexityCard time="O(n)" space="O(1)" note="固定 26 个字母，计数数组大小为常数" />
