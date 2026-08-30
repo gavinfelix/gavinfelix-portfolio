@@ -1,0 +1,64 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 217
+title: 'LeetCode 217 - Contains Duplicate'
+difficulty: 'easy'
+tags: ['array', 'hash-table', 'sorting']
+date: '2026-08-30'
+description: '用哈希集合判断重复：遍历时若元素已存在，说明有重复'
+---
+
+## 题目理解
+
+给定整数数组 `nums`，如果数组中**存在**至少一个重复元素，返回 `true`；否则返回 `false`。
+
+例如：
+
+```ts
+nums = [1, 2, 3, 1]     // true
+nums = [1, 2, 3, 4]     // false
+nums = [1, 1, 1, 3, 3]  // true
+```
+
+## 思路一：排序
+
+先排序，再检查相邻元素是否相等。
+
+时间 O(n log n)，空间 O(1)（不考虑排序额外空间）。
+
+## 思路二：哈希集合
+
+遍历数组，用 `Set` 记录已经见过的数字：
+
+- 如果当前数字已在集合里，说明重复，返回 `true`
+- 否则加入集合，继续
+
+遍历结束还没发现重复，返回 `false`。
+
+这是最直接的做法，时间 O(n)，空间 O(n)。
+
+### 代码实现（TypeScript）
+
+```ts
+function containsDuplicate(nums: number[]): boolean {
+  const seen = new Set<number>();
+
+  for (const num of nums) {
+    if (seen.has(num)) {
+      return true;
+    }
+    seen.add(num);
+  }
+
+  return false;
+}
+```
+
+也可以一行写法：`return new Set(nums).size !== nums.length`，但面试里通常还是写循环版，逻辑更清晰。
+
+## 延伸
+
+[LeetCode 219 - Contains Duplicate II](https://leetcode.com/problems/contains-duplicate-ii/) 要求重复元素的下标差不超过 `k`，可以用滑动窗口 + 哈希集合解决。
+
+<ComplexityCard time="O(n)" space="O(n)" note="Set 最多存储 n 个元素" />
