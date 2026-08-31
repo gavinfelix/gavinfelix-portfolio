@@ -1,0 +1,68 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 125
+title: 'LeetCode 125 - Valid Palindrome'
+difficulty: 'easy'
+tags: ['string', 'two-pointers']
+date: '2026-08-31'
+description: '双指针从两端向中间收缩，跳过非字母数字字符后比较是否相等'
+---
+
+## 题目理解
+
+给定一个字符串 `s`，判断它是否是回文串。
+
+只考虑字母和数字字符，忽略大小写。空字符串也算回文。
+
+例如：
+
+```ts
+s = "A man, a plan, a canal: Panama" // true
+s = "race a car"                     // false
+s = " "                              // true
+```
+
+## 思路：双指针
+
+把字符串预处理成只含小写字母和数字再比较也能做，但会额外分配空间。
+
+更优的做法是用双指针直接从两端向中间走：
+
+- `left` 从 0 开始，`right` 从末尾开始
+- 如果 `left` 指向的不是字母或数字，`left++`
+- 如果 `right` 指向的不是字母或数字，`right--`
+- 两边都是有效字符时，比较小写形式是否相等
+- 不相等直接返回 `false`；相等则 `left++`、`right--` 继续
+
+当 `left >= right` 时，说明全部配对成功，返回 `true`。
+
+### 代码实现（TypeScript）
+
+```ts
+function isPalindrome(s: string): boolean {
+  let left = 0;
+  let right = s.length - 1;
+
+  const isAlphaNum = (char: string) =>
+    /[a-z0-9]/i.test(char);
+
+  while (left < right) {
+    while (left < right && !isAlphaNum(s[left])) left++;
+    while (left < right && !isAlphaNum(s[right])) right--;
+
+    if (s[left].toLowerCase() !== s[right].toLowerCase()) {
+      return false;
+    }
+
+    left++;
+    right--;
+  }
+
+  return true;
+}
+```
+
+内层两个 `while` 负责跳过无效字符，外层 `while` 负责配对比较。这种写法不需要额外数组，一遍扫描就能完成。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只使用 left、right 两个指针" />
