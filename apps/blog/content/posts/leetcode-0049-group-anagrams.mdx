@@ -1,0 +1,60 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 49
+title: 'LeetCode 49 - Group Anagrams'
+difficulty: 'medium'
+tags: ['hash-table', 'string', 'sorting']
+date: '2026-09-02'
+description: '用排序后的字符串或字符频次作为哈希键，将字母异位词分组'
+---
+
+## 题目理解
+
+给定一个字符串数组 `strs`，把字母异位词（anagram）放在同一组里。字母异位词指字母相同、顺序可以不同的字符串。
+
+例如：
+
+```ts
+strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+// 输出: [["bat"], ["nat", "tan"], ["ate", "eat", "tea"]]
+```
+
+任意顺序返回分组结果即可。
+
+## 思路：哈希表分组
+
+两个字符串互为字母异位词，当且仅当它们排序后完全相同，或者字符频次完全一致。
+
+可以用排序后的字符串作为 `Map` 的 key：
+
+1. 遍历 `strs` 中的每个字符串
+2. 将字符串拆成字符数组、排序、再拼回字符串，得到 key
+3. 把原字符串加入 `map.get(key)` 对应的数组
+4. 最后返回 `map` 中所有 value
+
+也可以用长度为 26 的字符计数数组作为 key，避免排序，但排序写法更直观，且对一般长度字符串足够高效。
+
+### 代码实现（TypeScript）
+
+```ts
+function groupAnagrams(strs: string[]): string[][] {
+  const map = new Map<string, string[]>();
+
+  for (const str of strs) {
+    const key = str.split('').sort().join('');
+
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+
+    map.get(key)!.push(str);
+  }
+
+  return Array.from(map.values());
+}
+```
+
+排序后的 key 相同，说明两个字符串包含的字母及数量一致，因此可以归为一组。
+
+<ComplexityCard time="O(n * k log k)" space="O(n * k)" note="n 为字符串数量，k 为单个字符串的最大长度" />
