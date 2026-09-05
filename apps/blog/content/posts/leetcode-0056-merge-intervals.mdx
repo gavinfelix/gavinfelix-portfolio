@@ -1,0 +1,68 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 56
+title: 'LeetCode 56 - Merge Intervals'
+difficulty: 'medium'
+tags: ['array', 'sorting', 'intervals']
+date: '2026-09-04'
+description: '按起点排序后线性扫描，重叠区间合并右端点'
+---
+
+## 题目理解
+
+给定一个区间数组 `intervals`，其中 `intervals[i] = [start_i, end_i]`。合并所有**重叠**的区间，返回互不重叠的区间列表，且要覆盖输入中的全部区间。
+
+两个区间 `[a, b]` 和 `[c, d]` 重叠的条件是：`a <= d` 且 `c <= b`（端点相接也算重叠）。
+
+例如：
+
+```ts
+intervals = [[1, 3], [2, 6], [8, 10], [15, 18]]
+// 输出: [[1, 6], [8, 10], [15, 18]]
+// [1,3] 与 [2,6] 重叠，合并为 [1,6]
+
+intervals = [[1, 4], [4, 5]]
+// 输出: [[1, 5]]
+// 端点 4 相接，也要合并
+```
+
+## 思路：排序 + 线性合并
+
+和 [LeetCode 435 Non-overlapping Intervals](/posts/leetcode-0435-non-overlapping-intervals) 一样，区间题往往先**排序**再贪心处理。本题按**左端点**升序排序，然后从左到右扫描：
+
+- 用 `merged` 保存结果，初始放入第一个区间
+- 遍历后续区间 `[start, end]`，与 `merged` 中最后一个区间 `[lastStart, lastEnd]` 比较
+- 若 `start <= lastEnd`，说明重叠，把最后一个区间的右端点更新为 `Math.max(lastEnd, end)`
+- 否则不重叠，直接把 `[start, end]` 推入 `merged`
+
+排序后，任意重叠区间在数组中一定相邻（或已通过前面的合并连在一起），所以一遍扫描就够了。
+
+### 代码实现（TypeScript）
+
+```ts
+function merge(intervals: number[][]): number[][] {
+  if (intervals.length === 0) return [];
+
+  intervals.sort((a, b) => a[0] - b[0]);
+
+  const merged: number[][] = [intervals[0]];
+
+  for (let i = 1; i < intervals.length; i++) {
+    const [start, end] = intervals[i];
+    const last = merged[merged.length - 1];
+
+    if (start <= last[1]) {
+      last[1] = Math.max(last[1], end);
+    } else {
+      merged.push([start, end]);
+    }
+  }
+
+  return merged;
+}
+```
+
+`Math.max(last[1], end)` 不能省略：当前区间可能完全「包」在上一个合并结果里面（例如先 `[1, 10]` 再 `[2, 3]`），只取 `end` 会缩短已合并的区间。
+
+<ComplexityCard time="O(n log n)" space="O(n)" note="排序 dominates；merged 最多存 n 个区间" />
