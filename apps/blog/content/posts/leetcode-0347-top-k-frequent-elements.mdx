@@ -1,0 +1,74 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 347
+title: 'LeetCode 347 - Top K Frequent Elements'
+difficulty: 'medium'
+tags: ['array', 'hash-table', 'bucket-sort']
+date: '2026-09-05'
+description: '用哈希表统计频率，再用桶排序按出现次数收集前 k 个元素'
+---
+
+## 题目理解
+
+给定整数数组 `nums` 和整数 `k`，返回出现频率前 `k` 高的元素。
+
+答案顺序不限，但每个元素只出现一次。
+
+例如：
+
+```ts
+nums = [1, 1, 1, 2, 2, 3], k = 2 // [1, 2]
+nums = [1], k = 1                 // [1]
+```
+
+## 思路：哈希表 + 桶排序
+
+第一步，用 `Map` 统计每个数字的出现次数。
+
+第二步，把相同频率的数字放进同一个桶里：
+
+- 桶的下标就是频率
+- 频率最大不会超过 `nums.length`，所以桶的数量是 `n + 1`
+
+第三步，从频率最高的桶开始往低处扫，收集元素直到凑满 `k` 个。
+
+为什么不用直接排序频率？
+
+- 对所有不同元素按频率排序是 O(m log m)
+- 桶排序利用「频率范围有限」这一特点，整体是 O(n)
+
+### 代码实现（TypeScript）
+
+```ts
+function topKFrequent(nums: number[], k: number): number[] {
+  const freq = new Map<number, number>();
+
+  for (const num of nums) {
+    freq.set(num, (freq.get(num) ?? 0) + 1);
+  }
+
+  const buckets: number[][] = Array.from({ length: nums.length + 1 }, () => []);
+
+  for (const [num, count] of freq) {
+    buckets[count].push(num);
+  }
+
+  const result: number[] = [];
+
+  for (let i = buckets.length - 1; i >= 0 && result.length < k; i--) {
+    for (const num of buckets[i]) {
+      result.push(num);
+      if (result.length === k) break;
+    }
+  }
+
+  return result;
+}
+```
+
+## 延伸
+
+如果 `k` 很大、不同元素很多，也可以用大小为 `k` 的最小堆维护当前前 `k` 高频元素，时间复杂度 O(n log k)。
+
+<ComplexityCard time="O(n)" space="O(n)" note="freq 和 buckets 都与数组规模线性相关" />
