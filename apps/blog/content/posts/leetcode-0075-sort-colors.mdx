@@ -1,0 +1,71 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 75
+title: 'LeetCode 75 - Sort Colors'
+difficulty: 'medium'
+tags: ['array', 'two-pointers', 'sorting']
+date: '2026-09-07'
+description: '荷兰国旗三指针原地一趟排序 0、1、2'
+---
+
+## 题目理解
+
+给定一个只包含 `0`、`1`、`2` 的数组 `nums`，需要**原地**、**一趟扫描**内完成排序，使结果按升序排列。
+
+例如：
+
+```ts
+nums = [2, 0, 2, 1, 1, 0]
+// 输出: [0, 0, 1, 1, 2, 2]
+
+nums = [2, 0, 1]
+// 输出: [0, 1, 2]
+```
+
+进阶要求：能否只用常数级额外空间，且只遍历一次数组？
+
+## 思路：荷兰国旗（三指针）
+
+数组只有三种取值，不必调用通用排序。维护三个指针，把数组分成四段：
+
+- `[0 .. low-1]`：已排好的 `0`
+- `[low .. mid-1]`：已排好的 `1`
+- `[mid .. high]`：尚未处理的元素
+- `[high+1 .. n-1]`：已排好的 `2`
+
+初始时 `low = 0`、`mid = 0`、`high = n - 1`。每次看 `nums[mid]`：
+
+- 若为 `0`：与 `nums[low]` 交换，`low++`、`mid++`（`0` 归入左侧已排序区）
+- 若为 `1`：`mid++`（`1` 留在中间已排序区）
+- 若为 `2`：与 `nums[high]` 交换，`high--`（`2` 归入右侧；**不** `mid++`，因为换入 `mid` 的元素还未分类）
+
+当 `mid > high` 时，整数组已按 `0 → 1 → 2` 排好。
+
+### 代码实现（TypeScript）
+
+```ts
+function sortColors(nums: number[]): void {
+  let low = 0;
+  let mid = 0;
+  let high = nums.length - 1;
+
+  while (mid <= high) {
+    if (nums[mid] === 0) {
+      [nums[low], nums[mid]] = [nums[mid], nums[low]];
+      low++;
+      mid++;
+    } else if (nums[mid] === 1) {
+      mid++;
+    } else {
+      // nums[mid] === 2
+      [nums[mid], nums[high]] = [nums[high], nums[mid]];
+      high--;
+    }
+  }
+}
+```
+
+三指针只交换必要元素，一趟扫描完成分类；比计数排序多几次交换，但同样满足 O(n) 时间与 O(1) 空间。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只使用 low、mid、high 三个指针；最多 n 次交换" />
