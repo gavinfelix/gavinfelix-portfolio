@@ -1,0 +1,116 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 76
+title: 'LeetCode 76 - Minimum Window Substring'
+difficulty: 'hard'
+tags: ['string', 'sliding-window', 'hash-table']
+date: '2026-09-08'
+description: '滑动窗口 + 哈希表：扩张右边界覆盖 t，再收缩左边界求最短合法子串'
+---
+
+## 题目理解
+
+给定两个字符串 `s` 和 `t`，在 `s` 中找出包含 `t` 中**所有字符**（含重复）的最短子串。
+
+如果 `s` 中不存在这样的子串，返回空字符串 `""`。
+
+例如：
+
+```ts
+s = "ADOBECODEBANC", t = "ABC"
+// 返回 "BANC"
+
+s = "a", t = "a"
+// 返回 "a"
+
+s = "a", t = "aa"
+// 返回 ""（s 中只有一个 a，无法满足 t 需要两个 a）
+```
+
+注意：`t` 里的字符出现次数也要被满足，不只是字符种类。
+
+## 思路：滑动窗口 + 哈希表
+
+暴力枚举所有子串是 O(n²)，会超时。可以用滑动窗口维护一段「当前已覆盖 `t`」的连续区间。
+
+### 1. 统计 `t` 的字符频次
+
+用 `need` 记录 `t` 中每个字符还需要多少个；`required` 记录 `t` 里**不同字符**的种类数（用于判断窗口是否合法）。
+
+### 2. 扩张右边界
+
+`right` 向右移动，把 `s[right]` 加入窗口：
+
+- 若该字符在 `need` 中，将其所需数量减 1
+- 当某个字符的所需数量从 1 变为 0 时，说明这种字符已被完全覆盖，`formed++`
+
+当 `formed === required` 时，当前窗口已包含 `t` 的全部字符。
+
+### 3. 收缩左边界
+
+窗口合法后，尝试移动 `left` 缩小窗口，同时更新最短答案：
+
+- 若 `s[left]` 在 `need` 中，将其所需数量加回 1；若从 0 变回 1，说明这种字符不再被完全覆盖，`formed--`
+- `left++`，直到窗口不再合法（`formed < required`）
+
+重复扩张与收缩，直到 `right` 遍历完 `s`。
+
+### 代码实现（TypeScript）
+
+```ts
+function minWindow(s: string, t: string): string {
+  if (t.length === 0 || s.length < t.length) {
+    return "";
+  }
+
+  const need = new Map<string, number>();
+  for (const ch of t) {
+    need.set(ch, (need.get(ch) ?? 0) + 1);
+  }
+
+  const required = need.size;
+  let formed = 0;
+
+  const windowCounts = new Map<string, number>();
+  let left = 0;
+  let minLen = Infinity;
+  let minStart = 0;
+
+  for (let right = 0; right < s.length; right++) {
+    const ch = s[right];
+    windowCounts.set(ch, (windowCounts.get(ch) ?? 0) + 1);
+
+    if (need.has(ch) && windowCounts.get(ch) === need.get(ch)) {
+      formed++;
+    }
+
+    while (left <= right && formed === required) {
+      const windowLen = right - left + 1;
+      if (windowLen < minLen) {
+        minLen = windowLen;
+        minStart = left;
+      }
+
+      const leftCh = s[left];
+      windowCounts.set(leftCh, windowCounts.get(leftCh)! - 1);
+
+      if (need.has(leftCh) && windowCounts.get(leftCh)! < need.get(leftCh)!) {
+        formed--;
+      }
+
+      left++;
+    }
+  }
+
+  return minLen === Infinity ? "" : s.slice(minStart, minStart + minLen);
+}
+```
+
+`formed` 只统计「已满足目标频次的字符种类数」，比每次遍历 `need` 检查是否全部归零更高效。
+
+## 延伸
+
+这是经典的**可变长度滑动窗口**模板：先扩张 `right` 直到条件满足，再收缩 `left` 优化答案。类似思路也适用于 [LeetCode 438 - Find All Anagrams in a String](https://leetcode.com/problems/find-all-anagrams-in-a-string/) 等题。
+
+<ComplexityCard time="O(|s| + |t|)" space="O(|s| + |t|)" note="need 与 windowCounts 的规模由字符集大小决定；每个指针最多移动 |s| 次" />
