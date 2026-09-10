@@ -1,0 +1,114 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 79
+title: 'LeetCode 79 - Word Search'
+difficulty: 'medium'
+tags: ['backtracking', 'array', 'matrix']
+date: '2026-09-10'
+description: '回溯 + 网格 DFS：从每个起点尝试匹配单词，用 visited 标记避免重复使用同一格'
+---
+
+## 题目理解
+
+给定一个 `m x n` 的字符二维数组 `board` 和一个字符串 `word`，判断 `word` 是否存在于网格中。
+
+单词必须按照**字母顺序**，通过**相邻**的单元格内的字母构成，其中「相邻」单元格是指水平或垂直方向上相邻的单元格。同一个单元格内的字母**不允许被重复使用**。
+
+例如：
+
+```ts
+board = [
+  ["A","B","C","E"],
+  ["S","F","C","S"],
+  ["A","D","E","E"]
+]
+word = "ABCCED" // true
+
+word = "SEE"    // true
+word = "ABCB"   // false（不能重复使用同一格）
+```
+
+## 思路：回溯 + DFS
+
+这道题和 [LeetCode 78 - Subsets](/posts/leetcode-0078-subsets) 一样属于回溯模板题，但搜索空间是二维网格上的路径。
+
+核心想法：
+
+- 单词的第一个字母可能出现在网格的任意位置，所以对每个 `(row, col)` 都尝试作为起点
+- 从当前格子出发，向上下左右四个方向 DFS，尝试匹配 `word[index]`
+- 匹配成功则递归匹配下一个字符；四个方向都失败则回溯
+
+为避免同一路径中重复使用同一格，常见做法有两种：
+
+1. 用 `visited` 布尔数组标记已访问格子
+2. 原地修改 `board[row][col]` 为特殊字符（如 `#`），回溯时恢复
+
+下面用 `visited` 写法，逻辑更直观，也不修改输入。
+
+剪枝与边界：
+
+- `index === word.length` 时说明全部字符匹配成功，返回 `true`
+- 越界、已访问、当前字符与 `word[index]` 不等时，直接返回 `false`
+
+### 代码实现（TypeScript）
+
+```ts
+function exist(board: string[][] | null, word: string): boolean {
+  if (!board || board.length === 0 || board[0].length === 0) return false;
+
+  const rows = board.length;
+  const cols = board[0].length;
+  const visited: boolean[][] = Array.from({ length: rows }, () =>
+    Array(cols).fill(false)
+  );
+
+  const directions = [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0],
+  ];
+
+  function dfs(row: number, col: number, index: number): boolean {
+    if (index === word.length) return true;
+    if (
+      row < 0 ||
+      col < 0 ||
+      row >= rows ||
+      col >= cols ||
+      visited[row][col] ||
+      board[row][col] !== word[index]
+    ) {
+      return false;
+    }
+
+    visited[row][col] = true;
+
+    for (const [dr, dc] of directions) {
+      if (dfs(row + dr, col + dc, index + 1)) {
+        return true;
+      }
+    }
+
+    visited[row][col] = false;
+    return false;
+  }
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (dfs(row, col, 0)) return true;
+    }
+  }
+
+  return false;
+}
+```
+
+`visited[row][col] = false` 是回溯的关键：当前路径走不通时，要把格子「归还」，让其他起点或其他分支还能使用它。
+
+## 复杂度分析
+
+最坏情况下，每个起点都可能探索大量路径。网格大小为 `m × n`，单词长度为 `L`，分支因子最多为 4，上界约为 `O(m × n × 4^L)`。实际运行中，字符不匹配和 `visited` 剪枝会大幅减少搜索。
+
+<ComplexityCard time="O(m × n × 4^L)" space="O(m × n + L)" note="visited 数组 O(m × n)，递归栈深度最多 L" />
