@@ -1,0 +1,77 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 90
+title: 'LeetCode 90 - Subsets II'
+difficulty: 'medium'
+tags: ['backtracking', 'array', 'sorting']
+date: '2026-09-11'
+description: '回溯 + 排序去重：先排序，同层递归中跳过相同元素，避免重复子集'
+---
+
+## 题目理解
+
+给定一个**可能包含重复元素**的整数数组 `nums`，返回该数组所有可能的子集（幂集）。
+
+解集**不能**包含重复子集。返回的具体顺序不重要。
+
+例如：
+
+```ts
+nums = [1, 2, 2]
+// 返回 [[], [1], [1, 2], [1, 2, 2], [2], [2, 2]]
+
+nums = [0]
+// 返回 [[], [0]]
+```
+
+和 [LeetCode 78 - Subsets](/posts/leetcode-0078-subsets) 的区别在于：输入可能有重复值，直接套用 78 的写法会产生重复子集，比如 `[1,2,2]` 会得到两个 `[2]`。
+
+## 思路：回溯 + 排序去重
+
+整体框架与 78 相同：用 `path` 记录当前子集，用 `start` 控制只向后搜索。
+
+多出来的关键是**去重**，常用两步：
+
+1. **先排序**：把相同元素挨在一起，方便在同层循环里识别重复
+2. **同层跳过重复值**：在 `for (let i = start; ...)` 中，若 `i > start` 且 `nums[i] === nums[i - 1]`，说明这一层已经用同样的值尝试过，直接 `continue`
+
+为什么 `i > start` 而不是 `i > 0`？
+
+- `start` 表示当前递归层「可选范围」的起点
+- 同一层里，第一个出现的 `2` 要尝试；第二个 `2` 才跳过
+- 不同层之间，同一个 `2` 仍可能被选中（例如 `[1,2]` 和 `[2,2]`），所以只跳过同层重复
+
+### 代码实现（TypeScript）
+
+```ts
+function subsetsWithDup(nums: number[]): number[][] {
+  nums.sort((a, b) => a - b);
+
+  const res: number[][] = [];
+  const path: number[] = [];
+
+  function backtrack(start: number) {
+    res.push([...path]);
+
+    for (let i = start; i < nums.length; i++) {
+      if (i > start && nums[i] === nums[i - 1]) continue;
+
+      path.push(nums[i]);
+      backtrack(i + 1);
+      path.pop();
+    }
+  }
+
+  backtrack(0);
+  return res;
+}
+```
+
+`res.push([...path])` 放在循环外，每个递归深度都会记录一个合法子集；`continue` 保证同层不会用相同数字重复扩展，从而去掉 `[1,2]` 与 `[1,2]` 这类重复答案。
+
+## 复杂度分析
+
+排序 O(n log n)。共有最多 `2^n` 个子集，每个子集拷贝进结果最多 O(n)，回溯树深度 O(n)。
+
+<ComplexityCard time="O(n × 2^n)" space="O(n)" note="排序 O(n log n)；不计结果集时 path 与递归栈深度为 O(n)" />
