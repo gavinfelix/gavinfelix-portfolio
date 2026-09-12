@@ -1,0 +1,84 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 46
+title: 'LeetCode 46 - Permutations'
+difficulty: 'medium'
+tags: ['backtracking', 'array']
+date: '2026-09-12'
+description: '回溯枚举全排列：用 used 标记已选元素，path 满时收集答案'
+---
+
+## 题目理解
+
+给定一个**不含重复数字**的数组 `nums`，返回其所有可能的全排列。
+
+可以按任意顺序返回答案。
+
+例如：
+
+```ts
+nums = [1, 2, 3]
+// 返回 [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+
+nums = [0, 1]
+// 返回 [[0, 1], [1, 0]]
+
+nums = [1]
+// 返回 [[1]]
+```
+
+和 [LeetCode 78 - Subsets](/posts/leetcode-0078-subsets) 的区别在于：子集只关心「选或不选」，顺序无关；全排列要求每个元素**恰好用一次**，且**顺序不同算不同答案**。
+
+## 思路：回溯
+
+用 `path` 记录当前正在构建的排列，`used` 标记哪些数字已经用过。
+
+每一步从 `nums` 中选一个**还没用过**的数字加入 `path`：
+
+1. 若 `path.length === nums.length`，说明得到一个完整排列，把 `[...path]` 加入结果
+2. 否则遍历 `nums`，跳过 `used[i] === true` 的下标
+3. 选中 `nums[i]`：标记 `used[i] = true`，`path.push(nums[i])`，递归，再回溯 `pop` 并恢复 `used[i] = false`
+
+为什么需要 `used`？
+
+- 子集问题用 `start` 只向后搜索，避免 `[1,2]` 和 `[2,1]` 重复
+- 排列问题每一步可以选**任意未使用的元素**，不能靠 `start` 限制方向，必须用 `used` 记录占用状态
+
+### 代码实现（TypeScript）
+
+```ts
+function permute(nums: number[]): number[][] {
+  const res: number[][] = [];
+  const path: number[] = [];
+  const used = new Array(nums.length).fill(false);
+
+  function backtrack() {
+    if (path.length === nums.length) {
+      res.push([...path]);
+      return;
+    }
+
+    for (let i = 0; i < nums.length; i++) {
+      if (used[i]) continue;
+
+      used[i] = true;
+      path.push(nums[i]);
+      backtrack();
+      path.pop();
+      used[i] = false;
+    }
+  }
+
+  backtrack();
+  return res;
+}
+```
+
+`path` 满时才收集答案，与 78 在每层递归开头就 `push` 子集不同——排列必须凑满 `n` 个元素才算一条合法结果。
+
+## 复杂度分析
+
+共有 `n!` 种排列，每种拷贝进结果最多 O(n)，回溯树深度 O(n)。
+
+<ComplexityCard time="O(n × n!)" space="O(n)" note="不计结果集时 path、used 与递归栈深度为 O(n)" />
