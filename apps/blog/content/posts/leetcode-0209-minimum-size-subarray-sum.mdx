@@ -1,0 +1,78 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 209
+title: 'LeetCode 209 - Minimum Size Subarray Sum'
+difficulty: 'medium'
+tags: ['array', 'sliding-window']
+date: '2026-09-15'
+description: '用滑动窗口求和至少为 target 的最短连续子数组长度'
+---
+
+## 题目理解
+
+给定一个只包含正整数的数组 `nums` 和一个正整数 `target`。
+
+找出数组中**和大于等于 `target` 的长度最小的连续子数组**，返回其长度。如果不存在符合条件的子数组，返回 `0`。
+
+例如：
+
+```ts
+nums = [2, 3, 1, 2, 4, 3], target = 7 // 返回 2，子数组 [4, 3]
+nums = [1, 4, 4], target = 4 // 返回 1，子数组 [4]
+nums = [1, 1, 1, 1, 1, 1, 1, 1], target = 11 // 返回 0
+```
+
+## 思路一：暴力枚举（O(n^2)）
+
+枚举所有连续子数组 `[i, j]`，计算区间和，记录满足条件的最短长度。
+
+优点：直观  
+缺点：时间复杂度 O(n^2)，数据量大时会超时。
+
+## 思路二：滑动窗口（O(n) 推荐）
+
+数组元素都是正整数，有一个关键性质：
+
+- 窗口右端 `right` 右移 → 窗口和只会增大
+- 窗口左端 `left` 右移 → 窗口和只会减小
+
+因此可以用双指针维护一个可变窗口 `[left, right]`：
+
+1. 不断右移 `right`，扩大窗口，累加 `sum`
+2. 当 `sum >= target` 时，当前窗口合法，用 `right - left + 1` 更新最短长度
+3. 然后右移 `left` 缩小窗口，并从 `sum` 中减去 `nums[left]`
+4. 重复步骤 2–3，直到窗口和再次小于 `target`
+5. 继续右移 `right`，直到遍历完整个数组
+
+因为 `left` 和 `right` 都最多移动 n 次，整体是 O(n)。
+
+### 代码实现（TypeScript）
+
+```ts
+function minSubArrayLen(target: number, nums: number[]): number {
+  let left = 0;
+  let sum = 0;
+  let minLength = Infinity;
+
+  for (let right = 0; right < nums.length; right++) {
+    sum += nums[right];
+
+    while (sum >= target) {
+      minLength = Math.min(minLength, right - left + 1);
+      sum -= nums[left];
+      left++;
+    }
+  }
+
+  return minLength === Infinity ? 0 : minLength;
+}
+```
+
+## 为什么正整数很重要
+
+滑动窗口能工作，依赖「扩大窗口一定让和变大、缩小窗口一定让和变小」这一单调性。
+
+如果数组里有负数或零，窗口扩大后和可能反而变小，上述 `while` 收缩逻辑就不再正确，需要改用前缀和 + 二分或哈希表等别的做法。
+
+<ComplexityCard time="O(n)" space="O(1)" note="left 和 right 都最多移动 n 次" />
