@@ -1,0 +1,85 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 560
+title: 'LeetCode 560 - Subarray Sum Equals K'
+difficulty: 'medium'
+tags: ['array', 'hash-table', 'prefix-sum']
+date: '2026-09-16'
+description: '用前缀和 + 哈希表统计和为 k 的连续子数组个数'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums` 和一个整数 `k`，返回数组中和为 `k` 的**连续子数组**的个数。
+
+子数组是数组中一段连续的非空元素序列。
+
+例如：
+
+```ts
+nums = [1, 1, 1], k = 2 // 返回 2，子数组 [1, 1] 出现两次（下标 0–1 和 1–2）
+nums = [1, 2, 3], k = 3 // 返回 2，[1, 2] 和 [3]
+```
+
+## 思路一：暴力枚举（O(n^2)）
+
+枚举所有连续子数组 `[i, j]`，计算区间和，统计等于 `k` 的次数。
+
+优点：直观  
+缺点：时间复杂度 O(n^2)，数据量大时会超时。
+
+## 思路二：前缀和 + 哈希表（O(n) 推荐）
+
+设 `prefix[i]` 为 `nums[0..i-1]` 的和（`prefix[0] = 0`）。
+
+子数组 `nums[i..j]` 的和可以写成：
+
+```ts
+prefix[j + 1] - prefix[i] === k
+```
+
+移项得：
+
+```ts
+prefix[i] === prefix[j + 1] - k
+```
+
+遍历数组时，一边累加当前前缀和 `sum`，一边查哈希表里 `sum - k` 出现了多少次——那就是以当前位置结尾、和为 `k` 的子数组个数。
+
+具体步骤：
+
+1. 用 `Map` 记录每个前缀和出现的次数，初始化 `{0: 1}`（空前缀）
+2. 遍历 `nums`，累加 `sum`
+3. 把 `map.get(sum - k)` 加到答案里
+4. 把当前 `sum` 的计数加一
+
+和 [LeetCode 209 Minimum Size Subarray Sum](/posts/leetcode-0209-minimum-size-subarray-sum) 不同：209 要求**最短**子数组且元素为正，适合滑动窗口；560 允许负数，滑动窗口的单调性不再成立，前缀和 + 哈希表才是正解。
+
+### 代码实现（TypeScript）
+
+```ts
+function subarraySum(nums: number[], k: number): number {
+  const count = new Map<number, number>();
+  count.set(0, 1);
+
+  let prefixSum = 0;
+  let result = 0;
+
+  for (const num of nums) {
+    prefixSum += num;
+    result += count.get(prefixSum - k) ?? 0;
+    count.set(prefixSum, (count.get(prefixSum) ?? 0) + 1);
+  }
+
+  return result;
+}
+```
+
+## 为什么初始化 `{0: 1}`
+
+`count.set(0, 1)` 表示「空前缀」的和为 0，且出现过 1 次。
+
+这样当某个前缀和恰好等于 `k` 时，`count.get(k)` 能正确计入从下标 0 开始的子数组，不需要额外特判。
+
+<ComplexityCard time="O(n)" space="O(n)" note="哈希表最多存 n 个不同的前缀和" />
