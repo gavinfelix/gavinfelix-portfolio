@@ -1,0 +1,92 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 40
+title: 'LeetCode 0040 - Combination Sum II'
+difficulty: 'medium'
+tags: ['backtracking', 'array', 'sorting']
+date: '2026-09-17'
+description: '回溯 + 排序去重：每个数字最多用一次，同层跳过重复候选避免重复组合'
+---
+
+## 题目理解
+
+给定一个**可能包含重复元素**的整数数组 `candidates` 和一个目标整数 `target`，找出 `candidates` 中所有可以使数字和为 `target` 的组合。
+
+`candidates` 中的**每个数字在每个组合中只能使用一次**。
+
+解集**不能**包含重复的组合。
+
+例如：
+
+```ts
+candidates = [10, 1, 2, 7, 6, 1, 5], target = 8
+// 返回 [[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]
+
+candidates = [2, 5, 2, 1, 2], target = 5
+// 返回 [[1, 2, 2], [5]]
+
+candidates = [1], target = 1
+// 返回 [[1]]
+```
+
+和 [LeetCode 39 - Combination Sum](/posts/leetcode-0039-combination-sum) 的区别：
+
+- 39：候选无重复，**同一数字可重复使用**
+- 40：候选可能有重复，**每个数字最多用一次**
+
+## 思路：回溯 + 排序去重
+
+整体框架与 39 类似：用 `path` 记录当前组合，用 `sum` 累加和，用 `start` 只向后搜索，保证组合按非递减顺序生成。
+
+40 多出来的两个约束：
+
+1. **每个数字最多用一次**：递归时传 `i + 1`，而不是 39 的 `i`
+2. **输入有重复值**：先排序，再在同层循环里跳过重复候选（与 [LeetCode 90 - Subsets II](/posts/leetcode-0090-subsets-ii) 相同）
+
+去重规则：在 `for (let i = start; ...)` 中，若 `i > start` 且 `candidates[i] === candidates[i - 1]`，说明这一层已经用同样的值扩展过，直接 `continue`。
+
+为什么 `i > start`？
+
+- 同一层里，第一个出现的 `1` 要尝试；第二个 `1` 才跳过
+- 不同层之间，同一个 `1` 仍可能被选中（例如 `[1, 1, 6]`），所以只跳过同层重复
+
+剪枝：排序后若 `sum + candidates[i] > target`，后面的数只会更大，直接 `break`。
+
+### 代码实现（TypeScript）
+
+```ts
+function combinationSum2(candidates: number[], target: number): number[][] {
+  candidates.sort((a, b) => a - b);
+
+  const res: number[][] = [];
+  const path: number[] = [];
+
+  function backtrack(start: number, sum: number) {
+    if (sum === target) {
+      res.push([...path]);
+      return;
+    }
+
+    for (let i = start; i < candidates.length; i++) {
+      if (i > start && candidates[i] === candidates[i - 1]) continue;
+      if (sum + candidates[i] > target) break;
+
+      path.push(candidates[i]);
+      backtrack(i + 1, sum + candidates[i]);
+      path.pop();
+    }
+  }
+
+  backtrack(0, 0);
+  return res;
+}
+```
+
+`backtrack(i + 1, ...)` 表示当前数字已用过，下一层只能从 `i + 1` 开始；`continue` 保证同层不会用相同候选重复扩展，从而去掉 `[1, 2, 5]` 与 `[1, 2, 5]` 这类重复答案。
+
+## 复杂度分析
+
+排序 O(n log n)。最坏情况下需要枚举所有合法组合；每个组合拷贝进结果最多 O(target / min(candidates))。不计结果集时，`path` 与递归栈深度最多 O(target / min(candidates))。
+
+<ComplexityCard time="O(n × 2^n)" space="O(n)" note="排序 O(n log n)；不计结果集时 path 与递归栈深度为 O(n)" />
