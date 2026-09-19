@@ -1,0 +1,74 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 739
+title: 'LeetCode 0739 - Daily Temperatures'
+difficulty: 'medium'
+tags: ['array', 'stack', 'monotonic-stack']
+date: '2026-09-19'
+description: '单调递减栈：从右向左或从左向右维护尚未找到更暖日子的下标，弹出时计算等待天数'
+---
+
+## 题目理解
+
+给定一个整数数组 `temperatures`，其中 `temperatures[i]` 表示第 `i` 天的气温。
+
+返回一个数组 `answer`，使得 `answer[i]` 表示：在第 `i` 天之后，还要等多少天才能遇到比当天更暖的气温。若之后不存在更暖的日子，则 `answer[i] = 0`。
+
+例如：
+
+```ts
+temperatures = [73, 74, 75, 71, 69, 72, 76, 73]
+// 返回 [1, 1, 4, 2, 1, 1, 0, 0]
+
+temperatures = [30, 40, 50, 60]
+// 返回 [1, 1, 1, 0]
+
+temperatures = [30, 60, 90]
+// 返回 [1, 1, 0]
+```
+
+本题是经典的「下一个更大元素」变体：不是返回更大元素本身，而是返回**下标距离（天数差）**。
+
+## 思路：单调递减栈
+
+从左到右遍历每一天。用栈保存「还没找到更暖日子的下标」，且这些下标对应的温度在栈中从底到顶**单调递减**。
+
+遍历到下标 `i` 时：
+
+1. 若栈非空且 `temperatures[i]` 大于栈顶下标对应的气温，说明第 `i` 天就是栈顶那天遇到的第一个更暖日子
+2. 弹出栈顶下标 `prev`，令 `answer[prev] = i - prev`
+3. 重复步骤 1–2，直到栈为空或栈顶气温不低于 `temperatures[i]`
+4. 将 `i` 入栈，等待后面更暖的日子来「消化」它
+
+栈中始终维护「温度递减、下标递增」的候选集合；每个下标入栈一次、出栈一次，因此整体是线性的。
+
+### 代码实现（TypeScript）
+
+```ts
+function dailyTemperatures(temperatures: number[]): number[] {
+  const n = temperatures.length;
+  const answer = new Array<number>(n).fill(0);
+  const stack: number[] = [];
+
+  for (let i = 0; i < n; i++) {
+    // Current day is warmer than some earlier days still waiting in the stack
+    while (stack.length > 0 && temperatures[i] > temperatures[stack[stack.length - 1]]) {
+      const prev = stack.pop()!;
+      answer[prev] = i - prev;
+    }
+
+    stack.push(i);
+  }
+
+  return answer;
+}
+```
+
+`answer` 初始为 0，对应「之后没有更暖日子」的情况；只有被弹出的下标才会被写成正整数天数。
+
+## 复杂度分析
+
+每个下标最多入栈、出栈各一次，内层 `while` 的总执行次数也是 O(n)。
+
+<ComplexityCard time="O(n)" space="O(n)" note="最坏情况下栈中保存所有下标" />
