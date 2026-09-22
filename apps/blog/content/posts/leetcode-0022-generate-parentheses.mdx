@@ -1,0 +1,79 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 22
+title: 'LeetCode 22 - Generate Parentheses'
+difficulty: 'medium'
+tags: ['string', 'backtracking', 'recursion']
+date: '2026-09-22'
+description: '回溯剪枝：左括号未用完时可追加 "("，右括号数量小于左括号时可追加 ")"'
+---
+
+## 题目理解
+
+给定 `n` 对括号，生成所有**有效**的括号组合。
+
+例如：
+
+```ts
+n = 3
+// 返回 ["((()))","(()())","(())()","()(())","()()()"]
+
+n = 1
+// 返回 ["()"]
+```
+
+有效括号需满足：
+
+- 任意前缀中左括号 `'('` 的数量不少于右括号 `')'`
+- 最终左、右括号数量都等于 `n`
+
+本题是回溯入门经典题：在构造字符串的每一步，只有满足合法性约束时才继续递归。
+
+## 思路：回溯 + 双计数剪枝
+
+用 `open` 表示已使用的左括号数，`close` 表示已使用的右括号数，当前部分解为 `path`。
+
+递归规则：
+
+- 若 `open < n`，可以追加 `'('`，`open + 1` 后继续
+- 若 `close < open`，可以追加 `')'`，`close + 1` 后继续（保证右括号永远不超过左括号）
+- 当 `path.length === 2 * n` 时，收集一个完整解
+
+剪枝关键：`close < open` 等价于「任意前缀右括号不超过左括号」，无需额外检查字符串合法性。
+
+与 [LeetCode 46 Permutations](/posts/leetcode-0046-permutations) 一样在决策树上做 DFS；与 [LeetCode 77 Combinations](/posts/leetcode-0077-combinations) 不同，本题每步可选字符受 `open`/`close` 约束，不是简单枚举索引组合。
+
+### 代码实现（TypeScript）
+
+```ts
+function generateParenthesis(n: number): string[] {
+  const result: string[] = [];
+
+  const backtrack = (path: string, open: number, close: number): void => {
+    if (path.length === 2 * n) {
+      result.push(path);
+      return;
+    }
+
+    if (open < n) {
+      backtrack(path + "(", open + 1, close);
+    }
+
+    if (close < open) {
+      backtrack(path + ")", open, close + 1);
+    }
+  };
+
+  backtrack("", 0, 0);
+  return result;
+}
+```
+
+也可以先追加字符再回溯撤销（`path.push` / `path.pop`），但字符串拼接写法更直观，且本题叶子深度固定为 `2n`。
+
+## 复杂度分析
+
+解的数量为第 `n` 个卡特兰数 \(C_n = \frac{1}{n+1}\binom{2n}{n}\)，输出本身就需要 O(\(C_n \cdot n\)) 时间。回溯树节点数同阶，每个节点 O(1) 工作。
+
+<ComplexityCard time="O(C_n × n)" space="O(n)" note="递归栈深度最多 2n；不计结果数组占用的 O(C_n × n) 输出空间" />
