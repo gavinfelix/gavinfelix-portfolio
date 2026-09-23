@@ -1,0 +1,77 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 322
+title: 'LeetCode 322 - Coin Change'
+difficulty: 'medium'
+tags: ['array', 'dynamic-programming']
+date: '2026-09-23'
+description: '完全背包 DP：dp[i] 表示凑出金额 i 的最少硬币数，逐枚尝试每种面值'
+---
+
+## 题目理解
+
+给定整数数组 `coins` 表示不同面值的硬币，以及整数 `amount` 表示总金额。
+
+返回凑成总金额所需的**最少硬币个数**。若无法用给定面值凑出该金额，返回 `-1`。
+
+每种面值硬币数量无限，可以重复使用。
+
+例如：
+
+```ts
+coins = [1, 2, 5], amount = 11
+// 返回 3，即 11 = 5 + 5 + 1
+
+coins = [2], amount = 3
+// 返回 -1，无法凑出 3
+
+coins = [1], amount = 0
+// 返回 0
+```
+
+本题是经典的「完全背包」最小值问题：每种物品（硬币）可无限次选取，目标是达到容量（金额）且代价（硬币数）最小。
+
+## 思路：动态规划
+
+定义 `dp[i]` 为凑出金额 `i` 所需的最少硬币数。
+
+- 基础：`dp[0] = 0`（凑出 0 元不需要硬币）
+- 其余位置先初始化为 `Infinity`，表示「暂时不可达」
+
+对每一个金额 `i`（从 `1` 到 `amount`），尝试每一种硬币 `coin`：
+
+- 若 `coin <= i`，说明可以先用一枚 `coin`，再在剩余金额 `i - coin` 上继续凑
+- 状态转移：`dp[i] = min(dp[i], dp[i - coin] + 1)`
+
+遍历顺序是「外层金额、内层硬币」，与 [LeetCode 70 Climbing Stairs](/posts/leetcode-0070-climbing-stairs) 的递推类似，但本题每种硬币可重复使用，且要在多种面值中取最小值。
+
+最终若 `dp[amount]` 仍为 `Infinity`，说明无法凑出该金额，返回 `-1`；否则返回 `dp[amount]`。
+
+### 代码实现（TypeScript）
+
+```ts
+function coinChange(coins: number[], amount: number): number {
+  const dp = new Array<number>(amount + 1).fill(Infinity);
+  dp[0] = 0;
+
+  for (let i = 1; i <= amount; i++) {
+    for (const coin of coins) {
+      // Skip denominations larger than the current amount
+      if (coin > i) continue;
+
+      dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+    }
+  }
+
+  return dp[amount] === Infinity ? -1 : dp[amount];
+}
+```
+
+也可以把 `dp` 初始化为 `amount + 1` 作为哨兵值（因为最坏情况是用全为 1 的硬币），但 `Infinity` 更直观地表达「不可达」。
+
+## 复杂度分析
+
+外层遍历 `amount` 个状态，内层遍历 `coins.length` 种面值，每个状态转移 O(1)。
+
+<ComplexityCard time="O(amount × coins.length)" space="O(amount)" note="dp 数组长度为 amount + 1" />
