@@ -1,0 +1,82 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 55
+title: 'LeetCode 55 - Jump Game'
+difficulty: 'medium'
+tags: ['array', 'greedy']
+date: '2026-09-24'
+description: '贪心维护最远可达下标，判断能否从起点跳到数组末尾'
+---
+
+## 题目理解
+
+给定一个非负整数数组 `nums`，你最初位于数组的第一个下标。
+
+数组中的每个元素 `nums[i]` 表示从该位置**最多**可以向前跳跃的步数。
+
+判断你是否能够到达数组的最后一个下标。
+
+例如：
+
+```ts
+nums = [2, 3, 1, 1, 4]
+// 返回 true，路径 0 -> 1 -> 4
+
+nums = [3, 2, 1, 0, 4]
+// 返回 false，无论怎么跳都会在 3 处卡住
+```
+
+## 思路：贪心维护最远可达位置
+
+不需要真的模拟每一步跳跃，只需要知道「当前能到达的最远下标」即可。
+
+用变量 `furthest` 记录从起点出发，目前能到达的最远下标。从左到右遍历数组：
+
+- 如果当前下标 `i` 大于 `furthest`，说明这个位置根本到不了，直接返回 `false`
+- 否则用 `i + nums[i]` 更新 `furthest`，表示站在 `i` 时还能往前跳多远
+- 一旦 `furthest >= nums.length - 1`，说明最后一个下标可达，返回 `true`
+
+这个做法的关键观察是：只要某个位置能到达，从它出发能跳到的所有更远位置，对后续决策来说都是等价的——我们只需要保留「最远能到哪」这一信息。
+
+### 代码实现（TypeScript）
+
+```ts
+function canJump(nums: number[]): boolean {
+  let furthest = 0;
+
+  for (let i = 0; i < nums.length; i++) {
+    // Current index is unreachable from the start
+    if (i > furthest) return false;
+
+    furthest = Math.max(furthest, i + nums[i]);
+
+    // Last index is already reachable
+    if (furthest >= nums.length - 1) return true;
+  }
+
+  return true;
+}
+```
+
+## 从后往前的工作版本
+
+也可以把「最后一个下标」当作目标，从倒数第二个位置往前看：谁能一步跳到当前目标，谁就成为新的目标。最终若目标变成 `0`，说明起点能到达末尾。
+
+```ts
+function canJump(nums: number[]): boolean {
+  let goal = nums.length - 1;
+
+  for (let i = nums.length - 2; i >= 0; i--) {
+    if (i + nums[i] >= goal) {
+      goal = i;
+    }
+  }
+
+  return goal === 0;
+}
+```
+
+两种写法时间复杂度相同，正向版本更直观，反向版本代码更短。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护一个最远可达下标" />
