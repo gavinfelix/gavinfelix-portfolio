@@ -1,0 +1,72 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 142
+title: 'LeetCode 142 - Linked List Cycle II'
+difficulty: 'medium'
+tags: ['linked-list', 'two-pointers']
+date: '2026-09-25'
+description: 'Floyd 判圈相遇后，一指针回表头同速前进，再次相遇处即为环入口'
+---
+
+## 题目理解
+
+给定链表的头节点 `head`，如果链表中存在环，返回**入环的第一个节点**；如果不存在环，返回 `null`。
+
+和 [LeetCode 141 - Linked List Cycle](/posts/leetcode-0141-linked-list-cycle) 不同，这道题不仅要判断有没有环，还要定位环是从哪个节点开始的。
+
+## 思路：快慢指针 + 数学推导
+
+仍然用 Floyd 判圈：慢指针每次 1 步，快指针每次 2 步。若有环，两者一定会在环内某处相遇。
+
+设：
+
+- 从表头到环入口的距离为 `a`
+- 从环入口到第一次相遇点的距离为 `b`
+- 从相遇点沿 `next` 再走回到环入口的距离为 `c`（环长为 `b + c`）
+
+相遇时：
+
+- 慢指针走了 `a + b`
+- 快指针走了 `a + b + n(b + c)`（`n` 为快指针在环内多绕的圈数）
+
+因为快指针速度是慢指针的两倍，所以 `2(a + b) = a + b + n(b + c)`，化简得 `a = (n - 1)(b + c) + c`。
+
+含义是：从表头走 `a` 步，与从相遇点走 `c` 步（再绕若干整圈），会同时到达环入口。
+
+因此算法是：
+
+1. 先用快慢指针找到相遇点；若快指针先到 `null`，无环
+2. 把一个指针放回 `head`，两个指针每次各走 1 步
+3. 再次相遇的节点就是环的入口
+
+### 代码实现（TypeScript）
+
+```ts
+function detectCycle(head: ListNode | null): ListNode | null {
+  let slow = head;
+  let fast = head;
+
+  // Phase 1: detect whether a cycle exists
+  while (fast !== null && fast.next !== null) {
+    slow = slow!.next;
+    fast = fast.next.next;
+
+    if (slow === fast) {
+      // Phase 2: find the entry node of the cycle
+      let entry = head;
+      while (entry !== slow) {
+        entry = entry!.next;
+        slow = slow!.next;
+      }
+      return entry;
+    }
+  }
+
+  return null;
+}
+```
+
+第一阶段和 141 题完全相同；第二阶段利用 `a` 与 `c` 的关系，把「找入口」变成两次同速行走。
+
+<ComplexityCard time="O(n)" space="O(1)" note="仅使用常数个指针，不借助哈希表" />
