@@ -1,0 +1,115 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 438
+title: 'LeetCode 438 - Find All Anagrams in a String'
+difficulty: 'medium'
+tags: ['string', 'sliding-window', 'hash-table']
+date: '2026-09-27'
+description: '固定长度滑动窗口 + 字符频次：在 s 中找出所有与 p 互为字母异位词的起始下标'
+---
+
+## 题目理解
+
+给定两个字符串 `s` 和 `p`，在 `s` 中找出所有 `p` 的**字母异位词**的起始下标，按升序返回。
+
+字母异位词指由相同字母、相同数量组成、顺序可以不同的字符串。
+
+例如：
+
+```ts
+s = "cbaebabacd", p = "abc"
+// 返回 [0, 6]
+// 下标 0 的子串 "cba" 与 "abc" 互为异位词
+// 下标 6 的子串 "bac" 与 "abc" 互为异位词
+
+s = "abab", p = "ab"
+// 返回 [0, 1, 2]
+// 子串 "ab"、"ba"、"ab" 都与 "ab" 互为异位词
+```
+
+题目保证 `s` 和 `p` 只包含小写英文字母。
+
+## 思路：固定长度滑动窗口 + 哈希表
+
+暴力做法是枚举 `s` 中每个长度为 `|p|` 的子串，排序后与 `p` 比较，复杂度约 O(n · |p| log |p|)。
+
+因为窗口长度固定为 `|p|`，可以用滑动窗口维护当前子串的字符频次，并与 `p` 的频次对比：
+
+### 1. 统计 `p` 的目标频次
+
+用 `need` 记录 `p` 中每个字符应出现的次数；`required` 为 `need` 中不同字符的种类数。
+
+### 2. 右指针扩张窗口
+
+`right` 每步右移，把 `s[right]` 加入窗口计数 `window`：
+
+- 若该字符在 `need` 中，且窗口内该字符计数恰好等于目标频次，则 `formed++`（又多满足一种字符）
+
+### 3. 左指针收缩（窗口长度超过 |p|）
+
+当 `right - left + 1 > p.length` 时，移除 `s[left]` 并 `left++`：
+
+- 若移除前该字符在 `need` 中且计数等于目标频次，则 `formed--`
+
+### 4. 记录答案
+
+当窗口长度恰好为 `|p|` 且 `formed === required` 时，说明当前子串与 `p` 互为异位词，将 `left` 加入结果。
+
+`left` 和 `right` 各最多移动 `|s|` 次，整体线性。
+
+### 代码实现（TypeScript）
+
+```ts
+function findAnagrams(s: string, p: string): number[] {
+  if (p.length === 0 || s.length < p.length) {
+    return [];
+  }
+
+  const need = new Map<string, number>();
+  for (const ch of p) {
+    need.set(ch, (need.get(ch) ?? 0) + 1);
+  }
+
+  const required = need.size;
+  const window = new Map<string, number>();
+  const result: number[] = [];
+
+  let left = 0;
+  let formed = 0;
+
+  for (let right = 0; right < s.length; right++) {
+    const ch = s[right];
+    window.set(ch, (window.get(ch) ?? 0) + 1);
+
+    // Window count matches target frequency for this character type.
+    if (need.has(ch) && window.get(ch) === need.get(ch)) {
+      formed++;
+    }
+
+    // Shrink when the window is longer than p.
+    while (right - left + 1 > p.length) {
+      const leftCh = s[left];
+      if (need.has(leftCh) && window.get(leftCh) === need.get(leftCh)) {
+        formed--;
+      }
+      window.set(leftCh, window.get(leftCh)! - 1);
+      left++;
+    }
+
+    if (right - left + 1 === p.length && formed === required) {
+      result.push(left);
+    }
+  }
+
+  return result;
+}
+```
+
+`formed` 表示「在窗口内已满足目标频次的字符种类数」，避免每次窗口合法时遍历整个 `need` 表。
+
+## 延伸
+
+这是**固定长度滑动窗口**的典型模板，与 [LeetCode 76 - Minimum Window Substring](/blog/leetcode-0076-minimum-window-substring) 的可变长度窗口形成对照。若只判断是否存在异位词（不要求列出全部下标），[LeetCode 567 - Permutation in String](https://leetcode.com/problems/permutation-in-string/) 是同一套思路的单点版本。
+
+<ComplexityCard time="O(|s| + |p|)" space="O(|p|)" note="need 与 window 的规模由字符集大小决定；双指针各最多移动 |s| 次" />
