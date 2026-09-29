@@ -1,0 +1,100 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 199
+title: 'LeetCode 199 - Binary Tree Right Side View'
+difficulty: 'medium'
+tags: ['tree', 'depth-first-search', 'breadth-first-search', 'binary-tree']
+date: '2026-09-29'
+description: '层序遍历每层最右节点，或 DFS 先右后左记录首次到达的深度'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，想象自己站在树的右侧，返回从右侧能看到的节点值，**从上到下**排列。
+
+同一层只保留**最靠右**的那个节点；如果某层只有一个节点，它自然就是该层的答案。
+
+例如：
+
+```ts
+     1
+   /   \
+  2     3
+   \     \
+    5     4
+```
+
+从右侧看，依次是 `1`、`3`、`4`，返回 `[1, 3, 4]`。
+
+## 思路：层序遍历（BFS）
+
+「右侧视图」等价于：对每一层，取**最后一个**被访问到的节点。
+
+用队列做标准层序遍历，每次处理一整层：
+
+1. 记录当前层节点个数 `size`
+2. 循环 `size` 次出队；每次把非空孩子入队
+3. 本层**最后一个**出队的节点值写入答案
+
+这样不需要区分左右，只要保证同一层从左到右依次处理即可。
+
+### 代码实现（TypeScript）
+
+```ts
+function rightSideView(root: TreeNode | null): number[] {
+  if (root === null) return [];
+
+  const result: number[] = [];
+  const queue: TreeNode[] = [root];
+
+  while (queue.length > 0) {
+    const size = queue.length;
+    let rightmost = 0;
+
+    for (let i = 0; i < size; i++) {
+      const node = queue.shift()!;
+      rightmost = node.val;
+
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+
+    result.push(rightmost);
+  }
+
+  return result;
+}
+```
+
+## DFS：先右后左
+
+也可以递归：深度 `d` 第一次被访问到的节点，一定是该层最靠右的（因为总是先走右子树）。
+
+维护 `depth` 从 `0` 开始，每向下一层 `depth + 1`。若 `depth === result.length`，说明这一深度还没记录过，把当前节点值 push 进去。
+
+### DFS 实现（TypeScript）
+
+```ts
+function rightSideView(root: TreeNode | null): number[] {
+  const result: number[] = [];
+
+  function dfs(node: TreeNode | null, depth: number): void {
+    if (node === null) return;
+
+    if (depth === result.length) {
+      result.push(node.val);
+    }
+
+    dfs(node.right, depth + 1);
+    dfs(node.left, depth + 1);
+  }
+
+  dfs(root, 0);
+  return result;
+}
+```
+
+BFS 更贴近题意；DFS 代码更短，且空间上不必在队列里同时存一整层节点。两种写法时间都是 O(n)。
+
+<ComplexityCard time="O(n)" space="O(n)" note="BFS 队列与 DFS 递归栈最坏均为 O(n)，例如链状树或完全二叉树" />
