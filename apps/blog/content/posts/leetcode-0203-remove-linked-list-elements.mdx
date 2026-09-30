@@ -1,0 +1,87 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 203
+title: 'LeetCode 203 - Remove Linked List Elements'
+difficulty: 'easy'
+tags: ['linked-list', 'two-pointers']
+date: '2026-09-30'
+description: '用哑节点统一处理头删，遍历链表跳过值等于 val 的节点'
+---
+
+## 题目理解
+
+给定单链表的头节点 `head` 和一个整数 `val`，删除链表中所有值等于 `val` 的节点，并返回新的头节点。
+
+例如：
+
+```ts
+head = [1, 2, 6, 3, 4, 5, 6], val = 6
+// 返回 [1, 2, 3, 4, 5]
+
+head = [], val = 1
+// 返回 []
+
+head = [7, 7, 7, 7], val = 7
+// 返回 []
+```
+
+注意：需要**原地**调整指针，不能只改值；头节点本身也可能被删掉。
+
+## 思路：哑节点 + 前驱指针
+
+如果直接从头节点开始删，「头节点要不要删」要单独写分支。在链表前放一个**哑节点** `dummy`，让 `dummy.next = head`，之后所有操作都站在「前驱」位置上，逻辑一致。
+
+用指针 `prev` 表示「已确认保留、且位于待检查节点之前」的节点，初始为 `dummy`：
+
+- 若 `prev.next` 的值等于 `val`，说明这个节点要删：把 `prev.next` 改成 `prev.next.next`，**不移动** `prev`（可能连续多个 `val`）
+- 否则当前节点保留，`prev` 前移到 `prev.next`
+
+遍历结束后返回 `dummy.next`，即可能更新过的新头节点。
+
+### 代码实现（TypeScript）
+
+```ts
+function removeElements(
+  head: ListNode | null,
+  val: number
+): ListNode | null {
+  const dummy = new ListNode(0, head);
+  let prev: ListNode = dummy;
+
+  while (prev.next !== null) {
+    if (prev.next.val === val) {
+      // Skip the node with target value
+      prev.next = prev.next.next;
+    } else {
+      prev = prev.next;
+    }
+  }
+
+  return dummy.next;
+}
+```
+
+## 递归写法
+
+也可以递归：若头节点值等于 `val`，答案就是去掉头之后的子链表；否则把头节点的 `next` 设为递归处理后的结果。
+
+```ts
+function removeElements(
+  head: ListNode | null,
+  val: number
+): ListNode | null {
+  if (head === null) return null;
+
+  if (head.val === val) {
+    return removeElements(head.next, val);
+  }
+
+  head.next = removeElements(head.next, val);
+  return head;
+}
+```
+
+迭代写法更易控制指针，递归写法代码短，但最坏情况下调用栈深度为 O(n)。
+
+<ComplexityCard time="O(n)" space="O(1)" note="迭代版本只使用哑节点和常数个指针；递归版本额外 O(n) 栈空间" />
