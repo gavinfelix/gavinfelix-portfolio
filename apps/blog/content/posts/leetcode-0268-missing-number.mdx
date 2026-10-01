@@ -1,0 +1,69 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 268
+title: 'LeetCode 268 - Missing Number'
+difficulty: 'easy'
+tags: ['array', 'math', 'bit-manipulation']
+date: '2026-10-01'
+description: '用 0..n 的完整和减去数组和，或用异或抵消成对出现的下标与数值'
+---
+
+## 题目理解
+
+给定一个包含 `n` 个不同整数的数组 `nums`，这些数的取值范围是 `[0, n]`，且**恰好有一个数没有出现在数组里**。找出缺失的那个数。
+
+要求尽量在线性时间内、常数额外空间内完成（进阶要求）。
+
+例如：
+
+```ts
+nums = [3, 0, 1]       // n = 3，缺失 2
+nums = [0, 1]          // n = 2，缺失 2
+nums = [9, 6, 4, 2, 3, 5, 7, 0, 1] // n = 9，缺失 8
+```
+
+## 思路一：等差数列求和
+
+完整集合 `{0, 1, …, n}` 的和是 `n * (n + 1) / 2`。把数组里所有元素加起来，用「完整和 − 数组和」就是缺失的数。
+
+例如 `nums = [3, 0, 1]`：`n = 3`，完整和为 `6`，数组和为 `4`，缺失 `6 - 4 = 2`。
+
+注意用整数运算即可，在题目约束下不会溢出。
+
+### 代码实现（TypeScript）
+
+```ts
+function missingNumber(nums: number[]): number {
+  const n = nums.length;
+  let sum = 0;
+
+  for (const num of nums) {
+    sum += num;
+  }
+
+  return (n * (n + 1)) / 2 - sum;
+}
+```
+
+## 思路二：异或
+
+和 [LeetCode 136](/blog/leetcode-0136-single-number) 类似，异或可以把成对的相同值消掉。
+
+把 `0..n` 的每个下标 `i` 与 `nums[i]` 一起异或进同一个累加器；再额外把 `n` 异或进去（因为下标只到 `n - 1`，而完整范围里还有数值 `n` 本身可能缺失）。所有在数组里成对出现的 `(i, nums[i])` 会两两抵消，最后剩下的就是缺失的数。
+
+```ts
+function missingNumber(nums: number[]): number {
+  let result = nums.length;
+
+  for (let i = 0; i < nums.length; i++) {
+    result ^= i ^ nums[i];
+  }
+
+  return result;
+}
+```
+
+初始 `result = nums.length` 等价于先把 `n` 放进异或链里，循环里只处理 `i` 与 `nums[i]`。
+
+<ComplexityCard time="O(n)" space="O(1)" note="求和或异或都只扫一遍数组，只用常数个变量" />
