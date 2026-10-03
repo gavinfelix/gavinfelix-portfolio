@@ -1,0 +1,105 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 102
+title: 'LeetCode 102 - Binary Tree Level Order Traversal'
+difficulty: 'medium'
+tags: ['tree', 'breadth-first-search', 'binary-tree']
+date: '2026-10-03'
+description: '标准层序 BFS：按层处理队列，把每层节点值收集成二维数组'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，返回其节点值的**层序遍历**结果（从左到右、逐层）。
+
+每一层的结果放在数组的一个子数组里，最终返回二维数组。
+
+例如：
+
+```ts
+     3
+   /   \
+  9    20
+      /  \
+     15   7
+```
+
+返回 `[[3], [9, 20], [15, 7]]`。
+
+空树返回 `[]`。
+
+## 思路：队列 BFS，按层批量出队
+
+层序遍历是二叉树 BFS 的模板题：用队列保存「待访问节点」，并保证**同一层的节点在队列中相邻**。
+
+每一轮：
+
+1. 记录当前队列长度 `size`（即本层节点数）
+2. 循环 `size` 次，每次从队头取出一个节点，把值写入当前层数组
+3. 将该节点的非空左、右孩子依次入队（下一层会从左到右进入队列）
+
+当队列为空时，所有层都已处理完毕。
+
+与 [LeetCode 199 - Binary Tree Right Side View](/posts/leetcode-0199-binary-tree-right-side-view) 用的是同一套按层 BFS 框架；199 每层只保留最右节点，本题需要收集**整层**的所有值。
+
+### 代码实现（TypeScript）
+
+```ts
+function levelOrder(root: TreeNode | null): number[][] {
+  if (root === null) return [];
+
+  const result: number[][] = [];
+  const queue: TreeNode[] = [root];
+
+  while (queue.length > 0) {
+    const size = queue.length;
+    const level: number[] = [];
+
+    for (let i = 0; i < size; i++) {
+      const node = queue.shift()!;
+      level.push(node.val);
+
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+
+    result.push(level);
+  }
+
+  return result;
+}
+```
+
+`shift()` 在 JS 数组上是 O(n)，面试中可改用双端队列或索引指针优化；LeetCode 数据规模下通常足够。
+
+## DFS：按深度写入结果
+
+也可以用 DFS：递归时带上当前深度 `depth`，第一次到达该深度时往 `result` 里 push 一个空数组，再把 `node.val` 放进 `result[depth]`。
+
+DFS 代码更短，但不如 BFS 直观；两种写法时间复杂度相同。
+
+### DFS 实现（TypeScript）
+
+```ts
+function levelOrder(root: TreeNode | null): number[][] {
+  const result: number[][] = [];
+
+  function dfs(node: TreeNode | null, depth: number): void {
+    if (node === null) return;
+
+    if (depth === result.length) {
+      result.push([]);
+    }
+
+    result[depth].push(node.val);
+    dfs(node.left, depth + 1);
+    dfs(node.right, depth + 1);
+  }
+
+  dfs(root, 0);
+  return result;
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="每个节点入队/访问一次；队列与递归栈最坏 O(n)，例如完全二叉树或链状树" />
