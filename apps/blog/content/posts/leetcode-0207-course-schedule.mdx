@@ -1,0 +1,84 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 0207
+title: 'LeetCode 0207 - Course Schedule'
+difficulty: 'medium'
+tags: ['graph', 'depth-first-search', 'breadth-first-search', 'topological-sort']
+date: '2026-10-05'
+description: '建图后 DFS 三色标记或 Kahn 拓扑排序，判断有向图是否存在环'
+---
+
+## 题目理解
+
+共有 `numCourses` 门课，编号 `0` 到 `numCourses - 1`。数组 `prerequisites` 中每一项 `[a, b]` 表示：要学课程 `a`，必须先学课程 `b`。
+
+判断能否完成所有课程（即先修关系是否无矛盾、能否排出一门合法的上课顺序）。
+
+例如：
+
+```ts
+numCourses = 2, prerequisites = [[1, 0]]
+// 返回 true：先学 0 再学 1
+
+numCourses = 2, prerequisites = [[1, 0], [0, 1]]
+// 返回 false：0 和 1 互相依赖，形成环
+```
+
+本质是在有向图上判断是否存在**环**；无环则存在拓扑序，可以学完所有课。
+
+## 思路：DFS 检测环（三色标记）
+
+把先修关系建成有向边：`b -> a`（学完 `b` 才能学 `a`）。
+
+对每个节点用三种状态：
+
+- `0`：未访问
+- `1`：在当前 DFS 路径上（「灰色」）
+- `2`：已访问且确认无环（「黑色」）
+
+DFS 从某节点出发时，若沿边走到状态为 `1` 的邻居，说明遇到回边，存在环，返回 `false`。若所有节点都能标记为 `2`，返回 `true`。
+
+也可用 BFS（Kahn 算法）维护入度：不断弹出入度为 0 的课并减少邻居入度，最终若处理节点数等于 `numCourses` 则无环。
+
+### 代码实现（TypeScript）
+
+```ts
+function canFinish(numCourses: number, prerequisites: number[][]): boolean {
+  const graph: number[][] = Array.from({ length: numCourses }, () => []);
+  for (const [course, prereq] of prerequisites) {
+    graph[prereq].push(course);
+  }
+
+  // 0 = unvisited, 1 = on current path, 2 = finished
+  const state = new Array<number>(numCourses).fill(0);
+
+  const dfs = (node: number): boolean => {
+    if (state[node] === 1) return false;
+    if (state[node] === 2) return true;
+
+    state[node] = 1;
+
+    for (const next of graph[node]) {
+      if (!dfs(next)) return false;
+    }
+
+    state[node] = 2;
+    return true;
+  };
+
+  for (let i = 0; i < numCourses; i++) {
+    if (state[i] === 0 && !dfs(i)) return false;
+  }
+
+  return true;
+}
+```
+
+从每个未访问节点启动 DFS 即可覆盖所有连通分量；已标记为 `2` 的节点直接跳过，避免重复遍历。
+
+## 复杂度分析
+
+建图 O(E)，其中 E 为 `prerequisites` 长度；每个节点和边最多访问常数次。
+
+<ComplexityCard time="O(V + E)" space="O(V + E)" note="V = numCourses；邻接表与 state 数组" />
