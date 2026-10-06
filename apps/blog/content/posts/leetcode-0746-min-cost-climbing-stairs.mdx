@@ -1,0 +1,69 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 746
+title: 'LeetCode 746 - Min Cost Climbing Stairs'
+difficulty: 'easy'
+tags: ['array', 'dynamic-programming']
+date: '2026-10-06'
+description: '到达楼顶的最小花费：每一步只依赖前两阶，用滚动变量做 O(1) 空间 DP'
+---
+
+## 题目理解
+
+数组 `cost` 中 `cost[i]` 是从第 `i` 阶**踏上**这一阶需要支付的费用（下标从 `0` 开始）。
+
+支付后可以选择再爬 **1** 或 **2** 阶。你可以从第 `0` 阶或第 `1` 阶出发（出发时也要支付对应那一阶的费用），目标是到达楼顶（可以认为在 `cost.length` 位置，超出最后一阶）。
+
+返回到达楼顶所需的**最小总花费**。
+
+例如：
+
+```ts
+cost = [10, 15, 20]
+// 返回 15：从第 1 阶出发（花 15），再爬 2 阶到顶
+
+cost = [1, 100, 1, 1, 1, 100, 1, 1, 100, 1]
+// 返回 6：路径 0 -> 2 -> 4 -> 6 -> 7 -> 9（只计踏上各阶的费用）
+```
+
+与 [LeetCode 70 Climbing Stairs](/posts/leetcode-0070-climbing-stairs) 一样，每一步只与「前两阶」有关，但本题要在多种路径中取**花费最小**而非计数。
+
+## 思路：动态规划
+
+设 `dp[i]` 为到达下标 `i` 这一「位置」的最小花费（尚未踏上 `i` 时已在该位置，或理解为爬到第 `i` 阶之前累计的花费）。下标 `0`、`1` 都可以作为起点，因此 `dp[0] = dp[1] = 0`。
+
+要从位置 `i - 1` 或 `i - 2` 再爬一步或两步到达位置 `i`，需要先踏上对应那一阶并支付 `cost[i - 1]` 或 `cost[i - 2]`：
+
+```ts
+dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2])
+```
+
+楼顶对应 `i = cost.length`（没有 `cost[length]` 这一阶）。答案为 `dp[cost.length]`。
+
+`dp[i]` 只依赖前两项，用两个滚动变量即可，与 [LeetCode 509 Fibonacci Number](/posts/leetcode-0509-fibonacci-number) 的写法类似。
+
+### 代码实现（TypeScript）
+
+```ts
+function minCostClimbingStairs(cost: number[]): number {
+  let prev = 0;
+  let curr = 0;
+
+  for (let i = 2; i <= cost.length; i++) {
+    const next = Math.min(prev + cost[i - 2], curr + cost[i - 1]);
+    prev = curr;
+    curr = next;
+  }
+
+  return curr;
+}
+```
+
+`prev`、`curr` 始终保存最近的 `dp[i - 2]` 与 `dp[i - 1]`；循环结束时 `curr` 即为 `dp[cost.length]`。
+
+## 复杂度分析
+
+状态从 `2` 推到 `cost.length`，每步 O(1)。
+
+<ComplexityCard time="O(n)" space="O(1)" note="n = cost.length；仅维护 prev、curr、next" />
