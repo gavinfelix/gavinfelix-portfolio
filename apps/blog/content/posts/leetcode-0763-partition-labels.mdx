@@ -1,0 +1,78 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 763
+title: 'LeetCode 763 - Partition Labels'
+difficulty: 'medium'
+tags: ['greedy', 'hash-table', 'string']
+date: '2026-10-07'
+description: '记录每个字母最后出现位置，扫描时扩展当前片段右边界，右边界追上下标时切出一段'
+---
+
+## 题目理解
+
+给定字符串 `s`，把它尽量多地切成若干**连续子串**，使得**每个字母最多出现在其中一个子串里**（同一字母不能跨段出现）。
+
+返回每一段的长度，顺序与从左到右的划分一致。
+
+例如：
+
+```ts
+s = "ababcbacadefegdehijhklij"
+// 返回 [9, 7, 8]
+// 划分为 "ababcbaca"、"defegde"、"hijhklij"
+
+s = "eccbbbbdec"
+// 返回 [10]
+// 整串必须在一起，因为 'c'、'b'、'd' 等字母在更后面还会出现
+```
+
+划分要满足约束，且希望段数尽量多，等价于在从左扫描时，**一旦当前「窗口」已经包含了窗口内所有字母的最后出现位置，就立刻在这里切一刀**。
+
+## 思路：贪心 + 最后出现位置
+
+若字母 `c` 在位置 `last[c]` 最后一次出现，那么从第一次遇到 `c` 开始，当前这一段至少要延伸到 `last[c]`，否则 `c` 会跨段。
+
+预处理：遍历 `s`，记录每个字符的**最后下标**。
+
+再从左到右扫描，维护当前段的左边界 `start` 和必须覆盖到的最远右边界 `end`：
+
+- 每走到 `i`，令 `end = max(end, last[s[i]])`
+- 当 `i === end` 时，说明 `[start, end]` 内每个字母都不会在 `end` 之后再出现，可以在这里结束一段，把长度 `end - start + 1` 加入答案，并令 `start = i + 1` 开始下一段
+
+这样每段都是「能切就尽早切」，段数自然最多。
+
+### 代码实现（TypeScript）
+
+```ts
+function partitionLabels(s: string): number[] {
+  const last = new Map<string, number>();
+
+  for (let i = 0; i < s.length; i++) {
+    last.set(s[i], i);
+  }
+
+  const sizes: number[] = [];
+  let start = 0;
+  let end = 0;
+
+  for (let i = 0; i < s.length; i++) {
+    end = Math.max(end, last.get(s[i])!);
+
+    if (i === end) {
+      sizes.push(end - start + 1);
+      start = i + 1;
+    }
+  }
+
+  return sizes;
+}
+```
+
+`last` 只在预处理时写入，扫描阶段只读；`end` 单调不减，因此每扫到一个「闭合」的右边界就切一段，不会漏切也不会多切。
+
+## 与区间贪心的关系
+
+本题没有显式排序区间，但和 [LeetCode 435 Non-overlapping Intervals](/posts/leetcode-0435-non-overlapping-intervals) 一样，核心是**尽早做局部最优决策**：一旦当前窗口在字母最后一次出现处「封口」，就立刻结束这一段，避免把本可分开的字母绑在同一子串里。
+
+<ComplexityCard time="O(n)" space="O(1)" note="n = s.length；last 至多 26 个小写字母，不计入渐近额外空间" />
