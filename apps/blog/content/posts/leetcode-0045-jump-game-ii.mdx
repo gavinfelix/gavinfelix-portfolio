@@ -1,0 +1,88 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 45
+title: 'LeetCode 45 - Jump Game II'
+difficulty: 'medium'
+tags: ['array', 'greedy']
+date: '2026-10-08'
+description: '贪心维护当前跳跃能覆盖的区间，到达区间右端时步数加一并扩展下一跳范围'
+---
+
+## 题目理解
+
+给定一个长度为 `n` 的非负整数数组 `nums`。你最初位于下标 `0`，每个元素 `nums[i]` 表示从该位置**最多**可以向前跳跃的步数。
+
+返回到达最后一个下标所需的**最少跳跃次数**。题目保证你总能到达最后一个下标。
+
+例如：
+
+```ts
+nums = [2, 3, 1, 1, 4]
+// 返回 2
+// 路径 0 -> 1 -> 4，先跳到下标 1，再跳到末尾
+
+nums = [2, 3, 0, 1, 4]
+// 返回 2
+
+nums = [1, 1, 1, 1, 1]
+// 返回 4，只能每次跳 1 步
+```
+
+与 [LeetCode 55 Jump Game](/posts/leetcode-0055-jump-game) 不同，本题要的是**最少跳跃次数**，而不是判断能否到达。
+
+## 思路：贪心维护「当前这一跳」的覆盖区间
+
+暴力 BFS 或 DP 都能做，但可以用 O(n) 贪心。
+
+从左到右扫描，想象你正在做第 `jumps` 次跳跃，当前这次跳跃**从某个起点出发，最多能覆盖到的最远下标**是 `end`。在 `[0, end]` 这段里，你还没真正「落地」到 `end` 之前，可以边走边看：站在 `i` 时，还能再往前摸到 `i + nums[i]`。
+
+维护两个量：
+
+- `end`：当前这一次跳跃所允许的**最远下标**（这一跳的右边界）
+- `furthest`：在 `[0, end]` 内任意落点出发，**下一跳**能摸到的最远下标
+
+扫描到下标 `i` 时：
+
+- 用 `i + nums[i]` 更新 `furthest`
+- 当 `i === end` 时，说明必须再跳一次才能继续往后：令 `jumps++`，并把 `end` 设为 `furthest`（下一跳的覆盖范围）
+
+若 `end` 已经 `>= n - 1`，说明最后一跳已经能到终点，可以提前结束。
+
+关键观察：在到达当前 `end` 之前，具体落在 `0..end` 的哪一步并不重要——只要记录「这一跳区间内能延伸到的最远位置」，到边界时统一再跳一步即可，这就是局部最优 leading to global optimal。
+
+### 代码实现（TypeScript）
+
+```ts
+function jump(nums: number[]): number {
+  let jumps = 0;
+  let end = 0;
+  let furthest = 0;
+
+  for (let i = 0; i < nums.length - 1; i++) {
+    furthest = Math.max(furthest, i + nums[i]);
+
+    if (i === end) {
+      jumps++;
+      end = furthest;
+
+      if (end >= nums.length - 1) break;
+    }
+  }
+
+  return jumps;
+}
+```
+
+循环只到 `nums.length - 2`，因为当 `end` 覆盖到 `n - 1` 时，答案里的跳跃次数已经统计完毕，不必再扫最后一个下标。
+
+## 与 Jump Game I 的对比
+
+| 题目 | 目标 | 典型做法 |
+| --- | --- | --- |
+| 55 Jump Game | 能否到达末尾 | 维护最远可达下标 |
+| 45 Jump Game II | 最少跳跃次数 | 在「当前跳的区间」内维护下一跳最远可达，到边界时步数 +1 |
+
+两题都只需线性扫描，不需要真的枚举路径。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护 jumps、end、furthest" />
