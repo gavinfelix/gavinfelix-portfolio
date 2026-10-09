@@ -1,0 +1,75 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 152
+title: 'LeetCode 0152 - Maximum Product Subarray'
+difficulty: 'medium'
+tags: ['array', 'dynamic-programming']
+date: '2026-10-09'
+description: '同时维护以当前位置结尾的最大与最小乘积，处理负数翻转全局最优的情况'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums`，找出其中乘积最大的**非空连续子数组**，并返回该乘积。
+
+例如：
+
+```ts
+nums = [2, 3, -2, 4]
+// 子数组 [2, 3] 的乘积为 6，这是最大值
+
+nums = [-2, 0, -1]
+// 最大乘积为 0（子数组 [0] 或包含 0 的任意连续段）
+
+nums = [-2, 3, -4]
+// 子数组 [-2, 3, -4] 的乘积为 24
+```
+
+注意：数组中可能包含负数；两个负数相乘会得到正数，因此「当前最小乘积」在下一步可能变成「当前最大乘积」。
+
+## 思路：动态规划（最大 / 最小乘积）
+
+定义以 `nums[i]` **结尾**的连续子数组：
+
+- `maxSoFar`：这些子数组中的最大乘积
+- `minSoFar`：这些子数组中的最小乘积（可能为负，供后续与负数相乘时翻转）
+
+遍历到 `nums[i]` 时，以 `i` 结尾的子数组只有三种来源：单独取 `nums[i]`、在「以 i-1 结尾的最大乘积」后接上 `nums[i]`、在「以 i-1 结尾的最小乘积」后接上 `nums[i]`。因此：
+
+```ts
+candidates = [nums[i], maxSoFar * nums[i], minSoFar * nums[i]]
+maxSoFar = max(candidates)
+minSoFar = min(candidates)
+```
+
+用 `result` 记录遍历过程中见过的全局最大 `maxSoFar`。初始时三个变量都设为 `nums[0]`。
+
+### 代码实现（TypeScript）
+
+```ts
+function maxProduct(nums: number[]): number {
+  let result = nums[0];
+  let maxSoFar = nums[0];
+  let minSoFar = nums[0];
+
+  for (let i = 1; i < nums.length; i++) {
+    const x = nums[i];
+    // Extend the best or worst subarray ending at i - 1, or start fresh at i
+    const candidates = [x, maxSoFar * x, minSoFar * x];
+    maxSoFar = Math.max(...candidates);
+    minSoFar = Math.min(...candidates);
+    result = Math.max(result, maxSoFar);
+  }
+
+  return result;
+}
+```
+
+每个位置只依赖前一个位置的 `maxSoFar` / `minSoFar`，不需要保存整条 DP 表。
+
+## 复杂度分析
+
+数组只遍历一次；每一步对常数个候选取最值。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护当前最大、最小乘积与全局答案" />
