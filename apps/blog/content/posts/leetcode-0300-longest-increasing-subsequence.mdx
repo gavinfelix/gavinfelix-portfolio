@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 300
+title: 'LeetCode 0300 - Longest Increasing Subsequence'
+difficulty: 'medium'
+tags: ['array', 'binary-search', 'dynamic-programming']
+date: '2026-10-10'
+description: '维护各长度递增子序列的最小末尾，二分定位插入位置，O(n log n) 求最长上升子序列长度'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums`，返回其中**最长严格递增子序列**的长度。
+
+子序列不要求连续，但必须保持原数组中的相对顺序。例如：
+
+```ts
+nums = [10, 9, 2, 5, 3, 7, 101, 18]
+// 最长递增子序列之一为 [2, 3, 7, 101]，长度为 4
+
+nums = [0, 1, 0, 3, 2, 3]
+// 最长长度为 4，例如 [0, 1, 2, 3]
+
+nums = [7, 7, 7, 7, 7, 7, 7]
+// 严格递增子序列最长为 1
+```
+
+## 思路：贪心 + 二分（耐心排序）
+
+`dp[i]` 表示以 `nums[i]` 结尾的最长递增子序列长度，可以得到 O(n²) 的 DP，但数据规模较大时容易超时。
+
+更高效的做法：维护数组 `tails`，其中 `tails[len - 1]` 表示**长度为 `len` 的递增子序列中，末尾元素的最小值**（同一长度下末尾越小，后面越容易接上更大的数）。
+
+从左到右扫描 `nums` 中的每个 `num`：
+
+1. 在 `tails` 里二分找到第一个 `>= num` 的位置 `pos`（即 `tails` 仍保持有序时的插入点）。
+2. 若 `pos === tails.length`，说明 `num` 比当前所有长度的末尾都大，最长长度加一，`tails.push(num)`。
+3. 否则用 `num` 替换 `tails[pos]`，让该长度的末尾更小。
+
+`tails` 的长度即为答案。注意我们并不真的构造整条子序列，只关心长度。
+
+### 代码实现（TypeScript）
+
+```ts
+function lengthOfLIS(nums: number[]): number {
+  const tails: number[] = [];
+
+  for (const num of nums) {
+    // First index in tails where tails[i] >= num
+    let left = 0;
+    let right = tails.length;
+    while (left < right) {
+      const mid = (left + right) >> 1;
+      if (tails[mid] < num) left = mid + 1;
+      else right = mid;
+    }
+
+    if (left === tails.length) tails.push(num);
+    else tails[left] = num;
+  }
+
+  return tails.length;
+}
+```
+
+`tails` 在过程中始终单调递增，因此二分合法。每个元素只参与一次二分与至多一次写入。
+
+## 复杂度分析
+
+外层遍历 n 个元素，每次在 `tails` 上二分，长度不超过 n。
+
+<ComplexityCard time="O(n log n)" space="O(n)" note="tails 最多存 n 个末尾候选" />
