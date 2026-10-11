@@ -1,0 +1,75 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 62
+title: 'LeetCode 0062 - Unique Paths'
+difficulty: 'medium'
+tags: ['dynamic-programming', 'math']
+date: '2026-10-11'
+description: '网格只能向右或向下，到达右下角的路径数等于上方与左方路径数之和，可压成一行 DP'
+---
+
+## 题目理解
+
+机器人位于 `m × n` 网格的左上角（起点标记为 `Start`），每次只能**向右**或**向下**移动一步，目标是到达右下角（`Finish`）。
+
+问从起点到终点共有多少条不同路径？
+
+例如：
+
+```ts
+m = 3, n = 7
+// 返回 28
+
+m = 3, n = 2
+// 返回 3：右→下、下→右、右→右→下（仅两种方向组合，共 3 条）
+
+m = 7, n = 3
+// 返回 28
+```
+
+题目保证答案在 32 位整数范围内。与 [LeetCode 70 - Climbing Stairs](/posts/leetcode-0070-climbing-stairs) 类似，都是「每一步有限选择、计数到达终点的方案数」，但这里是二维网格上的 DP。
+
+## 思路：动态规划
+
+设 `dp[i][j]` 表示从 `(0, 0)` 走到格子 `(i, j)` 的路径条数。
+
+机器人要进入 `(i, j)`，上一步只能来自：
+
+- 正上方 `(i - 1, j)`（向下走来的）
+- 正左方 `(i, j - 1)`（向右走来的）
+
+因此：
+
+```ts
+dp[i][j] = dp[i - 1][j] + dp[i][j - 1]
+```
+
+第一行、第一列只有一条路径（一直向右或一直向下），边界上 `dp[0][j] = dp[i][0] = 1`。
+
+二维表可以压成**一行**：第 `i` 行只依赖上一行与当前行左侧，用长度为 `n` 的数组从左到右滚动更新即可。
+
+### 代码实现（TypeScript）
+
+```ts
+function uniquePaths(m: number, n: number): number {
+  // dp[j] = number of paths to reach column j in the current row
+  const dp = new Array(n).fill(1);
+
+  for (let i = 1; i < m; i++) {
+    for (let j = 1; j < n; j++) {
+      dp[j] += dp[j - 1];
+    }
+  }
+
+  return dp[n - 1];
+}
+```
+
+`i === 0` 时整行已是 1，从 `i = 1` 开始更新；内层 `j` 从 1 起算，因为 `dp[0]` 在本行仍表示「只向右」的唯一路径。
+
+## 复杂度分析
+
+外层 `m` 行、内层最多 `n - 1` 列，每个格子常数时间转移。
+
+<ComplexityCard time="O(m × n)" space="O(n)" note="使用长度为 n 的一维滚动数组，未存完整 m×n 表" />
