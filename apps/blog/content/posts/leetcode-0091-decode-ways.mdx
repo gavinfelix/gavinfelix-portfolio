@@ -1,0 +1,75 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 91
+title: 'LeetCode 0091 - Decode Ways'
+difficulty: 'medium'
+tags: ['dynamic-programming', 'string']
+date: '2026-10-12'
+description: '数字串按 1–26 对应 A–Z 解码，dp[i] 表示前缀子串的合法解码方案数'
+---
+
+## 题目理解
+
+一条只包含数字 `0`–`9` 的字符串 `s`，要按下面的映射解码成字母：
+
+- `1` → `A`，`2` → `B`，…，`26` → `Z`
+
+每次可以取**一个**或**两个**连续数字作为一个字母编码（两位数字必须在 `10`–`26` 之间，且不能有前导零，例如 `06` 无效）。
+
+问 `s` 一共有多少种**不同的**解码方式。若无法解码，返回 `0`。
+
+例如：
+
+```ts
+s = "12"
+// 返回 2："AB"（1,2）或 "L"（12）
+
+s = "226"
+// 返回 3："BZ"（2,26）、"VF"（22,6）、"BBF"（2,2,6）
+
+s = "06"
+// 返回 0：'0' 不能单独解码，'06' 也不是合法两位编码
+```
+
+## 思路：动态规划
+
+设 `dp[i]` 表示字符串前 `i` 个字符（即 `s[0..i-1]`）的解码方案数。
+
+- `dp[0] = 1`：空前缀有一种「什么都不取」的方式，方便递推。
+- 若 `s[0] !== '0'`，则 `dp[1] = 1`，否则为 `0`。
+
+对 `i >= 2`，看**最后一个**字母占几位：
+
+1. **一位**：最后一位是 `s[i - 1]`。若该位不是 `'0'`，可以单独解码，则 `dp[i] += dp[i - 1]`。
+2. **两位**：最后两位是 `s[i-2..i-1]`。若组成的整数在 `10`–`26` 之间，则 `dp[i] += dp[i - 2]`。
+
+答案为 `dp[n]`。与 [LeetCode 70 - Climbing Stairs](/posts/leetcode-0070-climbing-stairs) 类似，都是「每一步取 1 或 2」，但这里还要判断数字是否合法（尤其 `'0'` 与两位范围）。
+
+### 代码实现（TypeScript）
+
+```ts
+function numDecodings(s: string): number {
+  const n = s.length;
+  // dp[i] = number of ways to decode s[0..i-1]
+  const dp = new Array<number>(n + 1).fill(0);
+  dp[0] = 1;
+  dp[1] = s[0] === "0" ? 0 : 1;
+
+  for (let i = 2; i <= n; i++) {
+    const oneDigit = s[i - 1];
+    const twoDigit = Number(s.slice(i - 2, i));
+
+    if (oneDigit !== "0") {
+      dp[i] += dp[i - 1];
+    }
+    if (twoDigit >= 10 && twoDigit <= 26) {
+      dp[i] += dp[i - 2];
+    }
+  }
+
+  return dp[n];
+}
+```
+
+<ComplexityCard time="O(n)" space="O(n)" note="长度为 n+1 的 dp 数组；可滚动为 O(1) 空间" />
