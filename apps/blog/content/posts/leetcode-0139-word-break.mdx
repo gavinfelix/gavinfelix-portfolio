@@ -1,0 +1,67 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 139
+title: 'LeetCode 0139 - Word Break'
+difficulty: 'medium'
+tags: ['dynamic-programming', 'string', 'hash-table']
+date: '2026-10-14'
+description: '判断字符串能否由词典单词拼接而成，dp[i] 表示前缀 s[0..i-1] 是否可拆分'
+---
+
+## 题目理解
+
+给定一个**非空**字符串 `s` 和一个包含若干**非空**单词的列表 `wordDict`，判断 `s` 能否被拆分成若干单词，且这些单词都来自 `wordDict`（**同一个单词可以重复使用**）。
+
+注意：不要求用完 `wordDict` 里的每一个词，只要求 `s` 能被词典中的词**完全**覆盖、中间不留多余字符。
+
+例如：
+
+```ts
+s = "leetcode", wordDict = ["leet", "code"]
+// 返回 true："leet" + "code"
+
+s = "applepenapple", wordDict = ["apple", "pen"]
+// 返回 true："apple" + "pen" + "apple"
+
+s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+// 返回 false：无法完整拆分
+```
+
+## 思路：动态规划
+
+设 `dp[i]` 表示 `s` 的前 `i` 个字符（即 `s[0..i-1]`）能否被词典中的单词拼接得到。
+
+- `dp[0] = true`：空前缀视为可拆分，方便从位置 `j` 接上一个单词递推到 `i`。
+- 对 `i` 从 `1` 到 `n`，枚举**最后一个单词**的起点 `j`（`0 <= j < i`）。若 `dp[j]` 为真，且子串 `s[j..i-1]` 在 `wordDict` 中，则 `dp[i] = true`。
+
+把 `wordDict` 放进 `Set` 里，查子串是否为词典词是 O(1) 均摊。
+
+答案为 `dp[n]`。与 [LeetCode 91 - Decode Ways](/posts/leetcode-0091-decode-ways) 一样是在前缀上递推，但这里是「选一段合法词接上」，而不是固定取 1 或 2 个字符。
+
+### 代码实现（TypeScript）
+
+```ts
+function wordBreak(s: string, wordDict: string[]): boolean {
+  const wordSet = new Set(wordDict);
+  const n = s.length;
+  // dp[i] = whether s[0..i-1] can be segmented
+  const dp = new Array<boolean>(n + 1).fill(false);
+  dp[0] = true;
+
+  for (let i = 1; i <= n; i++) {
+    for (let j = 0; j < i; j++) {
+      if (!dp[j]) continue;
+      const word = s.slice(j, i);
+      if (wordSet.has(word)) {
+        dp[i] = true;
+        break;
+      }
+    }
+  }
+
+  return dp[n];
+}
+```
+
+<ComplexityCard time="O(n² · L)" space="O(n + W)" note="n 为 s 长度，L 为子串平均长度；Set 存 W 个词典词，dp 长度为 n+1" />
