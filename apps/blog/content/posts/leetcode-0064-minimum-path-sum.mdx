@@ -1,0 +1,78 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 64
+title: 'LeetCode 0064 - Minimum Path Sum'
+difficulty: 'medium'
+tags: ['dynamic-programming', 'array', 'matrix']
+date: '2026-10-15'
+description: '网格只能向右或向下，到达右下角的最小路径和等于当前格权值加上上方与左方较小者，可压成一行 DP'
+---
+
+## 题目理解
+
+给定一个包含非负整数的 `m × n` 网格 `grid`，从左上角出发，每次只能**向右**或**向下**移动一步，直到右下角。
+
+求从起点到终点的**路径数字总和的最小值**（路径上的每个格子数字都计入总和）。
+
+例如：
+
+```ts
+grid = [
+  [1, 3, 1],
+  [1, 5, 1],
+  [4, 2, 1],
+]
+// 返回 7：1 → 3 → 1 → 1 → 1
+
+grid = [
+  [1, 2, 3],
+  [4, 5, 6],
+]
+// 返回 12：1 → 2 → 3 → 6
+```
+
+与 [LeetCode 62 - Unique Paths](/posts/leetcode-0062-unique-paths) 的移动规则相同，但这里要**最小化路径和**而不是计数路径条数。
+
+## 思路：动态规划
+
+设 `dp[i][j]` 表示从 `(0, 0)` 走到 `(i, j)` 的最小路径和。
+
+进入 `(i, j)` 前一步只能来自正上方 `(i - 1, j)` 或正左方 `(i, j - 1)`，因此：
+
+```ts
+dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1])
+```
+
+边界：第一行只能一直向右累加，第一列只能一直向下累加。
+
+二维表可以压成**一行**：第 `i` 行更新时，`dp[j]` 表示当前行第 `j` 列的最小和，同时 `dp[j - 1]` 已是本行左侧的结果，而更新前的 `dp[j]` 仍是上一行同列的值。
+
+### 代码实现（TypeScript）
+
+```ts
+function minPathSum(grid: number[][]): number {
+  const m = grid.length;
+  const n = grid[0].length;
+
+  // dp[j] = min path sum to column j in the current row
+  const dp = grid[0].slice();
+
+  for (let i = 1; i < m; i++) {
+    dp[0] += grid[i][0];
+    for (let j = 1; j < n; j++) {
+      dp[j] = grid[i][j] + Math.min(dp[j], dp[j - 1]);
+    }
+  }
+
+  return dp[n - 1];
+}
+```
+
+也可以直接在 `grid` 上原地改写每个格子为 `dp` 值，省去 `slice`，但会修改输入；面试时先问清楚是否允许改原数组。
+
+## 复杂度分析
+
+外层 `m` 行、内层最多 `n - 1` 列，每个格子常数时间转移。
+
+<ComplexityCard time="O(m × n)" space="O(n)" note="使用长度为 n 的一维滚动数组；若原地修改 grid 则为 O(1) 额外空间" />
