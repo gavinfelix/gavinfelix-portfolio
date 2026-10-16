@@ -1,0 +1,91 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 63
+title: 'LeetCode 0063 - Unique Paths II'
+difficulty: 'medium'
+tags: ['dynamic-programming', 'array', 'matrix']
+date: '2026-10-16'
+description: '带障碍的网格只能向右或向下，到达右下角的路径数在障碍格为 0，否则为上方与左方路径数之和，可压成一行 DP'
+---
+
+## 题目理解
+
+给定一个 `m × n` 的整数数组 `obstacleGrid`。机器人从左上角 `(0, 0)` 出发，每次只能**向右**或**向下**移动一步，目标是到达右下角 `(m - 1, n - 1)`。
+
+网格中的 `0` 表示可通行，`1` 表示障碍，机器人不能进入障碍格。
+
+问从起点到终点共有多少条不同路径？
+
+例如：
+
+```ts
+obstacleGrid = [
+  [0, 0, 0],
+  [0, 1, 0],
+  [0, 0, 0],
+]
+// 返回 2
+
+obstacleGrid = [
+  [0, 1],
+  [0, 0],
+]
+// 返回 1
+```
+
+若起点或终点本身是障碍，则无法到达，返回 `0`。移动规则与 [LeetCode 62 - Unique Paths](/posts/leetcode-0062-unique-paths) 相同，但部分格子不可经过。
+
+## 思路：动态规划
+
+设 `dp[i][j]` 表示从 `(0, 0)` 走到 `(i, j)` 的路径条数。
+
+- 若 `obstacleGrid[i][j] === 1`，该格不可达，`dp[i][j] = 0`。
+- 否则，上一步只能来自正上方 `(i - 1, j)` 或正左方 `(i, j - 1)`：
+
+```ts
+dp[i][j] = dp[i - 1][j] + dp[i][j - 1]
+```
+
+边界：第一行、第一列在累加路径数时，一旦遇到障碍，该格及之后同行/同列格子都应为 `0`（无法沿边界直达）。
+
+二维表可以压成**一行**：与 62 题相同，用长度为 `n` 的数组从左到右滚动；遇到障碍时将 `dp[j]` 置为 `0`，否则 `dp[j] += dp[j - 1]`（`dp[j]` 在更新前仍是上一行同列的值）。
+
+### 代码实现（TypeScript）
+
+```ts
+function uniquePathsWithObstacles(obstacleGrid: number[][]): number {
+  const m = obstacleGrid.length;
+  const n = obstacleGrid[0].length;
+
+  if (obstacleGrid[0][0] === 1 || obstacleGrid[m - 1][n - 1] === 1) {
+    return 0;
+  }
+
+  // dp[j] = number of paths to column j in the current row
+  const dp = new Array(n).fill(0);
+  dp[0] = 1;
+
+  for (let i = 0; i < m; i++) {
+    for (let j = 0; j < n; j++) {
+      if (obstacleGrid[i][j] === 1) {
+        dp[j] = 0;
+        continue;
+      }
+      if (j > 0) {
+        dp[j] += dp[j - 1];
+      }
+    }
+  }
+
+  return dp[n - 1];
+}
+```
+
+`i === 0` 且 `j === 0` 时只保留 `dp[0] = 1`；第一行其余列靠 `dp[j] += dp[j - 1]` 传播，遇障碍则断链为 `0`。
+
+## 复杂度分析
+
+外层 `m` 行、内层 `n` 列，每个格子常数时间判断与转移。
+
+<ComplexityCard time="O(m × n)" space="O(n)" note="使用长度为 n 的一维滚动数组，未存完整 m×n 表" />
