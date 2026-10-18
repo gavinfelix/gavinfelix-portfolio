@@ -1,0 +1,72 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 338
+title: 'LeetCode 0338 - Counting Bits'
+difficulty: 'easy'
+tags: ['dynamic-programming', 'bit-manipulation']
+date: '2026-10-18'
+description: '对每个 i 统计二进制中 1 的个数：利用 i >> 1 与 i & 1 从更小下标递推，避免逐个数位'
+---
+
+## 题目理解
+
+给定一个非负整数 `n`，返回一个长度为 `n + 1` 的数组 `ans`，其中 `ans[i]` 是 `i` 的二进制表示中 `1` 的个数（即 `i` 的汉明权重）。
+
+例如：
+
+```ts
+n = 2
+// 返回 [0, 1, 1]
+
+// 0 -> 0b0  -> 0 个 1
+// 1 -> 0b1  -> 1 个 1
+// 2 -> 0b10 -> 1 个 1
+
+n = 5
+// 返回 [0, 1, 1, 2, 1, 2]
+```
+
+要求对 `0..n` 每个数都能在 O(n) 总时间内算完（比「对每个 i 单独数比特」更优）。
+
+## 思路：递推（最低位 + 右移一位）
+
+对任意非负整数 `i`：
+
+- `i & 1` 是 `i` 的**最低位**（0 或 1）
+- `i >> 1` 等于去掉最低位后的数，其二进制中 `1` 的个数已经算在 `ans[i >> 1]` 里
+
+因此：
+
+```ts
+ans[i] = ans[i >> 1] + (i & 1)
+```
+
+边界：`ans[0] = 0`。
+
+直觉：`i` 比 `i >> 1` 多出来的那一个比特，就是当前最低位是否为 1。
+
+这和 [LeetCode 136 Single Number](/posts/leetcode-0136-single-number) 一样属于位运算题，但这里用的是「右移 + 与 1」做状态压缩递推，而不是异或抵消。
+
+### 代码实现（TypeScript）
+
+```ts
+function countBits(n: number): number[] {
+  const ans = new Array<number>(n + 1).fill(0);
+
+  for (let i = 1; i <= n; i++) {
+    // ones in i = ones in i without last bit + last bit
+    ans[i] = ans[i >> 1] + (i & 1);
+  }
+
+  return ans;
+}
+```
+
+从 `i = 1` 填到 `n`，每次只依赖更小的 `i >> 1`，单遍循环即可。
+
+## 复杂度分析
+
+共 `n` 次转移，每次 O(1)。
+
+<ComplexityCard time="O(n)" space="O(n)" note="输出数组长度为 n + 1；不计返回值则为 O(1) 额外空间" />
