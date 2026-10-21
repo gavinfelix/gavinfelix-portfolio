@@ -1,0 +1,76 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 100
+title: 'LeetCode 0100 - Same Tree'
+difficulty: 'easy'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'recursion']
+date: '2026-10-21'
+description: '递归同步比较两棵二叉树：结构相同且对应节点值相等'
+---
+
+## 题目理解
+
+给你两棵二叉树的根节点 `p` 和 `q`，判断它们是否相同。
+
+两棵树**相同**当且仅当：
+
+- 结构完全一致（对应位置都是节点或都是空）
+- 对应节点的值相等
+
+例如：
+
+```ts
+// true
+p = [1, 2, 3], q = [1, 2, 3]
+
+// false：结构不同
+p = [1, 2], q = [1, null, 2]
+
+// false：值不同
+p = [1, 2, 1], q = [1, 1, 2]
+```
+
+## 思路：递归同步遍历
+
+把「两棵树是否相同」拆成对**当前一对节点**的判断：
+
+1. 若 `p`、`q` 都是 `null`，结构在这一支上对齐，返回 `true`
+2. 若只有一边是 `null`，或两边值不相等，返回 `false`
+3. 否则同时递归比较左子树、右子树，两边都必须为 `true`
+
+这和 [LeetCode 104 Maximum Depth of Binary Tree](/posts/leetcode-0104-maximum-depth-of-binary-tree) 一样是典型的树递归：先处理边界，再合并左右子问题的结果。
+
+也可以用两个栈或队列做迭代 DFS/BFS，同时弹出 `p`、`q` 的对应节点，逻辑与递归版相同。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function isSameTree(p: TreeNode | null, q: TreeNode | null): boolean {
+  // Both empty: same structure here
+  if (p === null && q === null) return true;
+
+  // One empty or values differ
+  if (p === null || q === null || p.val !== q.val) return false;
+
+  const leftSame = isSameTree(p.left, q.left);
+  const rightSame = isSameTree(p.right, q.right);
+
+  return leftSame && rightSame;
+}
+```
+
+先判空与值，再分别递归左右子树，避免在已经不相等时继续深入。
+
+<ComplexityCard time="O(n)" space="O(h)" note="n 为较小树的节点数；h 为树高，链状树递归栈为 O(n)" />
