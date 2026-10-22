@@ -1,0 +1,81 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 101
+title: 'LeetCode 0101 - Symmetric Tree'
+difficulty: 'easy'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'recursion']
+date: '2026-10-22'
+description: '递归比较左右子树是否互为镜像：外侧对外侧、内侧对内侧'
+---
+
+## 题目理解
+
+给你一个二叉树的根节点 `root`，判断它是否是**轴对称**的（即左右子树互为镜像）。
+
+镜像的含义是：左子树的左孩子对应右子树的右孩子，左子树的右孩子对应右子树的左孩子，且对应节点值相等。
+
+例如：
+
+```ts
+// true
+root = [1, 2, 2, 3, 4, 4, 3]
+
+// false：值不对称
+root = [1, 2, 2, null, 3, null, 3]
+
+// false：结构不对称
+root = [1, 2, 2, null, 3]
+```
+
+## 思路：递归镜像比较
+
+和 [LeetCode 100 Same Tree](/posts/leetcode-0100-same-tree) 类似，都是成对比较节点；区别在于对称树比较的是**同一棵树**的左右两支，且比较顺序是「镜像」的：
+
+- 左子树的左孩子 ↔ 右子树的右孩子
+- 左子树的右孩子 ↔ 右子树的左孩子
+
+定义 `isMirror(a, b)`：
+
+1. 若 `a`、`b` 都是 `null`，这一对匹配，返回 `true`
+2. 若只有一边是 `null`，或值不相等，返回 `false`
+3. 否则返回 `isMirror(a.left, b.right) && isMirror(a.right, b.left)`
+
+根节点 `root` 对称当且仅当 `root` 为空，或 `isMirror(root.left, root.right)` 为 `true`。
+
+也可以用队列迭代：每次取出两个节点，按镜像规则把下一对子节点入队，逻辑与递归一致。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function isSymmetric(root: TreeNode | null): boolean {
+  if (root === null) return true;
+  return isMirror(root.left, root.right);
+}
+
+function isMirror(a: TreeNode | null, b: TreeNode | null): boolean {
+  if (a === null && b === null) return true;
+
+  if (a === null || b === null || a.val !== b.val) return false;
+
+  const outerMatch = isMirror(a.left, b.right);
+  const innerMatch = isMirror(a.right, b.left);
+
+  return outerMatch && innerMatch;
+}
+```
+
+`isSymmetric` 只负责把问题交给左右根；真正的镜像规则集中在 `isMirror` 的「左-右、右-左」递归上。
+
+<ComplexityCard time="O(n)" space="O(h)" note="n 为节点数；h 为树高，链状树递归栈为 O(n)" />
