@@ -1,0 +1,99 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 105
+title: 'LeetCode 0105 - Construct Binary Tree from Preorder and Inorder Traversal'
+difficulty: 'medium'
+tags: ['tree', 'array', 'hash-table', 'divide-and-conquer', 'binary-tree']
+date: '2026-10-23'
+description: '前序定根、中序划界：哈希表定位根在中序中的下标，递归构造左右子树'
+---
+
+## 题目理解
+
+给定两个整数数组 `preorder` 和 `inorder`，其中：
+
+- `preorder` 是二叉树的**前序遍历**（根 → 左 → 右）
+- `inorder` 是同一棵树的**中序遍历**（左 → 根 → 右）
+
+数组元素互不相同。请根据这两段遍历序列**构造**二叉树并返回根节点。
+
+例如：
+
+```ts
+preorder = [3, 9, 20, 15, 7]
+inorder  = [9, 3, 15, 20, 7]
+```
+
+对应二叉树：
+
+```ts
+     3
+   /   \
+  9    20
+      /  \
+     15   7
+```
+
+## 思路：前序定根 + 中序划界 + 分治
+
+前序遍历的第一个元素一定是当前子树的**根**。在中序数组中找到该根的下标 `rootIndex`，则：
+
+- `inorder[0 .. rootIndex - 1]` 属于左子树（中序左段）
+- `inorder[rootIndex + 1 .. end]` 属于右子树（中序右段）
+
+左子树在前序中的长度等于左段节点个数 `leftSize`。因此在前序里：
+
+- 左子树对应 `preorder[1 .. leftSize]`
+- 右子树对应 `preorder[leftSize + 1 .. end]`
+
+对左右子树递归套用同一规则即可重建整棵树。
+
+**优化**：每次在中序里线性查找根是 O(n)，总复杂度会退化。预处理 `inorder` 的值 → 下标哈希表，查找根位置为 O(1)。
+
+与 [LeetCode 100 Same Tree](/posts/leetcode-0100-same-tree)、[LeetCode 101 Symmetric Tree](/posts/leetcode-0101-symmetric-tree) 同属二叉树递归框架；本题是**根据遍历序列反推结构**，分治边界由子数组长度控制。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function buildTree(preorder: number[], inorder: number[]): TreeNode | null {
+  const indexByValue = new Map<number, number>();
+  for (let i = 0; i < inorder.length; i++) {
+    indexByValue.set(inorder[i], i);
+  }
+
+  let preIndex = 0;
+
+  function build(inLeft: number, inRight: number): TreeNode | null {
+    if (inLeft > inRight) return null;
+
+    const rootVal = preorder[preIndex++];
+    const root = new TreeNode(rootVal);
+
+    const rootIndex = indexByValue.get(rootVal)!;
+
+    // Build left subtree before right: preorder visits left first
+    root.left = build(inLeft, rootIndex - 1);
+    root.right = build(rootIndex + 1, inRight);
+
+    return root;
+  }
+
+  return build(0, inorder.length - 1);
+}
+```
+
+用 `preIndex` 全局推进前序指针，配合中序上的闭区间 `[inLeft, inRight]` 表示当前子树在中序中的范围。左子树递归必须在右子树之前完成，这样才能与前序「根、左、右」的顺序一致。
+
+<ComplexityCard time="O(n)" space="O(n)" note="n 为节点数；哈希表 O(n)，递归栈最坏 O(n)" />
