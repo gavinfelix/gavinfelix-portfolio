@@ -1,0 +1,113 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 106
+title: 'LeetCode 0106 - Construct Binary Tree from Inorder and Postorder Traversal'
+difficulty: 'medium'
+tags: ['tree', 'array', 'hash-table', 'divide-and-conquer', 'binary-tree']
+date: '2026-10-24'
+description: '后序定根、中序划界：从后序末尾取根，哈希表定位根在中序中的下标，递归构造左右子树'
+---
+
+## 题目理解
+
+给定两个整数数组 `inorder` 和 `postorder`，其中：
+
+- `inorder` 是二叉树的**中序遍历**（左 → 根 → 右）
+- `postorder` 是同一棵树的**后序遍历**（左 → 右 → 根）
+
+数组元素互不相同。请根据这两段遍历序列**构造**二叉树并返回根节点。
+
+例如：
+
+```ts
+inorder   = [9, 3, 15, 20, 7]
+postorder = [9, 15, 7, 20, 3]
+```
+
+对应二叉树：
+
+```ts
+     3
+   /   \
+  9    20
+      /  \
+     15   7
+```
+
+## 思路：后序定根 + 中序划界 + 分治
+
+后序遍历的**最后一个**元素是当前子树的**根**。在中序数组中找到该根的下标 `rootIndex`，则：
+
+- `inorder[inLeft .. rootIndex - 1]` 属于左子树
+- `inorder[rootIndex + 1 .. inRight]` 属于右子树
+
+左子树的节点个数为 `leftSize = rootIndex - inLeft`。在后序数组的当前片段 `[postLeft, postRight]` 中：
+
+- 左子树对应 `postorder[postLeft .. postLeft + leftSize - 1]`
+- 右子树对应 `postorder[postLeft + leftSize .. postRight - 1]`（末尾 `postRight` 是根，已单独取出）
+
+对左右子树递归套用同一规则即可。
+
+**优化**：预处理 `inorder` 的值 → 下标哈希表，避免每次线性扫描中序。
+
+与 [LeetCode 105 Construct Binary Tree from Preorder and Inorder Traversal](/posts/leetcode-0105-construct-binary-tree-from-preorder-and-inorder-traversal) 对称：105 从前序**头部**取根并配合全局前序指针；本题从后序**尾部**取根，用闭区间在后序上收缩。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function buildTree(inorder: number[], postorder: number[]): TreeNode | null {
+  const indexByValue = new Map<number, number>();
+  for (let i = 0; i < inorder.length; i++) {
+    indexByValue.set(inorder[i], i);
+  }
+
+  function build(
+    inLeft: number,
+    inRight: number,
+    postLeft: number,
+    postRight: number,
+  ): TreeNode | null {
+    if (inLeft > inRight || postLeft > postRight) return null;
+
+    const rootVal = postorder[postRight];
+    const root = new TreeNode(rootVal);
+
+    const rootIndex = indexByValue.get(rootVal)!;
+    const leftSize = rootIndex - inLeft;
+
+    // Recurse on left segment first, then right (matches postorder layout)
+    root.left = build(
+      inLeft,
+      rootIndex - 1,
+      postLeft,
+      postLeft + leftSize - 1,
+    );
+    root.right = build(
+      rootIndex + 1,
+      inRight,
+      postLeft + leftSize,
+      postRight - 1,
+    );
+
+    return root;
+  }
+
+  return build(0, inorder.length - 1, 0, postorder.length - 1);
+}
+```
+
+中序区间 `[inLeft, inRight]` 与后序区间 `[postLeft, postRight]` 始终描述同一棵子树；`leftSize` 把后序片段切成「左段、右段、根」三段，与 105 题用 `preIndex` 扫前序是同一套分治，只是遍历顺序相反。
+
+<ComplexityCard time="O(n)" space="O(n)" note="n 为节点数；哈希表 O(n)，递归栈最坏 O(n)" />
