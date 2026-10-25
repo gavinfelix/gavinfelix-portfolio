@@ -1,0 +1,81 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 108
+title: 'LeetCode 0108 - Convert Sorted Array to Binary Search Tree'
+difficulty: 'easy'
+tags: ['tree', 'array', 'divide-and-conquer', 'binary-search-tree', 'binary-tree']
+date: '2026-10-25'
+description: '有序数组取中点为根，左右半段递归构造平衡 BST'
+---
+
+## 题目理解
+
+给定一个**元素严格递增**的整数数组 `nums`，将其转换为一棵**高度平衡**的二叉搜索树（BST）。
+
+高度平衡：每个节点的左右子树高度差不超过 1。
+
+例如：
+
+```ts
+nums = [-10, -3, 0, 5, 9]
+```
+
+一种合法结果：
+
+```ts
+      0
+    /   \
+  -3     9
+  /     /
+-10    5
+```
+
+同一输入可能对应多棵合法 BST，返回任意一棵即可。
+
+## 思路：取中点作根 + 分治
+
+有序数组的中点元素是当前子树 BST 的**根**：左侧全部小于根，右侧全部大于根，天然满足 BST 性质。
+
+为尽量平衡，每次在闭区间 `[left, right]` 内取 `mid = left + ((right - left) >> 1)` 作为根（避免 `(left + right)` 溢出），再：
+
+- 左子树由 `nums[left .. mid - 1]` 递归构造
+- 右子树由 `nums[mid + 1 .. right]` 递归构造
+
+与 [LeetCode 105](/posts/leetcode-0105-construct-binary-tree-from-preorder-and-inorder-traversal)、[LeetCode 106](/posts/leetcode-0106-construct-binary-tree-from-inorder-and-postorder-traversal) 一样是典型的**分治建树**；本题不需要哈希表，因为有序数组直接按中点切分即可。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function sortedArrayToBST(nums: number[]): TreeNode | null {
+  function build(left: number, right: number): TreeNode | null {
+    if (left > right) return null;
+
+    const mid = left + ((right - left) >> 1);
+    const root = new TreeNode(nums[mid]);
+
+    // Left half is strictly smaller; right half strictly larger
+    root.left = build(left, mid - 1);
+    root.right = build(mid + 1, right);
+
+    return root;
+  }
+
+  return build(0, nums.length - 1);
+}
+```
+
+区间 `[left, right]` 始终描述当前子树在 `nums` 中占据的连续片段；每次砍掉根后左右片段长度至多相差 1，故整棵树高度为 `O(log n)`。
+
+<ComplexityCard time="O(n)" space="O(log n)" note="每个元素建一个节点；递归栈深度为树高 O(log n)" />
