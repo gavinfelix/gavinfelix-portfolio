@@ -1,0 +1,95 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 110
+title: 'LeetCode 0110 - Balanced Binary Tree'
+difficulty: 'easy'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'recursion']
+date: '2026-10-26'
+description: '自底向上 DFS，子树不平衡时返回 -1 作为哨兵，否则返回高度'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，判断它是否为**高度平衡**二叉树。
+
+高度平衡：对于树中**每一个**节点，其左右子树的高度差不超过 1。
+
+空树视为平衡。
+
+例如：
+
+```ts
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+左右子树高度均为 2，根节点高度差为 0，整棵树平衡。
+
+```ts
+       1
+      / \
+     2   2
+    / \
+   3   3
+  / \
+ 4   4
+```
+
+左子树高度为 4，右子树高度为 1，根节点高度差为 3，不平衡。
+
+## 思路：自底向上 DFS + 不平衡哨兵
+
+朴素做法：对每个节点分别算左右子树高度，再比较差值。每个节点都可能触发整棵子树的重复遍历，最坏 O(n²)。
+
+更高效的做法是**后序**遍历：先知道左右子树是否平衡以及它们的高度，再判断当前节点。
+
+定义 `height(node)`：
+
+- `node` 为空 → 高度 `0`
+- 左或右子树返回 `-1` → 当前子树不平衡，向上继续传 `-1`
+- 否则当前高度为 `max(leftH, rightH) + 1`；若 `|leftH - rightH| > 1` 则返回 `-1`
+
+最终 `height(root) !== -1` 即整棵树平衡。
+
+与 [LeetCode 104](/posts/leetcode-0104-maximum-depth-of-binary-tree) 同属后序高度统计，只是多了一层「高度差 ≤ 1」的校验。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function isBalanced(root: TreeNode | null): boolean {
+  function height(node: TreeNode | null): number {
+    if (!node) return 0;
+
+    const leftH = height(node.left);
+    if (leftH === -1) return -1;
+
+    const rightH = height(node.right);
+    if (rightH === -1) return -1;
+
+    if (Math.abs(leftH - rightH) > 1) return -1;
+
+    return Math.max(leftH, rightH) + 1;
+  }
+
+  return height(root) !== -1;
+}
+```
+
+`-1` 表示「以该节点为根的子树已经不平衡」，父节点无需再算高度，直接短路返回。
+
+<ComplexityCard time="O(n)" space="O(h)" note="每个节点访问一次；递归栈深度为树高 h，最坏 O(n)" />
