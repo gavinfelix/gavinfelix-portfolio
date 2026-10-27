@@ -1,0 +1,92 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 111
+title: 'LeetCode 0111 - Minimum Depth of Binary Tree'
+difficulty: 'easy'
+tags: ['tree', 'breadth-first-search', 'binary-tree']
+date: '2026-10-27'
+description: '层序 BFS：第一次遇到叶子节点时的层数即为最小深度，注意与最大深度的递归陷阱不同'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，返回其**最小深度**。
+
+最小深度：从根节点到**最近叶子节点**的最短路径上的节点数量。
+
+**叶子节点**指左右子节点都为空的节点。
+
+例如：
+
+```ts
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+最小深度为 2（路径 `3 → 9`）。
+
+```ts
+    2
+   / \
+  3   4
+ /
+5
+```
+
+最小深度为 3（路径 `2 → 3 → 5`），不能只算到节点 `3`——它不是叶子。
+
+## 思路：层序 BFS
+
+[LeetCode 104](/posts/leetcode-0104-maximum-depth-of-binary-tree) 的最大深度用 `max(左, 右) + 1` 递归即可；**最小深度**不能简单写成 `min(左, 右) + 1`：若一侧子树为空，必须沿另一侧走下去，否则会把「只到非叶子」的路径误当成答案。
+
+层序遍历按层扩展队列：**第一次**从队列中取出的**叶子**节点，其所在层数就是最小深度。BFS 天然保证先遇到更近的节点。
+
+维护 `depth`，每处理完一层（当前层节点全部出队）再 `depth++`。出队时若 `left` 与 `right` 均为空，立即返回当前 `depth`。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function minDepth(root: TreeNode | null): number {
+  if (!root) return 0;
+
+  const queue: TreeNode[] = [root];
+  let depth = 1;
+
+  while (queue.length > 0) {
+    const levelSize = queue.length;
+
+    for (let i = 0; i < levelSize; i++) {
+      const node = queue.shift()!;
+
+      // First leaf at this depth ends the search
+      if (!node.left && !node.right) return depth;
+
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+
+    depth++;
+  }
+
+  return depth;
+}
+```
+
+若树非空，BFS 必然在某层遇到叶子；`depth` 从 1 开始与「根算一层」的定义一致。
+
+<ComplexityCard time="O(n)" space="O(w)" note="每个节点入队一次；w 为队列中节点数峰值，满二叉树最宽一层约为 n/2" />
