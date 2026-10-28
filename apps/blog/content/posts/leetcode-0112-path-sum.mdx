@@ -1,0 +1,65 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 112
+title: 'LeetCode 0112 - Path Sum'
+difficulty: 'easy'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'recursion']
+date: '2026-10-28'
+description: '自顶向下 DFS：沿路径递减 targetSum，在叶子处判断是否恰好减为 0'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root` 和一个整数 `targetSum`，判断是否存在从**根**到**某一叶子**的路径，使得路径上所有节点值之和等于 `targetSum`。
+
+**叶子**指左右子节点均为空的节点；路径必须走到叶子才算完整。
+
+例如 `root = [5,4,8,11,null,13,4,7,2,null,null,null,1]`，`targetSum = 22` 时，存在路径 `5 → 4 → 11 → 2`，返回 `true`。
+
+若只有根节点 `root = [1]`、`targetSum = 1`，根即为叶子，返回 `true`；`targetSum = 2` 则返回 `false`。
+
+## 思路：自顶向下 DFS
+
+不必显式记录整条路径上的节点列表。从根出发，每进入一层就把 `targetSum` 减去当前节点值；当到达**叶子**时，检查剩余值是否为 `0`。
+
+递归定义 `hasPathSum(node, remain)`：
+
+- `node` 为空 → `false`
+- 更新 `remain -= node.val`
+- 若为叶子（无左右子）→ 返回 `remain === 0`
+- 否则 → 左或右子树存在合法路径即可（`||`）
+
+与 [LeetCode 111](/posts/leetcode-0111-minimum-depth-of-binary-tree) 的 BFS 不同，本题只需沿一条根到叶的路径试探，DFS 代码更短，且与 [LeetCode 104](/posts/leetcode-0104-maximum-depth-of-binary-tree) 的递归结构一脉相承。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function hasPathSum(root: TreeNode | null, targetSum: number): boolean {
+  if (!root) return false;
+
+  const remain = targetSum - root.val;
+
+  // Leaf: path is valid only if the running sum reaches exactly zero
+  if (!root.left && !root.right) return remain === 0;
+
+  return (
+    hasPathSum(root.left, remain) || hasPathSum(root.right, remain)
+  );
+}
+```
+
+空树在首行已处理；非空树中至少会访问到叶子或提前在子树中得到答案。
+
+<ComplexityCard time="O(n)" space="O(h)" note="每个节点最多访问一次；h 为树高，递归栈最坏 O(n)" />
