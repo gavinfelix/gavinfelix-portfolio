@@ -1,0 +1,76 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 113
+title: 'LeetCode 0113 - Path Sum II'
+difficulty: 'medium'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'backtracking', 'recursion']
+date: '2026-10-29'
+description: 'DFS 回溯：沿根到叶路径累加节点值，在叶子处收集和等于 targetSum 的整条路径'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root` 和一个整数 `targetSum`，返回**所有**从根到叶的路径，使得路径上节点值之和等于 `targetSum`。
+
+每条路径以数组形式给出节点值序列；若不存在满足条件的路径，返回空数组 `[]`。
+
+例如 `root = [5,4,8,11,null,13,4,7,2,null,null,5,1,4,null,10,null,null,null,null,null,null,1]`，`targetSum = 22` 时，应返回 `[[5,4,11,2],[5,8,4,5]]`（两条根到叶路径的和均为 22）。
+
+与 [LeetCode 112 - Path Sum](/posts/leetcode-0112-path-sum) 的区别：112 只问「是否存在」一条合法路径（返回布尔值）；本题要**枚举并返回**所有合法路径。
+
+## 思路：DFS + 路径回溯
+
+沿用 112 的自顶向下思路：从根出发，维护当前路径上的节点值列表 `path`，并把 `remain = targetSum - 当前路径和` 传给子递归；也可以像 112 一样只传剩余和，在叶子处判断 `remain === 0`。
+
+到达叶子且剩余和为 `0` 时，将 `path` 的拷贝加入答案（`[...path]`，避免后续回溯修改同一引用）。
+
+递归框架：
+
+- 将当前节点值 push 进 `path`
+- 若为叶子且 `targetSum === node.val`（或 `remain === 0`）→ 收集 `path`
+- 否则分别 DFS 左右子树，传入更新后的目标和
+- 回溯：pop 当前节点
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function pathSum(root: TreeNode | null, targetSum: number): number[][] {
+  const result: number[][] = [];
+
+  function dfs(node: TreeNode | null, remain: number, path: number[]): void {
+    if (!node) return;
+
+    path.push(node.val);
+    const nextRemain = remain - node.val;
+
+    // Leaf with exact sum: snapshot path before backtracking
+    if (!node.left && !node.right && nextRemain === 0) {
+      result.push([...path]);
+    } else {
+      dfs(node.left, nextRemain, path);
+      dfs(node.right, nextRemain, path);
+    }
+
+    path.pop();
+  }
+
+  dfs(root, targetSum, []);
+  return result;
+}
+```
+
+空树时 `dfs` 不会收集任何路径，直接返回 `[]`。非空树中每个节点入栈、出栈各一次，与标准回溯写法一致。
+
+<ComplexityCard time="O(n)" space="O(h + k·L)" note="n 为节点数；h 为递归栈深度；k 为合法路径条数，L 为平均路径长度，收集答案需额外空间" />
