@@ -1,0 +1,98 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 114
+title: 'LeetCode 0114 - Flatten Binary Tree to Linked List'
+difficulty: 'medium'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'linked-list', 'stack']
+date: '2026-10-31'
+description: '逆序后序 DFS：用 prev 指针把二叉树原地展开成先序链表'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，将其**原地**展开为一棵单链表：
+
+- 展开后的链表节点顺序与二叉树的**先序遍历**相同
+- 链表中的 `right` 指针指向下一个节点，`left` 指针一律为 `null`
+- 不允许新建节点，只能调整指针
+
+例如先序为 `1 → 2 → 3 → 4 → 5 → 6` 的树，展开后 `root` 仍指向原根 `1`，沿 `right` 走应得到上述顺序。
+
+## 思路：逆序后序 + prev 指针
+
+若按常规先序边遍历边接 `right`，需要额外保存「上一个接好的节点」，或显式用栈模拟先序。
+
+更简洁的做法是 **reverse post-order**（先右子树、再左子树、最后根）：在这种访问顺序下，当前节点 `root` 的下一个先序节点，恰好是刚刚处理完的 `prev`。
+
+维护指针 `prev`，初始为 `null`（表示先序序列末尾之后）。DFS 到 `root` 时：
+
+1. `root.right = prev`（当前根的右孩子指向已拼好的后缀）
+2. `root.left = null`
+3. `prev = root`，继续递归
+
+递归从根开始，最终 `prev` 指向先序最后一个节点，而 `root` 的 `right` 链即为完整先序链表。
+
+与 [LeetCode 112 - Path Sum](/posts/leetcode-0112-path-sum) 一样都是树 DFS，但本题要**改写结构**而非只读路径和；与 [LeetCode 206 - Reverse Linked List](/posts/leetcode-0206-reverse-linked-list) 类似，核心也是调整 `next` 类指针，只是遍历顺序来自树的逆序后序。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function flatten(root: TreeNode | null): void {
+  let prev: TreeNode | null = null;
+
+  function dfs(node: TreeNode | null): void {
+    if (!node) return;
+
+    dfs(node.right);
+    dfs(node.left);
+
+    node.right = prev;
+    node.left = null;
+    prev = node;
+  }
+
+  dfs(root);
+}
+```
+
+空树时 `dfs` 直接返回，不修改任何指针。非空树每个节点入栈出栈各一次，原地完成展开。
+
+### 迭代写法（显式栈）
+
+若希望避免递归栈深度，可以用栈模拟 **root → right → left** 的 push 顺序（弹出时即 root, left, right 的逆序，等价于 reverse post-order）：
+
+```ts
+function flatten(root: TreeNode | null): void {
+  if (!root) return;
+
+  let prev: TreeNode | null = null;
+  const stack: TreeNode[] = [root];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+
+    node.right = prev;
+    node.left = null;
+    prev = node;
+
+    if (node.left) stack.push(node.left);
+    if (node.right) stack.push(node.right);
+  }
+}
+```
+
+两种写法时间、空间量级相同，递归版更短，迭代版在极深树上更安全。
+
+<ComplexityCard time="O(n)" space="O(h)" note="每个节点访问一次；递归版栈深度为树高 h，最坏 O(n)；迭代版显式栈同样 O(h)" />
