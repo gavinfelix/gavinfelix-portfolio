@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 129
+title: 'LeetCode 0129 - Sum Root to Leaf Numbers'
+difficulty: 'medium'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'recursion']
+date: '2026-11-01'
+description: 'DFS 沿根到叶路径把各位数字拼成整数，在叶子处累加进总和'
+---
+
+## 题目理解
+
+给定一棵只包含数字 `0`～`9` 的二叉树根节点 `root`。
+
+从根到叶子的每条路径可以看作一个十进制整数：例如路径 `1 → 2 → 3` 表示数字 `123`。
+
+返回所有根到叶路径所表示数字的**总和**。
+
+例如 `root = [1,2,3]` 时，路径 `1 → 2` 为 `12`，路径 `1 → 3` 为 `13`，总和为 `25`。
+
+`root = [4,9,0,5,1]` 时，四条根到叶路径分别为 `495`、`491`、`40`，总和为 `1026`（`0` 作为中间节点时，其子路径仍按拼接规则计算）。
+
+## 思路：DFS 累加路径数字
+
+与 [LeetCode 112 Path Sum](/posts/leetcode-0112-path-sum) 类似，沿根向下走，但不必在叶子处做「是否等于目标」的判断，而是**把当前路径已经形成的整数一路带下去**。
+
+进入节点 `node` 时，更新：
+
+```ts
+pathNum = pathNum * 10 + node.val
+```
+
+- 若 `node` 是叶子（无左右子），把 `pathNum` 加入答案总和
+- 否则分别递归左右子树，把子树贡献加总
+
+空树总和为 `0`。单节点树的路径数字就是根的值本身。
+
+递归可以写成「返回以当前节点为根的子树中所有根到叶数字之和」，也可以用一个外层变量在叶子处累加；下面采用返回值的写法，便于组合左右子树结果。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function sumNumbers(root: TreeNode | null): number {
+  function dfs(node: TreeNode | null, pathNum: number): number {
+    if (!node) return 0;
+
+    const current = pathNum * 10 + node.val;
+
+    // Leaf: this path forms one complete number
+    if (!node.left && !node.right) return current;
+
+    return dfs(node.left, current) + dfs(node.right, current);
+  }
+
+  return dfs(root, 0);
+}
+```
+
+`pathNum` 从根前的 `0` 开始，每下一层左移一位并加上当前位，与十进制「从左到右读数」一致。
+
+<ComplexityCard time="O(n)" space="O(h)" note="每个节点访问一次；h 为树高，递归栈最坏 O(n)" />
