@@ -1,0 +1,110 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 130
+title: 'LeetCode 0130 - Surrounded Regions'
+difficulty: 'medium'
+tags: ['array', 'depth-first-search', 'breadth-first-search', 'matrix', 'union-find']
+date: '2026-11-02'
+description: '从边界上的 O 做 DFS/BFS 标记「与边界连通」的格子，再翻转其余 O 为 X'
+---
+
+## 题目理解
+
+给定一个 `m x n` 的矩阵 `board`，由字符 `'X'` 和 `'O'` 组成。
+
+**被围绕的区域**是指：只由 `'O'` 组成、且**四向相邻的 `'O'` 无法到达矩阵边界**的一块连通区域。
+
+要求把所有被围绕区域里的 `'O'` 都改成 `'X'`；与边界上 `'O'` 连通（直接或间接）的区域**不能**被翻转。
+
+例如：
+
+```ts
+board = [
+  ["X","X","X","X"],
+  ["X","O","O","X"],
+  ["X","X","O","X"],
+  ["X","O","X","X"]
+]
+// 翻转后中间孤立的 O 变 X，左下角与边界连通的 O 保留
+
+board = [["X"]]
+// 无 O，不变
+```
+
+## 思路：从边界「反向」标记安全 O
+
+若从每个 `'O'` 出发判断能否到达边界，容易重复搜索。更常见的做法是**反过来**：
+
+1. 四条边上的每个 `'O'` 都不可能被完全包围（它们本身就在边界上）
+2. 从这些边界 `'O'` 出发，用 DFS 或 BFS 标记所有与之四向连通的 `'O'` 为「安全 / 保留」
+3. 再扫描整张表：仍为 `'O'` 且未被标记的，就是被围绕的，改成 `'X'`；被标记的 `'O'` 改回 `'O'`（或全程用 `'#'` 等临时字符区分）
+
+与 [LeetCode 79 Word Search](/posts/leetcode-0079-word-search) 一样在网格上做四向 DFS，但本题不需要匹配字符串，而是从**所有边界起点**一次性「泛洪」标记连通块。
+
+标记方式可以：
+
+- 原地把安全 `'O'` 改成 `'#'`，第二遍扫描时 `'#' → 'O'`、其余 `'O' → 'X'`
+- 或用 `boolean[][]` 记录是否安全（多 O(mn) 空间）
+
+下面采用原地 `'#'` 标记，空间更省。
+
+### 代码实现（TypeScript）
+
+```ts
+function solve(board: string[][]): void {
+  if (board.length === 0 || board[0].length === 0) return;
+
+  const rows = board.length;
+  const cols = board[0].length;
+
+  const directions = [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0],
+  ];
+
+  function dfs(r: number, c: number): void {
+    if (
+      r < 0 ||
+      c < 0 ||
+      r >= rows ||
+      c >= cols ||
+      board[r][c] !== 'O'
+    ) {
+      return;
+    }
+
+    board[r][c] = '#';
+
+    for (const [dr, dc] of directions) {
+      dfs(r + dr, c + dc);
+    }
+  }
+
+  // Flood from every 'O' on the border — these cannot be captured
+  for (let c = 0; c < cols; c++) {
+    dfs(0, c);
+    dfs(rows - 1, c);
+  }
+  for (let r = 0; r < rows; r++) {
+    dfs(r, 0);
+    dfs(r, cols - 1);
+  }
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (board[r][c] === 'O') {
+        board[r][c] = 'X';
+      } else if (board[r][c] === '#') {
+        board[r][c] = 'O';
+      }
+    }
+  }
+}
+```
+
+边界上的 `'X'` 在 `dfs` 入口会被直接忽略；只有与边界 `'O'` 连通的 `'O'` 会被改成 `'#'` 并在最后恢复。
+
+<ComplexityCard time="O(m × n)" space="O(m × n)" note="每个格子最多访问常数次；递归栈最坏 O(mn)" />
