@@ -1,0 +1,136 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 116
+title: 'LeetCode 116 - Populating Next Right Pointers in Each Node'
+difficulty: 'medium'
+tags: ['tree', 'breadth-first-search', 'binary-tree', 'linked-list']
+date: '2026-11-03'
+description: '层序 BFS 逐层串联 next；或利用已有 next 指针 O(1) 额外空间逐层连接'
+---
+
+## 题目理解
+
+给定一棵**完美二叉树**（所有叶子在同一层，且每个非叶节点都有左右两个孩子）的根节点 `root`。
+
+树节点除了 `left`、`right` 外还有 `next` 指针，初始均为 `null`。要求把同一层的节点从左到右用 `next` 串成链表；最右侧节点的 `next` 保持 `null`。
+
+例如：
+
+```ts
+        1
+      /   \
+     2     3
+    / \   / \
+   4   5 6   7
+```
+
+第 1 层：`1.next → null`  
+第 2 层：`2.next → 3`，`3.next → null`  
+第 3 层：`4.next → 5 → 6 → 7`，`7.next → null`
+
+函数应返回根节点；修改的是原地 `next` 指针，不新建节点。
+
+## 思路一：层序 BFS，按层串联
+
+与 [LeetCode 102 - Binary Tree Level Order Traversal](/posts/leetcode-0102-binary-tree-level-order-traversal) 相同：用队列按层处理，每轮先记录 `size` 为本层节点数。
+
+区别是本题不收集节点值，而是在本层循环里维护 `prev`（上一个出队节点）：
+
+1. 第一个出队的节点：`prev` 设为该节点
+2. 之后每个节点：`prev.next = 当前节点`，再更新 `prev`
+3. 本层处理完后，照常把非空子节点入队
+
+队列为空时，各层 `next` 已全部连好。
+
+### 代码实现（TypeScript，BFS）
+
+```ts
+class Node {
+  val: number;
+  left: Node | null;
+  right: Node | null;
+  next: Node | null;
+  constructor(
+    val?: number,
+    left?: Node | null,
+    right?: Node | null,
+    next?: Node | null,
+  ) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+    this.next = next ?? null;
+  }
+}
+
+function connect(root: Node | null): Node | null {
+  if (root === null) return null;
+
+  const queue: Node[] = [root];
+
+  while (queue.length > 0) {
+    const size = queue.length;
+    let prev: Node | null = null;
+
+    for (let i = 0; i < size; i++) {
+      const node = queue.shift()!;
+
+      if (prev !== null) {
+        prev.next = node;
+      }
+      prev = node;
+
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+  }
+
+  return root;
+}
+```
+
+## 思路二：O(1) 额外空间（完美树）
+
+题目保证完美二叉树，且**上一层已经连好的 `next` 可以当作横向链表**，用来遍历当前层，无需队列。
+
+从 `leftmost`（当前层最左节点）开始，每一轮：
+
+1. 用指针 `head` 沿 `head.next` 走过当前层
+2. 对每个 `head`：`head.left!.next = head.right!`
+3. 若 `head.next` 存在，则 `head.right!.next = head.next.left!`（把下一层相邻子树接起来）
+4. 下一轮 `leftmost = leftmost.left`，直到没有下一层
+
+与 [LeetCode 114 - Flatten Binary Tree to Linked List](/posts/leetcode-0114-flatten-binary-tree-to-linked-list) 一样是在树上改指针，但这里是把**同层**节点横向连接，而不是压成先序单链。
+
+### 代码实现（TypeScript，O(1) 空间）
+
+```ts
+function connect(root: Node | null): Node | null {
+  if (root === null) return null;
+
+  let leftmost: Node | null = root;
+
+  while (leftmost.left !== null) {
+    let head: Node | null = leftmost;
+
+    while (head !== null) {
+      head.left!.next = head.right!;
+
+      if (head.next !== null) {
+        head.right!.next = head.next.left!;
+      }
+
+      head = head.next;
+    }
+
+    leftmost = leftmost.left;
+  }
+
+  return root;
+}
+```
+
+两种写法每个节点只处理常数次，BFS 多一个队列；面试中完美树更常写第二种。
+
+<ComplexityCard time="O(n)" space="O(1)" note="O(1) 空间写法只使用若干指针；BFS 版本队列最坏 O(n)" />
