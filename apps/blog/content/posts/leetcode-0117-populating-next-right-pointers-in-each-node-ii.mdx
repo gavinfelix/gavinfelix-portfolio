@@ -1,0 +1,141 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 117
+title: 'LeetCode 117 - Populating Next Right Pointers in Each Node II'
+difficulty: 'medium'
+tags: ['tree', 'breadth-first-search', 'binary-tree', 'linked-list']
+date: '2026-11-04'
+description: '层序 BFS 按层串联 next；或每层用 dummy 头结点 O(1) 额外空间连接子节点'
+---
+
+## 题目理解
+
+给定一棵**普通二叉树**（节点数在 `[0, 6000]`，节点值在 `[-100, 100]`）的根节点 `root`。
+
+树节点除了 `left`、`right` 外还有 `next` 指针，初始均为 `null`。要求把**同一层**的节点从左到右用 `next` 串成链表；每层最右侧节点的 `next` 保持 `null`。
+
+与 [LeetCode 116 - Populating Next Right Pointers in Each Node](/posts/leetcode-0116-populating-next-right-pointers-in-each-node) 的区别是：本题**不保证**完美二叉树，某节点可能只有左孩子、只有右孩子，或没有孩子。
+
+例如：
+
+```ts
+        1
+      /   \
+     2     3
+      \     \
+       5     7
+```
+
+第 1 层：`1.next → null`  
+第 2 层：`2.next → 3`，`3.next → null`  
+第 3 层：`5.next → 7`，`7.next → null`
+
+函数应返回根节点；只修改原地 `next` 指针。
+
+## 思路一：层序 BFS，按层串联
+
+与 [LeetCode 102 - Binary Tree Level Order Traversal](/posts/leetcode-0102-binary-tree-level-order-traversal) 相同：队列按层处理，每轮先记录 `size` 为本层节点数。
+
+在本层循环里维护 `prev`（上一个出队节点）：
+
+1. 第一个出队的节点：令 `prev = 该节点`
+2. 之后每个节点：`prev.next = 当前节点`，再更新 `prev`
+3. 把非空子节点照常入队
+
+任意树形都适用，但队列最坏需要 O(n) 额外空间。
+
+### 代码实现（TypeScript，BFS）
+
+```ts
+class Node {
+  val: number;
+  left: Node | null;
+  right: Node | null;
+  next: Node | null;
+  constructor(
+    val?: number,
+    left?: Node | null,
+    right?: Node | null,
+    next?: Node | null,
+  ) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+    this.next = next ?? null;
+  }
+}
+
+function connect(root: Node | null): Node | null {
+  if (root === null) return null;
+
+  const queue: Node[] = [root];
+
+  while (queue.length > 0) {
+    const size = queue.length;
+    let prev: Node | null = null;
+
+    for (let i = 0; i < size; i++) {
+      const node = queue.shift()!;
+
+      if (prev !== null) {
+        prev.next = node;
+      }
+      prev = node;
+
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+  }
+
+  return root;
+}
+```
+
+## 思路二：O(1) 额外空间（逐层 dummy 链表）
+
+116 的 O(1) 写法依赖「每个节点都有两个孩子」；本题节点可能缺左或缺右，不能直接用 `head.left!.next = head.right!` 那一套。
+
+做法：从当前层最左节点 `leftmost` 开始，为**下一层**维护一条只含 `next` 的临时链表，用一个 **dummy 头结点** `dummy` 和尾指针 `tail`：
+
+1. 用 `head` 沿当前层已有的 `head.next` 横向扫描
+2. 对每个 `head`，若 `head.left` 非空，则挂到 `tail` 后面（`tail.next = head.left`，`tail = tail.next`）；`head.right` 同理
+3. 下一层最左节点为 `dummy.next`，若为空则结束；否则 `leftmost = dummy.next`，清空 dummy 继续
+
+每层只走一遍当前层节点，每个子节点最多被 `tail` 接一次，总时间 O(n)。除 dummy 外只有常数个指针，满足 O(1) 额外空间（不随节点数增长的辅助结构）。
+
+### 代码实现（TypeScript，O(1) 空间）
+
+```ts
+function connect(root: Node | null): Node | null {
+  if (root === null) return null;
+
+  let leftmost: Node | null = root;
+
+  while (leftmost !== null) {
+    const dummy = new Node(0);
+    let tail: Node = dummy;
+    let head: Node | null = leftmost;
+
+    while (head !== null) {
+      if (head.left !== null) {
+        tail.next = head.left;
+        tail = tail.next;
+      }
+      if (head.right !== null) {
+        tail.next = head.right;
+        tail = tail.next;
+      }
+      head = head.next;
+    }
+
+    leftmost = dummy.next;
+  }
+
+  return root;
+}
+```
+
+面试中若不要求 O(1) 空间，BFS 更易写；若追问空间，第二种 dummy 逐层建链是经典答案。
+
+<ComplexityCard time="O(n)" space="O(1)" note="O(1) 空间写法每层一个 dummy 结点，不随 n 增长；BFS 版本队列最坏 O(n)" />
