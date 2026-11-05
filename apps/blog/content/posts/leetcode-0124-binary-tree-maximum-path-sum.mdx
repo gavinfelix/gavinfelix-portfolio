@@ -1,0 +1,91 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 124
+title: 'LeetCode 0124 - Binary Tree Maximum Path Sum'
+difficulty: 'hard'
+tags: ['tree', 'depth-first-search', 'binary-tree', 'dynamic-programming', 'recursion']
+date: '2026-11-05'
+description: '后序 DFS：每个节点返回「向下延伸的单边最大路径和」，全局维护经过该节点的路径最大值'
+---
+
+## 题目理解
+
+给定一棵**非空**二叉树的根节点 `root`。树中节点值在 `[-1000, 1000]`，节点数在 `[1, 3 × 10⁴]`。
+
+**路径**定义为：从树中任意节点出发，沿父子边走到任意节点（**不必经过根**，也**不必是根到叶**）。路径上至少包含一个节点。
+
+路径的**路径和**是路径上所有节点值之和。求整棵树中的**最大路径和**。
+
+例如：
+
+```ts
+root = [1, 2, 3]
+// 路径 2 → 1 → 3，和为 6
+
+root = [-10, 9, 20, null, null, 15, 7]
+// 路径 15 → 20 → 7，和为 42
+```
+
+节点值可能为负；若整条路径和为负，仍要选「最大的那个」（例如单节点 `-3` 时答案为 `-3`）。
+
+## 思路：后序 DFS + 单边贡献
+
+暴力枚举所有节点对之间的路径不可行。关键观察：
+
+1. 任意一条最大路径，一定存在某个**「拐点」节点** `node`，路径在 `node` 处分成向左、向右（或只走一侧）两段
+2. 经过 `node` 的路径和 = `node.val` +（可选）左子树向下延伸的最大单边和 +（可选）右子树向下延伸的最大单边和
+3. 子树向**父节点**返回时，只能选**左或右其中一侧**继续向上（不能走「倒 V」），否则会和父节点形成重复边
+
+因此对每个节点 `node` 做后序 DFS，函数 `gain(node)` 表示：从 `node` 出发、**只向下**走一条路径的最大和（至少包含 `node`，可以只取 `node.val` 本身）。
+
+递归：
+
+- 空节点贡献 `0`
+- `leftGain = max(0, gain(node.left))`，负贡献的边不选
+- `rightGain = max(0, gain(node.right))`
+- **经过 `node` 的完整路径**（可作为全局答案）：`node.val + leftGain + rightGain`，用全局变量 `maxSum` 更新
+- **返回给父节点**：`node.val + max(leftGain, rightGain)`（单边向上延伸）
+
+与 [LeetCode 112 Path Sum](/posts/leetcode-0112-path-sum) 不同，本题路径可不以根为端点；与 [LeetCode 104 Maximum Depth of Binary Tree](/posts/leetcode-0104-maximum-depth-of-binary-tree) 类似，都是后序合并左右子树信息，但这里合并的是「带权路径和」而非深度。
+
+### 代码实现（TypeScript）
+
+```ts
+class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = val ?? 0;
+    this.left = left ?? null;
+    this.right = right ?? null;
+  }
+}
+
+function maxPathSum(root: TreeNode | null): number {
+  let maxSum = -Infinity;
+
+  function gain(node: TreeNode | null): number {
+    if (!node) return 0;
+
+    // Only extend downward if the child branch is non-negative
+    const leftGain = Math.max(0, gain(node.left));
+    const rightGain = Math.max(0, gain(node.right));
+
+    // Path that uses this node as the "peak" (may turn left and right)
+    const pathThroughNode = node.val + leftGain + rightGain;
+    maxSum = Math.max(maxSum, pathThroughNode);
+
+    // Single branch to offer the parent
+    return node.val + Math.max(leftGain, rightGain);
+  }
+
+  gain(root);
+  return maxSum;
+}
+```
+
+`maxSum` 初始为 `-Infinity`，保证全负树时仍能取到某个节点的值。`gain` 的返回值只表示「从当前节点向下选一条最优单边」，完整路径的最大值在 `pathThroughNode` 处维护。
+
+<ComplexityCard time="O(n)" space="O(h)" note="每个节点访问一次；h 为树高，递归栈最坏 O(n)" />
