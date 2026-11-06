@@ -1,0 +1,90 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 131
+title: 'LeetCode 0131 - Palindrome Partitioning'
+difficulty: 'medium'
+tags: ['string', 'backtracking', 'dynamic-programming']
+date: '2026-11-06'
+description: '回溯按切分点枚举子串，每段用双指针判定回文后再继续搜索剩余后缀'
+---
+
+## 题目理解
+
+给定一个字符串 `s`，将 `s` 分割成若干**子串**，使得每个子串都是**回文串**。返回 `s` 所有可能的分割方案。
+
+例如：
+
+```ts
+s = "aab"
+// 返回 [["a","a","b"], ["aa","b"]]
+
+s = "a"
+// 返回 [["a"]]
+```
+
+分割顺序不同但子串列表相同只算一种方案；本题要求的是子串列表的集合，不是切分位置的下标。
+
+字符串长度在 `[1, 16]`，回溯规模可控，但需要在每层快速判断子串是否回文。
+
+## 思路：回溯 + 回文判定
+
+与 [LeetCode 125 Valid Palindrome](/posts/leetcode-0125-valid-palindrome) 一样，回文可以用双指针从两端向中间比较；这里是对**任意子串** `s[start..i]` 做判定。
+
+回溯维护：
+
+- `start`：当前尚未分割的后缀起点
+- `path`：已经选定的回文子串列表
+
+从 `start` 枚举下一个子串的结束位置 `i`（`i` 从 `start` 到 `n - 1`）：
+
+1. 若 `s[start..i]` 不是回文，跳过
+2. 若是回文，把 `s.slice(start, i + 1)` 加入 `path`，递归 `backtrack(i + 1)`
+3. 回溯时 `path.pop()`
+
+当 `start === s.length` 时，说明整串已切完，把 `path` 的副本加入答案。
+
+子串回文判定 `isPalindrome(left, right)`：双指针向内收缩，全部字符相等则 true。也可以预处理 `dp[i][j]` 表示 `s[i..j]` 是否回文，把判定摊到 `O(1)`，适合更长字符串；在 `n ≤ 16` 下直接双指针足够清晰。
+
+与 [LeetCode 78 Subsets](/posts/leetcode-0078-subsets) 不同，本题不是「选或不选」每个元素，而是**在剩余后缀上选一段合法回文前缀**再递归；与 [LeetCode 22 Generate Parentheses](/posts/leetcode-0022-generate-parentheses) 类似，都是 DFS 在决策树上扩展，但约束来自回文结构而非括号计数。
+
+### 代码实现（TypeScript）
+
+```ts
+function partition(s: string): string[][] {
+  const res: string[][] = [];
+  const path: string[] = [];
+  const n = s.length;
+
+  function isPalindrome(left: number, right: number): boolean {
+    while (left < right) {
+      if (s[left] !== s[right]) return false;
+      left++;
+      right--;
+    }
+    return true;
+  }
+
+  function backtrack(start: number) {
+    if (start === n) {
+      res.push([...path]);
+      return;
+    }
+
+    for (let i = start; i < n; i++) {
+      if (!isPalindrome(start, i)) continue;
+
+      path.push(s.slice(start, i + 1));
+      backtrack(i + 1);
+      path.pop();
+    }
+  }
+
+  backtrack(0);
+  return res;
+}
+```
+
+外层循环的 `i` 表示「当前这一段回文子串」的右边界；只有回文段才进入递归，避免无效分支。`path` 在回溯中复用，入答案时用 `[...path]` 拷贝，防止后续修改污染已记录方案。
+
+<ComplexityCard time="O(n × 2^n)" space="O(n)" note="最坏情况下存在大量分割方案；单次回文判定 O(n)，递归深度与 path 长度均为 O(n)" />
