@@ -1,0 +1,107 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 132
+title: 'LeetCode 0132 - Palindrome Partitioning II'
+difficulty: 'hard'
+tags: ['string', 'dynamic-programming']
+date: '2026-11-07'
+description: '预处理回文表，再用一维 DP 求把整串切成全回文子串所需的最少切割次数'
+---
+
+## 题目理解
+
+给定一个字符串 `s`，将 `s` 分割成若干子串，使每个子串都是回文串。返回**最少切割次数**，使得分割后每一段都是回文。
+
+注意：本题只求**最小切割次数**，不像 [LeetCode 131 Palindrome Partitioning](/posts/leetcode-0131-palindrome-partitioning) 那样枚举所有方案。
+
+例如：
+
+```ts
+s = "aab"
+// 最少切 1 次：["aa", "b"]
+
+s = "a"
+// 本来就是回文，返回 0
+
+s = "ab"
+// 只能切成 ["a", "b"]，返回 1
+```
+
+字符串长度在 `[1, 2000]`，暴力枚举所有切分会超时，需要动态规划。
+
+## 思路：回文预处理 + 一维 DP
+
+### 第一步：判断任意子串是否回文
+
+设 `pal[i][j]` 表示 `s[i..j]` 是否为回文，用区间 DP 自底向上填表：
+
+- 长度为 1：`pal[i][i] = true`
+- 长度为 2：`pal[i][i+1] = (s[i] === s[i+1])`
+- 更长区间：`pal[i][j] = (s[i] === s[j] && pal[i+1][j-1])`
+
+填表时让 `len` 从 2 递增到 `n`，保证计算 `pal[i][j]` 时内侧子串 `pal[i+1][j-1]` 已有结果。
+
+### 第二步：最少切割次数
+
+定义 `cuts[i]`：前缀 `s[0..i]`（含 `i`）切成全回文子串所需的**最少切割次数**。
+
+若 `s[0..i]` 本身已是回文，则无需切割，`cuts[i] = 0`。
+
+否则枚举最后一个回文段的左端点 `j`（`0 ≤ j ≤ i`）：
+
+- 若 `s[j..i]` 是回文，则可以先以 `s[0..j-1]` 的最优切法，再在 `j` 前切一刀接上 `s[j..i]`
+- 转移：`cuts[i] = min(cuts[i], cuts[j - 1] + 1)`（`j === 0` 时视作 `cuts[-1] = -1`，加一后得 0）
+
+初始可设 `cuts[i] = i`（最坏：每个字符单独成段，需要 `i` 次切割），再用转移取最小。
+
+与 131 的回溯不同，这里用 DP **重叠子问题**（同一前缀的最少切法只算一次），整体 `O(n²)`。
+
+### 代码实现（TypeScript）
+
+```ts
+function minCut(s: string): number {
+  const n = s.length;
+  if (n <= 1) return 0;
+
+  const pal: boolean[][] = Array.from({ length: n }, () =>
+    Array<boolean>(n).fill(false),
+  );
+
+  for (let i = 0; i < n; i++) {
+    pal[i][i] = true;
+  }
+
+  for (let len = 2; len <= n; len++) {
+    for (let i = 0; i + len - 1 < n; i++) {
+      const j = i + len - 1;
+      if (len === 2) {
+        pal[i][j] = s[i] === s[j];
+      } else {
+        pal[i][j] = s[i] === s[j] && pal[i + 1][j - 1];
+      }
+    }
+  }
+
+  const cuts: number[] = Array(n).fill(0).map((_, i) => i);
+
+  for (let i = 0; i < n; i++) {
+    if (pal[0][i]) {
+      cuts[i] = 0;
+      continue;
+    }
+
+    for (let j = 1; j <= i; j++) {
+      if (pal[j][i]) {
+        cuts[i] = Math.min(cuts[i], cuts[j - 1] + 1);
+      }
+    }
+  }
+
+  return cuts[n - 1];
+}
+```
+
+`pal` 先摊平「子串是否回文」的判定，内层枚举 `j` 时只查表、不再做双指针。`cuts` 一维滚动等价于对所有前缀取最优，最终 `cuts[n - 1]` 即整串答案。
+
+<ComplexityCard time="O(n²)" space="O(n²)" note="pal 表 O(n²)；cuts 为 O(n)。回文表可压成 O(n) 空间（Manacher 或滚动），但 DP 主体仍为 O(n²)" />
