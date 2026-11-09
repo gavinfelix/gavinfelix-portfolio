@@ -1,0 +1,78 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 134
+title: 'LeetCode 0134 - Gas Station'
+difficulty: 'medium'
+tags: ['array', 'greedy']
+date: '2026-11-09'
+description: '若总油量不少于总耗费则必有解；一遍扫描维护油箱，亏空则把起点改到下一站'
+---
+
+## 题目理解
+
+在一条环形公路上有 `n` 个加油站，第 `i` 个站有 `gas[i]` 单位汽油。
+
+从第 `i` 站开到第 `i + 1` 站（下标对 `n` 取模）需要消耗 `cost[i]` 汽油。
+
+你知道所有加油站和耗油量，从某个站点出发、油箱初始为空，问能否**绕一圈回到起点**；若能，返回**任一**合法起始下标，否则返回 `-1`。
+
+例如：
+
+```ts
+gas  = [1, 2, 3, 4, 5]
+cost = [3, 4, 5, 1, 2]
+// 返回 3：从站 3 出发，按 3 -> 4 -> 0 -> 1 -> 2 -> 3 可以完成一圈
+
+gas  = [2, 3, 4]
+cost = [3, 4, 3]
+// 返回 -1：总油量不足以支付总路程
+```
+
+题目保证最多只有一个有效答案。
+
+## 思路：总油量判定 + 贪心起点
+
+若 `sum(gas) < sum(cost)`，无论如何都走不完一圈，直接返回 `-1`。
+
+否则一定存在合法起点。从左到右模拟：维护当前起点 `start` 和油箱剩余 `tank`。
+
+- 每到一个站，先把 `gas[i]` 加满，再减去开到下一站的费用 `cost[i]`
+- 若 `tank < 0`，说明从当前 `start` 到 `i` 这一段**不能**作为环路起点（任何介于 `start` 与 `i` 之间的站更靠前，也更不可能单独支撑到 `i` 之后），于是把 `start` 设为 `i + 1`，`tank` 清零，继续扫描
+
+当 `start` 被如此调整后，若全局油量足够，最终留下的 `start` 即为答案。只需一遍线性扫描，不需要真的绕圈验证。
+
+### 代码实现（TypeScript）
+
+```ts
+function canCompleteCircuit(gas: number[], cost: number[]): number {
+  let totalGas = 0;
+  let totalCost = 0;
+  for (let i = 0; i < gas.length; i++) {
+    totalGas += gas[i];
+    totalCost += cost[i];
+  }
+
+  // Impossible to complete the circuit
+  if (totalGas < totalCost) return -1;
+
+  let start = 0;
+  let tank = 0;
+
+  for (let i = 0; i < gas.length; i++) {
+    tank += gas[i] - cost[i];
+
+    // Cannot depart from any station in [start, i]; try the next index
+    if (tank < 0) {
+      start = i + 1;
+      tank = 0;
+    }
+  }
+
+  return start;
+}
+```
+
+`totalGas >= totalCost` 保证答案存在时，`start` 即唯一合法起点；亏空时丢弃整段前缀，与 [LeetCode 55 Jump Game](/posts/leetcode-0055-jump-game) 中「只保留最远可达」的贪心思想同属一类——去掉不可能的前缀，只向前看。
+
+<ComplexityCard time="O(n)" space="O(1)" note="两遍单循环可合并为一遍；只使用若干标量" />
