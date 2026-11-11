@@ -1,0 +1,68 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 137
+title: 'LeetCode 0137 - Single Number II'
+difficulty: 'medium'
+tags: ['array', 'bit-manipulation']
+date: '2026-11-11'
+description: '位掩码 ones/twos：每个 bit 上 trio 抵消后，仅剩出现一次的数留在 ones'
+---
+
+## 题目理解
+
+给定一个整数数组 `nums`，其中：
+
+- 每个元素都出现了 **三次**
+- **恰好一个**元素只出现 **一次**
+
+找出并返回这个只出现一次的元素。
+
+要求：线性时间、常数额外空间。
+
+例如：
+
+```ts
+nums = [2, 2, 3, 2]           // 返回 3
+nums = [0, 1, 0, 1, 0, 1, 99]   // 返回 99
+```
+
+## 思路：每一位按出现次数模 3
+
+和 [LeetCode 136 Single Number](/posts/leetcode-0136-single-number) 一样，关键在异或；但这里每个数出现三次，不能一次异或到底。
+
+对每个 bit 位独立看：若 `k` 个数在这一位为 `1`，则 `k mod 3` 决定「剩余状态」。用两个状态变量按位维护：
+
+- `ones`：在这一位上，当前还没凑满「三份」的 `1` 的个数（模 2 编码进 `ones`）
+- `twos`：在这一位上，已经凑满一份「两个 1」、还差一个就清零的状态
+
+扫过一个数 `num` 后更新（经典写法）：
+
+```ts
+ones = (ones ^ num) & ~twos;
+twos = (twos ^ num) & ~ones;
+```
+
+直觉：`~twos` / `~ones` 保证同一 bit 上 `ones` 与 `twos` 不会同时为 1；三个相同数走过同一 bit 会轮转一圈把状态打回 0，只留下那个只出现一次的数。
+
+### 代码实现（TypeScript）
+
+```ts
+function singleNumber(nums: number[]): number {
+  let ones = 0;
+  let twos = 0;
+
+  for (const num of nums) {
+    // XOR num into ones; mask out bits already tracked in twos
+    ones = (ones ^ num) & ~twos;
+    // XOR num into twos; mask out bits already in ones (completes the trio cycle)
+    twos = (twos ^ num) & ~ones;
+  }
+
+  return ones;
+}
+```
+
+也可以对 32 个 bit 分别统计 `1` 的出现次数再对 3 取模，拼回答案；逻辑更直白，但常数更大。面试里 `ones/twos` 单行更新更紧凑。
+
+<ComplexityCard time="O(n)" space="O(1)" note="只维护 ones、twos 两个 32 位整数；n 为数组长度" />
