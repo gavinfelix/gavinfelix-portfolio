@@ -1,0 +1,90 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 138
+title: 'LeetCode 0138 - Copy List with Random Pointer'
+difficulty: 'medium'
+tags: ['hash-table', 'linked-list']
+date: '2026-11-13'
+description: '哈希表先克隆全部节点，再第二遍按原链表连通 next 与 random'
+---
+
+## 题目理解
+
+给定一个由 `n` 个节点组成的链表，每个节点除 `next` 外还有一个 `random` 指针，可能指向链表中任意节点或 `null`。
+
+```ts
+class Node {
+  val: number;
+  next: Node | null;
+  random: Node | null;
+  constructor(val?: number, next?: Node, random?: Node) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+    this.random = random === undefined ? null : random;
+  }
+}
+```
+
+要求返回该链表的**深拷贝**，新链表中的 `next` 与 `random` 指向关系须与原链表一一对应，且不得与原链表**共享任何节点对象**。
+
+例如：
+
+```ts
+// [[7,null],[13,0],[11,4],[10,2],[1,0]]
+// 节点 0 的 random 指向 null，节点 1 的 random 指向节点 0，依此类推
+```
+
+## 思路：两遍扫描 + 原节点到克隆的映射
+
+`random` 可以指向尚未遍历到的节点，不能边遍历边「猜」该指向链表中的哪一个克隆。
+
+与 [LeetCode 0133 Clone Graph](/posts/leetcode-0133-clone-graph) 相同套路：用 `Map<原节点, 克隆节点>` 保证每个原节点对应唯一新对象。
+
+1. **第一遍**：沿 `next` 从头走到尾，为每个原节点 `new Node(val)` 并写入 map，此时克隆节点的 `next`、`random` 暂为 `null`
+2. **第二遍**：再次从头扫描，对每个原节点取克隆，按 map 把 `clone.next`、`clone.random` 设为原 `next` / `random` 对应克隆（若为 `null` 则保持 `null`）
+
+两遍各 O(n)，map 大小 O(n)。另有一种「交错插入」法可在 O(1) 额外空间完成，但实现更绕；面试里 hash map 两遍写法最直观。
+
+### 代码实现（TypeScript）
+
+```ts
+class Node {
+  val: number;
+  next: Node | null;
+  random: Node | null;
+  constructor(val?: number, next?: Node, random?: Node) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+    this.random = random === undefined ? null : random;
+  }
+}
+
+function copyRandomList(head: Node | null): Node | null {
+  if (head === null) return null;
+
+  const cloned = new Map<Node, Node>();
+  let curr = head;
+
+  // First pass: allocate one clone per original node
+  while (curr !== null) {
+    cloned.set(curr, new Node(curr.val));
+    curr = curr.next;
+  }
+
+  // Second pass: connect next and random on each clone
+  curr = head;
+  while (curr !== null) {
+    const copy = cloned.get(curr)!;
+    copy.next = curr.next !== null ? cloned.get(curr.next)! : null;
+    copy.random = curr.random !== null ? cloned.get(curr.random)! : null;
+    curr = curr.next;
+  }
+
+  return cloned.get(head)!;
+}
+```
+
+第一遍只建壳，第二遍 `cloned.get(...)` 保证 `random` 绝不指向原图节点，只指向克隆。
+
+<ComplexityCard time="O(n)" space="O(n)" note="n 为节点数；map 保存 n 个克隆引用，两遍各扫描一次链表" />
