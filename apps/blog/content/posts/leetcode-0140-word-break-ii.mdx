@@ -1,0 +1,82 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 140
+title: 'LeetCode 0140 - Word Break II'
+difficulty: 'hard'
+tags: ['dynamic-programming', 'string', 'hash-table', 'backtracking']
+date: '2026-11-14'
+description: '记忆化 DFS 从起点枚举词典词缀在 s 上的匹配，与后缀句子拼成完整方案'
+---
+
+## 题目理解
+
+给定一个字符串 `s` 和一个字符串列表 `wordDict`，把 `s` 拆分成若干**非空**子串，要求每个子串都是 `wordDict` 里的某个单词（**同一个单词可以重复使用**）。
+
+返回所有能将 `s` 完整拆分的句子；单词之间用**单个空格**连接。返回顺序不限。
+
+若不存在合法拆分，返回空数组 `[]`。
+
+例如：
+
+```ts
+s = "catsanddog", wordDict = ["cat", "cats", "and", "sand", "dog"]
+// 返回 ["cats and dog", "cat sand dog"]
+
+s = "pineapplepenapple", wordDict = ["apple", "pen", "applepen", "pine", "pineapple"]
+// 返回 ["pine apple pen apple", "pineapple pen apple", "pine applepen apple"]
+// "pine applepen apple" 不合法，因为 "applepen" 与前后不能多出不属于词典的字母
+
+s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+// 返回 []：与 [LeetCode 139 Word Break](/posts/leetcode-0139-word-break) 中该例一样无法拆分
+```
+
+## 思路：记忆化 DFS
+
+[LeetCode 139](/posts/leetcode-0139-word-break) 只问「能否拆分」，用布尔 DP 即可；本题要**列出所有句子**，本质是带剪枝的 DFS。
+
+从下标 `start` 出发，枚举第一个单词的结束位置 `end`（`start < end <= n`）：
+
+1. 若 `s.slice(start, end)` 不在 `wordDict` 的 `Set` 中，跳过
+2. 否则记这个词为 `word`，递归求从 `end` 开始的所有后缀句子 `rest`
+3. 将 `word` 与 `rest` 中每一条用空格拼接（`rest` 只有空串 `''` 时表示已经到末尾，句子就是 `word` 本身）
+
+纯回溯会在相同 `start` 上重复搜索，用 `memo: Map<number, string[]>` 记下「从 `start` 起能形成的所有句子」。访问过的起点直接返回缓存。
+
+可选优化：先用 139 的 DP 判断 `dp[n]`，若为 `false` 直接返回 `[]`，避免无谓 DFS。核心仍是「选合法词缀 + 递归后缀」，与 [LeetCode 131 Palindrome Partitioning](/posts/leetcode-0131-palindrome-partitioning) 的回溯结构类似，但合法切分由词典而非回文决定。
+
+### 代码实现（TypeScript）
+
+```ts
+function wordBreak(s: string, wordDict: string[]): string[] {
+  const wordSet = new Set(wordDict);
+  const n = s.length;
+  const memo = new Map<number, string[]>();
+
+  function dfs(start: number): string[] {
+    if (memo.has(start)) return memo.get(start)!;
+    if (start === n) return [''];
+
+    const sentences: string[] = [];
+
+    for (let end = start + 1; end <= n; end++) {
+      const word = s.slice(start, end);
+      if (!wordSet.has(word)) continue;
+
+      const suffixes = dfs(end);
+      for (const suffix of suffixes) {
+        sentences.push(suffix ? `${word} ${suffix}` : word);
+      }
+    }
+
+    memo.set(start, sentences);
+    return sentences;
+  }
+
+  return dfs(0);
+}
+```
+
+当 `start === s.length` 时返回 `['']`，表示「空后缀」，方便在上一层用三元表达式区分「最后一个词」与「中间词」的拼接格式。
+
+<ComplexityCard time="O(n · 2^n)" space="O(n · 2^n)" note="最坏情况下拆法数量可达指数级，输出本身占用大量空间；记忆化按起点去重，n 为 s 长度" />
