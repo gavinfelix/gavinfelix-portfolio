@@ -1,0 +1,93 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 143
+title: 'LeetCode 143 - Reorder List'
+difficulty: 'medium'
+tags: ['linked-list', 'two-pointers']
+date: '2026-11-15'
+description: '找中点断开、反转后半段，再按 L0→Ln→L1→… 交替拼接'
+---
+
+## 题目理解
+
+给定单链表的头节点 `head`，将链表**原地**重排为：
+
+`L0 → L1 → … → Ln-1 → Ln`
+
+变为
+
+`L0 → Ln → L1 → Ln-1 → L2 → Ln-2 → …`
+
+不能只复制节点，要修改节点的 `next` 指针，且不能开额外数组存放链表值。
+
+例如：
+
+```ts
+1 -> 2 -> 3 -> 4
+// 重排为 1 -> 4 -> 2 -> 3
+
+1 -> 2 -> 3 -> 4 -> 5
+// 重排为 1 -> 5 -> 2 -> 4 -> 3
+```
+
+## 思路：找中点 + 反转后半 + 交替合并
+
+重排后的模式是「从两端向中间收拢」：第一个连最后一个，第二个连倒数第二个，依此类推。
+
+把链表从中间切成两半，问题就变成：如何把前半 `A` 与**反转后**的后半 `B` 按 `a0, b0, a1, b1, …` 交错接到一起。
+
+三步即可：
+
+1. **找中点并断开**：快慢指针，快指针每次两步、慢指针一步；快指针无法再走两步时，慢指针在前半末尾。把 `slow.next` 设为 `null`，后半从原 `slow.next` 开始。
+2. **反转后半**：与 [LeetCode 206 Reverse Linked List](/posts/leetcode-0206-reverse-linked-list) 相同，迭代三指针反转。
+3. **交错拼接**：维护 `first`、`second` 两个指针，每次把 `first` 的下一位暂存，让 `first` 指向 `second`，再把 `second` 接到原来的 `first.next` 上，然后分别前移。
+
+找中点时用 `fast.next && fast.next.next` 作为循环条件（与 [LeetCode 876](/posts/leetcode-0876-middle-of-the-linked-list) 返回「第二个中点」的写法不同），这样在偶数长度时前半比后半多一个节点，交错后不会错位。
+
+### 代码实现（TypeScript）
+
+```ts
+function reorderList(head: ListNode | null): void {
+  if (head === null || head.next === null) return;
+
+  // Step 1: find the end of the first half and split
+  let slow = head;
+  let fast = head;
+  while (fast.next !== null && fast.next.next !== null) {
+    slow = slow.next!;
+    fast = fast.next.next;
+  }
+
+  let second: ListNode | null = slow.next;
+  slow.next = null;
+
+  // Step 2: reverse the second half
+  let prev: ListNode | null = null;
+  let curr = second;
+  while (curr !== null) {
+    const next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+  }
+  second = prev;
+
+  // Step 3: merge first and reversed second half alternately
+  let first = head;
+  while (second !== null) {
+    const nextFirst = first.next;
+    const nextSecond = second.next;
+
+    first.next = second;
+    second.next = nextFirst;
+
+    first = nextFirst!;
+    second = nextSecond;
+  }
+}
+```
+
+快慢找中、原地反转、双指针合并，空间 O(1)；前半多出一个节点时，最后一轮 `second` 为 `null`，循环自然结束。
+
+<ComplexityCard time="O(n)" space="O(1)" note="三次线性扫描；仅使用常数个指针" />
