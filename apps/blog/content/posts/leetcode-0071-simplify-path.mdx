@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 71
+title: 'LeetCode 71 - Simplify Path'
+difficulty: 'medium'
+tags: ['string', 'stack']
+date: '2026-11-16'
+description: '用栈解析 Unix 路径：遇 .. 弹栈，遇 . 或空段跳过，其余入栈'
+---
+
+## 题目理解
+
+给你一个表示 Unix 风格文件路径的字符串 `path`，把它转换成**最简**的**绝对路径**。
+
+Unix 路径规则简要回顾：
+
+- 路径以 `/` 开头，表示从根目录出发
+- `.` 表示当前目录，可以忽略
+- `..` 表示上一级目录（往父目录走一层）
+- 多个连续的 `/` 视为一个 `/`
+- 路径不能以 `/` 结尾（除非是根目录 `/`）
+- `..` 在根目录再往上无效，应被忽略
+
+例如：
+
+```ts
+"/home/"           // -> "/home"
+"/home//foo/"      // -> "/home/foo"
+"/a/./b/../../c/"  // -> "/c"
+"/../"             // -> "/"
+```
+
+## 思路：栈
+
+不需要真的在字符串里删字符，只要知道「路径由哪些目录名依次组成」即可。用栈模拟目录层级最合适：
+
+1. 用 `/` 分割路径，得到每一段
+2. 遍历每一段 `part`：
+   - 空字符串或 `"."`：忽略
+   - `".."`：若栈非空则弹出（不能从根再往上）
+   - 其他：当作目录名压栈
+3. 最后 `"/" + stack.join("/")` 组成结果；栈空则为 `"/"`
+
+分割时 `path.split("/")` 会把首尾的空段也切出来（例如 `"/a/b/"` → `["", "a", "b", ""]`），正好会被上面的空段规则过滤掉。
+
+### 代码实现（TypeScript）
+
+```ts
+function simplifyPath(path: string): string {
+  const stack: string[] = [];
+  const parts = path.split("/");
+
+  for (const part of parts) {
+    if (part === "" || part === ".") {
+      continue;
+    }
+    if (part === "..") {
+      if (stack.length > 0) {
+        stack.pop();
+      }
+    } else {
+      stack.push(part);
+    }
+  }
+
+  return "/" + stack.join("/");
+}
+```
+
+注意：`join` 在栈空时得到 `""`，前面加上 `/` 正好是根路径 `"/"`。
+
+<ComplexityCard time="O(n)" space="O(n)" note="分割与栈最多各保存 O(n) 个字符" />
