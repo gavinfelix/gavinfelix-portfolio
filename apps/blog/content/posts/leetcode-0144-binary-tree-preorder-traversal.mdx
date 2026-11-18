@@ -1,0 +1,92 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 144
+title: 'LeetCode 0144 - Binary Tree Preorder Traversal'
+difficulty: 'easy'
+tags: ['tree', 'stack', 'depth-first-search', 'binary-tree']
+date: '2026-11-18'
+description: '递归 DFS 根左右；迭代用显式栈按「先右后左」入栈模拟前序'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，返回其节点值的**前序遍历**（根 → 左子树 → 右子树）。
+
+例如：
+
+```ts
+     1
+   /   \
+  2     3
+ / \
+4   5
+```
+
+返回 `[1, 2, 4, 5, 3]`。
+
+空树返回 `[]`。
+
+## 思路：递归 DFS（根 — 左 — 右）
+
+前序遍历的访问顺序在递归里非常自然：当前节点为「根」，先记录 `node.val`，再递归左子树，再递归右子树。
+
+```
+visit(root)
+  visit(left)
+  visit(right)
+```
+
+与 [LeetCode 102 Binary Tree Level Order Traversal](/posts/leetcode-0102-binary-tree-level-order-traversal) 的 BFS 相对，前序是深度优先；和层序一样，每个节点恰好访问一次。
+
+### 代码实现（TypeScript）
+
+```ts
+function preorderTraversal(root: TreeNode | null): number[] {
+  const result: number[] = [];
+
+  function dfs(node: TreeNode | null): void {
+    if (node === null) return;
+
+    result.push(node.val);
+    dfs(node.left);
+    dfs(node.right);
+  }
+
+  dfs(root);
+  return result;
+}
+```
+
+## 迭代：显式栈
+
+递归底层也是栈；面试常要求**不递归**的写法。
+
+用栈保存「下一次要访问的节点」。前序要先深入左子树，因此**右孩子先入栈、左孩子后入栈**——这样栈顶始终是下一个该访问的节点（先弹出的是左子树路径）。
+
+每次弹出 `node`，写入结果，再把非空的右、左孩子压栈。
+
+### 迭代实现（TypeScript）
+
+```ts
+function preorderTraversal(root: TreeNode | null): number[] {
+  if (root === null) return [];
+
+  const result: number[] = [];
+  const stack: TreeNode[] = [root];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    result.push(node.val);
+
+    if (node.right) stack.push(node.right);
+    if (node.left) stack.push(node.left);
+  }
+
+  return result;
+}
+```
+
+Morris 遍历可以做到 O(1) 额外空间（利用空指针线索），但写法和边界细节较多；栈写法更短、更好讲清楚。
+
+<ComplexityCard time="O(n)" space="O(h)" note="n 为节点数；递归栈或显式栈最坏 O(n)（链状树），平衡树约 O(log n)" />
