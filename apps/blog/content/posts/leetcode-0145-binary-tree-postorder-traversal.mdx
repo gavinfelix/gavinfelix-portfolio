@@ -1,0 +1,91 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 145
+title: 'LeetCode 0145 - Binary Tree Postorder Traversal'
+difficulty: 'easy'
+tags: ['tree', 'stack', 'depth-first-search', 'binary-tree']
+date: '2026-11-19'
+description: '递归 DFS 左右根；迭代可用双栈或「根右左」再反转模拟后序'
+---
+
+## 题目理解
+
+给定一棵二叉树的根节点 `root`，返回其节点值的**后序遍历**（左子树 → 右子树 → 根）。
+
+例如：
+
+```ts
+     1
+   /   \
+  2     3
+ / \
+4   5
+```
+
+返回 `[4, 5, 2, 3, 1]`。
+
+空树返回 `[]`。
+
+## 思路：递归 DFS（左 — 右 — 根）
+
+后序遍历在递归里与 [LeetCode 0144 Binary Tree Preorder Traversal](/posts/leetcode-0144-binary-tree-preorder-traversal) 对称：先递归左右子树，最后才记录当前节点。
+
+```
+visit(left)
+  visit(right)
+  visit(root)
+```
+
+### 代码实现（TypeScript）
+
+```ts
+function postorderTraversal(root: TreeNode | null): number[] {
+  const result: number[] = [];
+
+  function dfs(node: TreeNode | null): void {
+    if (node === null) return;
+
+    dfs(node.left);
+    dfs(node.right);
+    result.push(node.val);
+  }
+
+  dfs(root);
+  return result;
+}
+```
+
+## 迭代：双栈（或根 — 右 — 左再反转）
+
+面试里经常要求**不递归**的写法。一种经典做法是「双栈」：
+
+1. 栈 `stack1` 做类似前序的压栈（根入栈，弹出时把非空**左、右**孩子压回——注意这里先左后右，这样栈顶优先走右子树）。
+2. 弹出顺序天然是「根 → 右 → 左」；依次写入第二个结构（数组即可），最后**整体反转**，就是「左 → 右 → 根」。
+
+直觉：后序是前序（根左右）把左右对调并反转结果。
+
+### 迭代实现（TypeScript）
+
+```ts
+function postorderTraversal(root: TreeNode | null): number[] {
+  if (root === null) return [];
+
+  const stack: TreeNode[] = [root];
+  const reversedRootRightLeft: number[] = [];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    reversedRootRightLeft.push(node.val);
+
+    if (node.left) stack.push(node.left);
+    if (node.right) stack.push(node.right);
+  }
+
+  return reversedRootRightLeft.reverse();
+}
+```
+
+也可用单栈 + `lastVisited` 指针判断「右子树是否已处理」，避免重复入栈；代码稍长，但只占一个栈。Morris 遍历能做到 O(1) 额外空间（线索二叉树），适合作为进阶；日常手写双栈或反转法更稳。
+
+<ComplexityCard time="O(n)" space="O(h)" note="n 为节点数；递归栈或显式栈最坏 O(n)（链状树），平衡树约 O(log n)；反转的 output 数组不计入额外空间时可视为 O(h)" />
