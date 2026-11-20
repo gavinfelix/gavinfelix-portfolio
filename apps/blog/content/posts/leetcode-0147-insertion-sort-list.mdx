@@ -1,0 +1,76 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 147
+title: 'LeetCode 0147 - Insertion Sort List'
+difficulty: 'medium'
+tags: ['linked-list', 'sorting']
+date: '2026-11-20'
+description: '维护已排序虚拟头，逐个把当前节点插入有序段的正确位置'
+---
+
+## 题目理解
+
+给定单链表的头节点 `head`，用**插入排序**在原地对链表排序，并返回排序后链表的头节点。
+
+插入排序过程（与数组版相同）：
+
+1. 维护一段「已排序」的前缀；
+2. 从左到右取出下一个节点，在已排序段里找到第一个**不小于**它的位置，插入到该处；
+3. 重复直到链表遍历结束。
+
+例如：
+
+```ts
+4 -> 2 -> 1 -> 3
+// 排序后为 1 -> 2 -> 3 -> 4
+
+-1 -> 5 -> 3 -> 4 -> 0
+// 排序后为 -1 -> 0 -> 3 -> 4 -> 5
+```
+
+链表上不能直接交换下标，只能通过调整 `next` 指针完成插入；不要求 O(1) 额外空间以外的其它限制，但经典写法只需常数辅助指针。
+
+## 思路：虚拟头 + 有序段插入
+
+用哑节点 `dummy` 作为**已排序链表**的头，初始为空（`dummy.next = null`）。
+
+用指针 `current` 扫描原链表：
+
+1. 先保存 `current.next`，稍后还要继续扫描；
+2. 在 `dummy` 为起点的有序链表中，用 `prev` 从左向右走，直到 `prev.next` 为 `null` 或 `prev.next.val >= current.val`，此时应在 `prev` 与 `prev.next` 之间插入 `current`；
+3. 把 `current` 从原位置摘下：`current.next = prev.next`，`prev.next = current`；
+4. `current` 移到下一步待处理节点。
+
+这是对数组插入排序的直接翻译：内层 while 找插入点，外层 while 逐个处理节点。与 [LeetCode 206 Reverse Linked List](/posts/leetcode-0206-reverse-linked-list) 等题一样，关键是**先保存后继**再改指针，避免断链。
+
+### 代码实现（TypeScript）
+
+```ts
+function insertionSortList(head: ListNode | null): ListNode | null {
+  const dummy = new ListNode(0);
+  let current = head;
+
+  while (current !== null) {
+    const next = current.next;
+
+    // Find the last node in the sorted list whose value is < current.val
+    let prev: ListNode = dummy;
+    while (prev.next !== null && prev.next.val < current.val) {
+      prev = prev.next;
+    }
+
+    // Insert current between prev and prev.next
+    current.next = prev.next;
+    prev.next = current;
+
+    current = next;
+  }
+
+  return dummy.next;
+}
+```
+
+若数据已近乎有序，内层扫描较短，实践中可接受；最坏情况下每个节点都要扫完整个有序段，与数组版插入排序的复杂度相同。
+
+<ComplexityCard time="O(n²)" space="O(1)" note="n 为节点数；最坏每个元素插入时扫描 O(n)；仅使用哑节点与常数指针" />
