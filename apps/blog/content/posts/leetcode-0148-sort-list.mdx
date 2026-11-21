@@ -1,0 +1,90 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 148
+title: 'LeetCode 0148 - Sort List'
+difficulty: 'medium'
+tags: ['linked-list', 'sorting', 'two-pointers', 'divide-and-conquer']
+date: '2026-11-21'
+description: '归并排序：快慢指针找中点切分，递归排序两半再合并有序链表'
+---
+
+## 题目理解
+
+给定单链表的头节点 `head`，在 **O(n log n)** 时间、**O(1)** 空间（常数额外空间，递归栈不计入本题常见题解口径）内完成排序，并返回排序后链表的头节点。
+
+例如：
+
+```ts
+4 -> 2 -> 1 -> 3
+// 排序后为 1 -> 2 -> 3 -> 4
+
+-1 -> 5 -> 3 -> 4 -> 0
+// 排序后为 -1 -> 0 -> 3 -> 4 -> 5
+```
+
+数组排序可以用快速排序或堆排序，但链表不支持随机访问，在链表上做 O(1) 额外空间的 O(n log n) 排序，经典做法是**自顶向下的归并排序**：不断把链表从中间切成两半，分别排序，再合并两个有序段。
+
+## 思路：找中点切分 + 递归排序 + 合并
+
+归并排序在数组上的步骤是「分治 + 合并」；链表版把「分」换成**快慢指针找中点并断开**。
+
+1. **合并两个有序链表**：维护哑节点，比较两个头节点的值，较小者接到结果链末尾，指针后移，直到某一端耗尽，把剩余段直接接上。与 [LeetCode 21 Merge Two Sorted Lists](/posts/leetcode-0021-merge-two-sorted-lists) 相同。
+2. **排序整段链表** `sortList(head)`：
+   - 若 `head` 为空或只有一个节点，已有序，直接返回；
+   - 快慢指针找中点：`slow` 每次一步，`fast` 每次两步；循环条件用 `fast.next && fast.next.next`（与 [LeetCode 143](/posts/leetcode-0143-reorder-list) 一致），偶数长度时 `slow` 停在前半最后一个节点，便于在 `slow` 处切开；
+   - `mid = slow.next`，`slow.next = null` 断开后半；
+   - `left = sortList(head)`，`right = sortList(mid)`；
+   - 返回 `merge(left, right)`。
+
+每次切分两半规模大致减半，合并是线性扫描，总时间 O(n log n)。辅助空间主要是递归深度 O(log n) 的调用栈；若改写成自底向上的归并可做到 O(1) 栈空间，但递归写法更贴近「分治」思路且代码更短。
+
+### 代码实现（TypeScript）
+
+```ts
+function sortList(head: ListNode | null): ListNode | null {
+  if (head === null || head.next === null) return head;
+
+  // Find the end of the first half and split
+  let slow: ListNode = head;
+  let fast: ListNode = head;
+  while (fast.next !== null && fast.next.next !== null) {
+    slow = slow.next!;
+    fast = fast.next.next;
+  }
+
+  const mid = slow.next;
+  slow.next = null;
+
+  const left = sortList(head);
+  const right = sortList(mid);
+
+  return mergeSortedLists(left, right);
+}
+
+function mergeSortedLists(
+  a: ListNode | null,
+  b: ListNode | null,
+): ListNode | null {
+  const dummy = new ListNode(0);
+  let tail: ListNode = dummy;
+
+  while (a !== null && b !== null) {
+    if (a.val <= b.val) {
+      tail.next = a;
+      a = a.next;
+    } else {
+      tail.next = b;
+      b = b.next;
+    }
+    tail = tail.next;
+  }
+
+  tail.next = a !== null ? a : b;
+  return dummy.next;
+}
+```
+
+稳定排序：合并时对相等值优先取 `a` 一侧（`<=`），相对顺序与归并排序的稳定性一致。
+
+<ComplexityCard time="O(n log n)" space="O(log n)" note="每层合并 O(n)，共分 log n 层；递归栈深度 O(log n)；若需严格 O(1) 额外空间可用自底向上归并" />
