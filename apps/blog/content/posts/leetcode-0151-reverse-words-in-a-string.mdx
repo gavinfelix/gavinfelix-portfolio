@@ -2,46 +2,89 @@
 type: 'algorithm'
 platform: 'leetcode'
 problemId: 151
-title: 'LeetCode 151 - Reverse Words in a String'
+title: 'LeetCode 0151 - Reverse Words in a String'
 difficulty: 'medium'
 tags: ['string', 'two-pointers']
-date: '2026-06-07'
-description: '反转字符串中的单词顺序，并处理首尾空格和多个连续空格'
+date: '2026-11-23'
+description: '先整体反转字符数组再逐词反转，双指针压缩多余空格得到逆序单词串'
 ---
 
 ## 题目理解
 
-给定一个字符串 `s`，将字符串中的单词顺序反转。
+给定一个字符串 `s`，其中单词由非空格字符组成，单词之间至少有一个空格分隔。
 
-需要注意：
+要求**反转单词的顺序**，并用**单个空格**把单词拼接成结果字符串。输入可能含有**首尾空格**或**单词间多个空格**，返回结果不应保留这些多余空格。
 
-- 单词之间可能有多个空格
-- 字符串开头和结尾也可能有空格
-- 返回结果中，单词之间只保留一个空格
+例如：
 
-## 思路：清理空格后反转单词
+```ts
+s = "the sky is blue"
+// 返回 "blue is sky the"
 
-这题的核心不是反转字符，而是反转单词的顺序。
+s = "  hello world  "
+// 返回 "world hello"
 
-可以分成几步：
+s = "a good   example"
+// 返回 "example good a"
+```
 
-1. 用 `trim()` 去掉首尾空格
-2. 用 `split(" ")` 按空格切分
-3. 用 `filter(Boolean)` 去掉多个连续空格产生的空字符串
-4. 用 `reverse()` 反转单词数组
-5. 用 `join(" ")` 拼回字符串
+## 思路：整体反转 + 逐词反转
+
+要把单词顺序倒过来，经典做法是**在字符数组上**分三步（多次对区间做双指针交换，与原地反转字符串的思路相同）：
+
+1. **去掉首尾空格，并把中间连续空格压成一个**（双指针 `read` / `write` 扫一遍，或先 `trim` 再规范间距；下面实现用一次线性扫描写出紧凑数组）
+2. **反转整个字符数组**
+3. **对每个单词区间分别反转**，此时单词顺序即为所求
+
+若用 TypeScript 的 `string`，可先 `split('')` 得到可变数组，最后在有效长度处 `join('')`。
+
+另一种写法是 `trim` 后按 `\s+` 分割再 `reverse().join(' ')`，代码更短，但本题更强调**原地**字符操作与双指针，与链表、数组原地题一脉相承。
 
 ### 代码实现（TypeScript）
 
 ```ts
+function reverseRange(chars: string[], left: number, right: number): void {
+  while (left < right) {
+    const tmp = chars[left];
+    chars[left] = chars[right];
+    chars[right] = tmp;
+    left++;
+    right--;
+  }
+}
+
 function reverseWords(s: string): string {
-  return s
-    .trim()
-    .split(" ")
-    .filter(Boolean)
-    .reverse()
-    .join(" ");
+  const chars = s.split('');
+  const n = chars.length;
+  let write = 0;
+
+  // Collapse spaces: skip leading/multiple spaces, keep one space between words
+  for (let read = 0; read < n; read++) {
+    if (chars[read] === ' ') {
+      if (write === 0 || chars[write - 1] === ' ') continue;
+    }
+    chars[write++] = chars[read];
+  }
+  // Trim trailing space if present
+  if (write > 0 && chars[write - 1] === ' ') write--;
+
+  const len = write;
+  if (len === 0) return '';
+
+  reverseRange(chars, 0, len - 1);
+
+  let start = 0;
+  for (let i = 0; i <= len; i++) {
+    if (i === len || chars[i] === ' ') {
+      reverseRange(chars, start, i - 1);
+      start = i + 1;
+    }
+  }
+
+  return chars.slice(0, len).join('');
 }
 ```
 
-<ComplexityCard time="O(n)" space="O(n)" note="需要额外数组保存切分后的单词" />
+第一步后 `len` 为规范化后的长度；全串反转后单词边界仍由空格分隔，再对每个单词做小范围反转即可恢复字母顺序并得到全局逆序。
+
+<ComplexityCard time="O(n)" space="O(n)" note="n 为 s 长度；字符数组需要 O(n) 辅助空间，扫描与三次反转均为线性" />
