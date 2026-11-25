@@ -1,0 +1,73 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 153
+title: 'LeetCode 0153 - Find Minimum in Rotated Sorted Array'
+difficulty: 'medium'
+tags: ['array', 'binary-search']
+date: '2026-11-25'
+description: '比较中点与右端点判断最小值落在哪一半，在旋转有序数组上二分缩区间'
+---
+
+## 题目理解
+
+已知一个按升序排列、**元素互不相同**的整数数组在某个下标处被「旋转」过（把尾部一段整体搬到前面），例如 `[0, 1, 2, 4, 5, 6, 7]` 在下标 `3` 旋转后变成 `[4, 5, 6, 7, 0, 1, 2]`）。
+
+返回数组中的**最小元素**。要求算法必须在 **O(log n)** 时间内完成。
+
+例如：
+
+```ts
+nums = [3, 4, 5, 1, 2]
+// 原序列为 [1, 2, 3, 4, 5]，最小值为 1
+
+nums = [4, 5, 6, 7, 0, 1, 2]
+// 返回 0
+
+nums = [11, 13, 15, 17]
+// 未被旋转或只转了一圈，最小值为 11
+
+nums = [2, 1]
+// 返回 1
+```
+
+若允许 O(n) 扫一遍，直接 `Math.min(...nums)` 即可；约束在二分，说明旋转后仍保留「局部有序」结构，可以像 [LeetCode 704 Binary Search](/posts/leetcode-0704-binary-search) 一样每次排除一半搜索空间。
+
+## 思路：与右端点比较的二分
+
+在区间 `[left, right]` 上二分。取中点 `mid`，比较 `nums[mid]` 与 `nums[right]`：
+
+1. **`nums[mid] > nums[right]`**  
+   说明 `mid` 落在旋转前的「较大一段」上，最小值一定在 `mid` **右侧**（不含 `mid`），令 `left = mid + 1`。
+
+2. **`nums[mid] <= nums[right]`**  
+   说明 `mid` 在较小一段上，或与 `right` 同属未旋转的升序尾段，最小值在 `[left, mid]` 内（**含 `mid`**），令 `right = mid`。不能写 `right = mid - 1`，否则可能把最小值排除掉。
+
+循环条件是 `left < right`（与 [LeetCode 162 Find Peak Element](/posts/leetcode-0162-find-peak-element) 同类「缩区间到单点」模板）。当 `left === right` 时，该下标即为最小值所在位置。
+
+### 代码实现（TypeScript）
+
+```ts
+function findMin(nums: number[]): number {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left < right) {
+    const mid = left + Math.floor((right - left) / 2);
+
+    if (nums[mid] > nums[right]) {
+      // Minimum lies strictly to the right of mid
+      left = mid + 1;
+    } else {
+      // nums[mid] <= nums[right]: shrink right but keep mid as a candidate
+      right = mid;
+    }
+  }
+
+  return nums[left];
+}
+```
+
+若数组从未旋转（整体仍升序），任意 `mid` 都满足 `nums[mid] <= nums[right]`，区间不断向左缩，最终 `left` 停在 `0`，正确返回首元素。
+
+<ComplexityCard time="O(log n)" space="O(1)" note="只维护 left、right、mid，每次排除一半区间" />
