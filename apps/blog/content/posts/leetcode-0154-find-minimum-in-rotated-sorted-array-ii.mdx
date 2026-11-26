@@ -1,0 +1,89 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 154
+title: 'LeetCode 0154 - Find Minimum in Rotated Sorted Array II'
+difficulty: 'hard'
+tags: ['array', 'binary-search']
+date: '2026-11-26'
+description: '在 153 题二分模板上，当 nums[mid] 等于 nums[right] 时收缩右边界，处理旋转数组中的重复元素'
+---
+
+## 题目理解
+
+与 [LeetCode 153 Find Minimum in Rotated Sorted Array](/posts/leetcode-0153-find-minimum-in-rotated-sorted-array) 相同：一个原本升序的整数数组在某个下标处被旋转。本题的区别是 **数组中可能包含重复元素**。
+
+返回数组中的最小元素。题目说明应尽量将时间复杂度降到 **O(log n)**；在最坏情况下，大量重复值会使区间无法对半排除，退化到接近 O(n)。
+
+例如：
+
+```ts
+nums = [1, 3, 5]
+// 未被旋转或整体仍升序，返回 1
+
+nums = [2, 2, 2, 0, 1]
+// 旋转后最小值为 0
+
+nums = [3, 3, 1, 3]
+// 返回 1
+
+nums = [2, 2, 2, 2, 2]
+// 全相同，返回 2
+```
+
+当 `mid` 与 `right` 处的值相等时，无法像无重复版本那样断定最小值落在左半还是右半，需要额外规则收缩搜索空间。
+
+## 思路：153 的二分 + 重复时 `right--`
+
+仍维护 `[left, right]`，比较 `nums[mid]` 与 `nums[right]`：
+
+1. **`nums[mid] > nums[right]`**  
+   与 153 题相同：`mid` 落在旋转后较大的那一段，最小值在 `mid` 右侧，令 `left = mid + 1`。
+
+2. **`nums[mid] < nums[right]`**  
+   最小值在 `[left, mid]` 内（含 `mid`），令 `right = mid`。
+
+3. **`nums[mid] === nums[right]`**  
+   无法判断丢弃哪一半。例如 `[2, 2, 2, 0, 1]` 与 `[2, 2, 0, 1, 2]` 在 `mid === right` 时都可能成立。安全做法是 **`right--`**：丢掉一个与 `mid` 等价的右端点，缩小区间但不排除仍可能成为答案的位置（最小值若恰在 `right`，左侧通常还有相同副本或更小值，或通过继续 `right--` 暴露结构）。
+
+循环 `while (left < right)`，结束时 `nums[left]` 即为最小值。
+
+与 [LeetCode 704 Binary Search](/posts/leetcode-0704-binary-search) 相比，本题不是找目标下标，而是在旋转结构上维护不变量；与 153 相比，多出的 `===` 分支是处理重复的核心。
+
+### 代码实现（TypeScript）
+
+```ts
+function findMin(nums: number[]): number {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left < right) {
+    const mid = left + Math.floor((right - left) / 2);
+
+    if (nums[mid] > nums[right]) {
+      // Same as problem 153: minimum is to the right of mid
+      left = mid + 1;
+    } else if (nums[mid] < nums[right]) {
+      // Minimum is in [left, mid], keep mid as candidate
+      right = mid;
+    } else {
+      // nums[mid] === nums[right]: cannot discard half; peel duplicate at right
+      right--;
+    }
+  }
+
+  return nums[left];
+}
+```
+
+`right--` 在最坏情况（例如全数组相同）每次只减 1，复杂度会退化为 O(n)；在重复较少的旋转数组上仍接近 O(log n)。
+
+## 复杂度分析
+
+理想情况与 153 相同，每次排除约一半区间；当 `nums[mid] === nums[right]` 频繁出现时，可能线性缩小 `right`。
+
+<ComplexityCard
+  time="O(log n) 均摊；最坏 O(n)"
+  space="O(1)"
+  note="仅使用常数个指针；全等或大量重复时二分优势减弱"
+/>
