@@ -1,0 +1,103 @@
+---
+type: 'algorithm'
+platform: 'leetcode'
+problemId: 155
+title: 'LeetCode 0155 - Min Stack'
+difficulty: 'medium'
+tags: ['stack', 'design']
+date: '2026-11-27'
+description: '主栈保存值，辅助栈同步记录各深度的前缀最小值，四个接口均在 O(1) 完成'
+---
+
+## 题目理解
+
+设计一个栈，支持以下操作并在 **常数时间** 内完成：
+
+- `push(val)`：将元素 `val` 压入栈顶
+- `pop()`：移除栈顶元素
+- `top()`：返回栈顶元素
+- `getMin()`：返回栈中的最小元素
+
+与 [LeetCode 0020 Valid Parentheses](/posts/leetcode-0020-valid-parentheses) 等「用栈解题」不同，本题是 **数据结构题**：实现栈本身，并在普通 LIFO 语义之外额外维护全局最小值。
+
+例如：
+
+```ts
+const stack = new MinStack();
+stack.push(-2);
+stack.push(0);
+stack.push(-3);
+stack.getMin(); // 返回 -3
+stack.pop();
+stack.top();    // 返回 0
+stack.getMin(); // 返回 -2
+```
+
+若只用单栈并在 `getMin` 时扫描，单次查询为 O(n)，不满足题意。
+
+## 思路：值栈 + 同步的最小值栈
+
+`pop` 可能移除当前最小值，但 **被弹出的那一层** 的最小值信息也应一并撤销。做法与 [LeetCode 146 LRU Cache](/posts/leetcode-0146-lru-cache) 类似：用第二个结构承担「按状态查询」的职责。
+
+维护两个栈，始终同步 `push` / `pop`：
+
+1. **`stack`**：保存实际压入的值。
+2. **`minStack`**：`minStack[i]` 表示在 `stack` 与 `minStack` 同为 `i + 1` 个元素时，**该栈内**的最小值。
+
+`push(val)` 时：
+
+- `stack` 压入 `val`
+- `minStack` 压入 `min(minStack 栈顶, val)`（空栈时即为 `val`）
+
+`pop()` 时两个栈同步弹出；`top()` 读 `stack` 栈顶；`getMin()` 读 `minStack` 栈顶，无需遍历。
+
+这样在任意栈深度，`getMin` 对应的是「当前子栈」的最小值，而不是历史全局最小值的陈旧副本。
+
+### 代码实现（TypeScript）
+
+```ts
+class MinStack {
+  private stack: number[];
+  private minStack: number[];
+
+  constructor() {
+    this.stack = [];
+    this.minStack = [];
+  }
+
+  push(val: number): void {
+    this.stack.push(val);
+    const minSoFar =
+      this.minStack.length === 0
+        ? val
+        : Math.min(this.minStack[this.minStack.length - 1], val);
+    this.minStack.push(minSoFar);
+  }
+
+  pop(): void {
+    // Keep both stacks in sync so min state matches current depth
+    this.stack.pop();
+    this.minStack.pop();
+  }
+
+  top(): number {
+    return this.stack[this.stack.length - 1];
+  }
+
+  getMin(): number {
+    return this.minStack[this.minStack.length - 1];
+  }
+}
+```
+
+也可以用单栈存 `[value, minSoFar]` 二元组，逻辑等价；双栈写法与「主数据 + 辅助索引」模式一致，便于对照 [LeetCode 150 Evaluate Reverse Polish Notation](/posts/leetcode-0150-evaluate-reverse-polish-notation) 中的栈操作习惯。
+
+## 复杂度分析
+
+每次 `push` / `pop` 对两个栈各做常数次操作；`top` 与 `getMin` 仅取栈顶。
+
+<ComplexityCard
+  time="O(1)"
+  space="O(n)"
+  note="n 次 push 后两个栈各最多 n 个元素；四个接口均为常数时间"
+/>
